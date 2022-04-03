@@ -2,9 +2,9 @@ services:
 # for front-end/mobile etc.
 #  web:
 #    build: .
-#    command: uvicorn app.main:app --host 0.0.0.0
+#    command: uvicorn src.main:src --host 0.0.0.0
 #    volumes:
-#      - .:/app
+#      - .:/src
 #    ports:
 #      - 8008:8000
 #    environment:
