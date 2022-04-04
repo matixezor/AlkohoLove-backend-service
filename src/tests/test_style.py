@@ -1,9 +1,7 @@
 import pycodestyle
-import os
 
 
 def test_style():
-    os.system('pycodestyle ./src --show-source')
-    style = pycodestyle.StyleGuide()
+    style = pycodestyle.StyleGuide(max_line_length=100)
     result = style.check_files(['./src'])
     assert result.total_errors == 0
