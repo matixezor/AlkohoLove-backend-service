@@ -13,6 +13,15 @@ Db `jdbc:postgresql://localhost:5432/alkoholove`
 
 `http://localhost:8008/docs`
 
+## Tests
+
+To run tests use `$ pytest` command in root directory
+
+## Linters
+
+To run linter check use `$ pycodestyle ./src --source-code` in root directory 
+or `$ pycodestyle . --source-code` in src directory
+
 ## COMMITS CONVENTION
 
 Commits merged into master should follow conventional 
