@@ -1,4 +1,4 @@
-INSERT INTO Users
+INSERT INTO users
 VALUES 
 (DEFAULT, 'admin', 'af0fecce40045d00b41eee663e362399' , 'admin@gmail.com','2022-03-22 19:10:25', '2022-03-22 19:13:25', true, false, 'ZCkvHgkHRZHB26WR'), --password - Jan123
 (DEFAULT, 'Adam_Skorupa', 'af0fecce40045d00b41eee663e362399' , 'adam.skorupa@gmail.com','2022-04-12 06:11:15', '2022-04-22 16:24:21', false, false, 'ZCkvHgkHRZHB26WR'), --password - Jan123
