@@ -1,16 +1,15 @@
 services:
-# for front-end/mobile etc.
-#  web:
-#    build: .
-#    command: uvicorn src.main:src --host 0.0.0.0
-#    volumes:
-#      - .:/src
-#    ports:
-#      - 8008:8000
-#    environment:
-#      - DATABASE_URL=postgresql://alkoholove_admin:Test1234@db:5432/alkoholove
-#    depends_on:
-#      - db
+  backend:
+    build: .
+    command: uvicorn src.main:app --host 0.0.0.0
+    volumes:
+      - .:/src
+    ports:
+      - 8008:8000
+    environment:
+      - DATABASE_URL=postgresql://alkoholove_admin:Test1234@db:5432/alkoholove
+    depends_on:
+      - db
   db:
     image: postgres:14-alpine
     ports:
