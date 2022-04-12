@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: '3.10.4'
 
-      - name: Run docker
+      - name: Run docker containers
         run: docker-compose up --build -d
 
       - name: Install dependencies
@@ -30,4 +30,7 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove
-        run: pytest
+        run: pytest ./src
+
+      - name: Shut down docker containers
+        run: docker-compose down --volumes
