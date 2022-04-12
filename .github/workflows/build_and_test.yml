@@ -21,8 +21,8 @@ jobs:
         with:
           python-version: '3.10.4'
 
-      - name: Run docker containers
-        run: docker-compose up --build -d
+      - name: Run database container
+        run: docker-compose run -d db
 
       - name: Install dependencies
         run: pip install -r requirements.txt
