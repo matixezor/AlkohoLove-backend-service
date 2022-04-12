@@ -37,9 +37,9 @@ CREATE INDEX ON country (country);
 
 CREATE TABLE region
 (
-    region_id  serial PRIMARY KEY,
+    region_id   serial PRIMARY KEY,
     region_name VARCHAR(50),
-    country_id INTEGER REFERENCES country (country_id)
+    country_id  INTEGER REFERENCES country (country_id)
 );
 
 CREATE INDEX ON region (region_name);
@@ -69,16 +69,16 @@ CREATE TABLE ingredient
 
 CREATE TABLE alcohol_aroma
 (
-    aroma_id INTEGER REFERENCES aroma (aroma_id),
+    aroma_id   INTEGER REFERENCES aroma (aroma_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
-   PRIMARY KEY (aroma_id, alcohol_id)
+    PRIMARY KEY (aroma_id, alcohol_id)
 );
 
 CREATE TABLE alcohol_food_pairing
 (
     food_id    INTEGER REFERENCES food (food_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
-   PRIMARY KEY (food_id, alcohol_id)
+    PRIMARY KEY (food_id, alcohol_id)
 
 );
 
@@ -86,13 +86,13 @@ CREATE TABLE alcohol_flavour
 (
     flavour_id INTEGER REFERENCES flavour (flavour_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
-     PRIMARY KEY (flavour_id, alcohol_id)
+    PRIMARY KEY (flavour_id, alcohol_id)
 
 );
 CREATE TABLE alcohol_ingredient
 (
     ingredient_id INTEGER REFERENCES ingredient (ingredient_id),
-    alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
+    alcohol_id    INTEGER REFERENCES alcohol (alcohol_id),
     PRIMARY KEY (ingredient_id, alcohol_id)
 
 );
