@@ -22,3 +22,5 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
       - ./init_db/create_user_table.sql:/docker-entrypoint-initdb.d/create_user_table.sql
       - ./init_db/populate_users.sql:/docker-entrypoint-initdb.d/populate_users.sql
+      - ./init_db/create_alcohol_tables.sql:/docker-entrypoint-initdb.d/create_alcohol_tables.sql
+      - ./init_db/populate_alcohol_tables.sql:/docker-entrypoint-initdb.d/populate_alcohol_tables.sql
