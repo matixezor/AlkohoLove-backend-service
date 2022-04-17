@@ -20,6 +20,10 @@
 	 - The Standard Reference Method is one of several systems modern brewers use to specify beer color.
  - extract float (beer)
 	 - It describes the amount of sugar in the wort. Generally the higher the BLG the stronger, heavier and sweeter the beer
+ - fermentation varchar (11) (beer)
+	 - There are 4 types of fermentation top, bottom, spontaneous and mixed.
+ - is_filtered boolean (beer)
+ - is_pasteurized boolean (beer)
  - serving_temperature varchar(7)
  - brand varchar(50)
  - image_path varchar(50)
@@ -66,6 +70,10 @@
 	 - The Standard Reference Method is one of several systems modern brewers use to specify beer color.
  - extract float
 	 - It describes the amount of sugar in the wort. Generally the higher the BLG the stronger, heavier and sweeter the beer
+ - fermentation varchar(11) (beer)
+	 - There are 4 types of fermentation top, bottom, spontaneous and mixed.
+ - is_filtered boolean (beer)
+ - is_pasteurized boolean (beer)
 
 
 # Wine
