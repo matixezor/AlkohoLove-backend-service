@@ -14,9 +14,9 @@
  - color varchar(50)
  - country varchar(50)
  - year integer
- - bitterness_IBU integer (beer)
+ - bitterness_ibu integer (beer)
 	- The International Bitterness Units scale, or IBU, is used to approximately quantify the bitterness of beer. Measured on a scale from 0 to without upper limit.
- - SRM float (beer)
+ - srm float (beer)
 	 - The Standard Reference Method is one of several systems modern brewers use to specify beer color.
  - extract float (beer)
 	 - It describes the amount of sugar in the wort. Generally the higher the BLG the stronger, heavier and sweeter the beer
@@ -64,9 +64,9 @@
 
 # Beer
 
- - bitterness_IBU integer 
+ - bitterness_ibu integer 
 	- The International Bitterness Units scale, or IBU, is used to approximately quantify the bitterness of beer. Measured on a scale from 0 to without upper limit.
- - SRM float
+ - srm float
 	 - The Standard Reference Method is one of several systems modern brewers use to specify beer color.
  - extract float
 	 - It describes the amount of sugar in the wort. Generally the higher the BLG the stronger, heavier and sweeter the beer
