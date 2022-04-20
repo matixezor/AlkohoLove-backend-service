@@ -5,7 +5,7 @@ VALUES (DEFAULT, 'Żywiec białe', 'piwo', 5.0, 'witbier',
        (DEFAULT, 'Soplica Szlachetna Wódka', 'wódka', 4.0, 'czysta',
         'Jedna z najstarszych wódek w Polsce, to połączenie tradycji i nowoczesności. Wykonana jest z najwyższej klasy spirytusu produkowanego z wielkopolskiego zboża. W trakcie procesu technologicznego poddawana jest czterokrotnej aktywnej filtracji, dzięki czemu ma delikatny smak i zapach. Zastosowanie unikalnych metod oczyszczania spirytusu i zestawiania składników decyduje o jej szczególnym charakterze i harmonijnej kompozycji smakowo-zapachowej. To sprawdzony skład gwarantujący doskonałą jakość.',
         1,
-        40.0, 'przezroczysty', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Soplica', NULL, NULL);
+        40.0, 'bezbarwne', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Soplica', NULL, NULL);
 
 
 INSERT INTO bar_code
