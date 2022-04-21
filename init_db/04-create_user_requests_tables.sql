@@ -8,7 +8,7 @@ CREATE TABLE errors_reported
 CREATE TABLE alcohol_request
 (
     request_id          serial PRIMARY KEY,
-    user_id             INTEGER REFERENCES users (user_id)
+    user_id             INTEGER REFERENCES users (user_id),
     name                VARCHAR(50) NOT NULL,
     kind                VARCHAR(50) NOT NULL,
     type                VARCHAR(50) NOT NULL,

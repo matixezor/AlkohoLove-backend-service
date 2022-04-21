@@ -5,5 +5,5 @@ INSERT INTO user_wishlist
 VALUES (1, 2);
 
 INSERT INTO user_search_history
-VALUES (1, 2, '2005-10-03'),
-       (1, 1, '2022-15-04');
+VALUES (1, 2, '2022-03-10'),
+       (1, 1, '2022-04-15');
