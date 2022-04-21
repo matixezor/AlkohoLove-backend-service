@@ -1,11 +1,11 @@
 from bcrypt import gensalt
 from datetime import datetime
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi import status, HTTPException
-from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update
 
-from src.database.database import Base
+from src.database.database_metadata import Base
 from src.domain.user import UserCreate, UserUpdate
 
 
@@ -39,11 +39,11 @@ class UserDatabaseHandler:
         return pwd_context.hash(salt + password)
 
     @staticmethod
-    def get_user_by_id(db: Session, user_id: int) -> User | None:
-        return db.query(User).filter(User.user_id == user_id).first()
+    async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+        return await db.get(User, user_id)
 
     @staticmethod
-    def check_if_user_exists(db: Session, email: str, username: str) -> None:
+    async def check_if_user_exists(db: AsyncSession, email: str, username: str) -> None:
         if UserDatabaseHandler.get_user_by_email(db, email):
             UserDatabaseHandler.raise_user_already_exists('email')
 
@@ -51,15 +51,19 @@ class UserDatabaseHandler:
             UserDatabaseHandler.raise_user_already_exists('username')
 
     @staticmethod
-    def get_user_by_email(db: Session, email: str) -> User | None:
-        return db.query(User).filter(User.email == email).first()
+    async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+        query = select(User).filter(User.email == email).limit(1)
+        result = await db.execute(query)
+        return result.scalars().first()
 
     @staticmethod
-    def get_user_by_username(db: Session, username: str) -> User | None:
-        return db.query(User).filter(User.username == username).first()
+    async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
+        query = select(User).filter(User.username == username).limit(1)
+        result = await db.execute(query)
+        return result.scalars().first()
 
     @staticmethod
-    def create_user(db: Session, user_create_payload: UserCreate) -> User:
+    async def create_user(db: AsyncSession, user_create_payload: UserCreate) -> User:
         password_salt = gensalt().decode("utf-8")
         user_create_payload.password = UserDatabaseHandler.get_password_hash(
             user_create_payload.password,
@@ -73,15 +77,16 @@ class UserDatabaseHandler:
         )
 
         db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
+        await db.commit()
+        await db.refresh(db_user)
 
         return db_user
 
     @staticmethod
-    def update_user(db: Session, user_id: int, user_update_payload: UserUpdate) -> User:
-        db.query(User)\
-            .filter(User.user_id == user_id)\
-            .update(user_update_payload.dict(exclude_none=True), synchronize_session=False)
-        db.commit()
-        return UserDatabaseHandler.get_user_by_id(db, user_id=user_id)
+    async def update_user(db: AsyncSession, user_id: int, user_update_payload: UserUpdate) -> User:
+        query = update(User)\
+            .where(User.user_id == user_id)\
+            .values(user_update_payload.dict(exclude_none=True))
+        await db.execute(query)
+        await db.commit()
+        return await UserDatabaseHandler.get_user_by_id(db, user_id=user_id)

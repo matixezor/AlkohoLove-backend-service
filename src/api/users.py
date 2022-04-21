@@ -1,7 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from src.database.database import get_db
+from src.database.database_config import get_db
 from src.domain.user import User, UserCreate, UserUpdate
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
@@ -18,11 +18,11 @@ def raise_user_not_found():
     response_model=User,
     status_code=status.HTTP_200_OK
 )
-def get_user(user_id: int, db: Session = Depends(get_db)) -> User:
+async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
     """
     Read user information
     """
-    db_user = DatabaseHandler.get_user_by_id(db, user_id)
+    db_user = await DatabaseHandler.get_user_by_id(db, user_id)
     if not db_user:
         raise_user_not_found()
     return db_user
@@ -34,10 +34,10 @@ def get_user(user_id: int, db: Session = Depends(get_db)) -> User:
     response_model=User,
     status_code=status.HTTP_200_OK
 )
-def update_user(
+async def update_user(
         user_id: int,
         user_update_payload: UserUpdate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> User:
     """
     Update user with request Body:
@@ -51,7 +51,7 @@ def update_user(
     db_user = DatabaseHandler.get_user_by_id(db, user_id)
     if not db_user:
         raise_user_not_found()
-    return DatabaseHandler.update_user(db, user_id, user_update_payload)
+    return await DatabaseHandler.update_user(db, user_id, user_update_payload)
 
 
 @router.post(
@@ -60,7 +60,7 @@ def update_user(
     response_model=User,
     status_code=status.HTTP_201_CREATED
 )
-def post_user(user_create_payload: UserCreate, db: Session = Depends(get_db)) -> User:
+async def post_user(user_create_payload: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
     """
     Create user with request body:
     - **email**: required
@@ -69,9 +69,9 @@ def post_user(user_create_payload: UserCreate, db: Session = Depends(get_db)) ->
     - **password**: required
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
-    DatabaseHandler.check_if_user_exists(
+    await DatabaseHandler.check_if_user_exists(
         db,
         user_create_payload.email,
         user_create_payload.username
     )
-    return DatabaseHandler.create_user(db, user_create_payload)
+    return await DatabaseHandler.create_user(db, user_create_payload)
