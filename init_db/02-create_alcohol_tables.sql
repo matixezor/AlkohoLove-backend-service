@@ -10,9 +10,12 @@ CREATE TABLE alcohol
     alcohol_by_volume   FLOAT,
     color               VARCHAR(50),
     year                INTEGER,
-    bitterness_IBU      INTEGER,
-    SRM                 FLOAT,
+    bitterness_ibu      INTEGER,
+    srm                 FLOAT,
     extract             FLOAT,
+    fermentation        VARCHAR(11),
+    is_filtered         BOOLEAN,
+    is_pasteurized      BOOLEAN,
     serving_temperature VARCHAR(7),
     brand               VARCHAR(50),
     vine_stock          VARCHAR(50),
@@ -69,30 +72,30 @@ CREATE TABLE ingredient
 
 CREATE TABLE alcohol_aroma
 (
-    aroma_id   INTEGER REFERENCES aroma (aroma_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
+    aroma_id   INTEGER REFERENCES aroma (aroma_id),
     PRIMARY KEY (aroma_id, alcohol_id)
 );
 
 CREATE TABLE alcohol_food_pairing
 (
-    food_id    INTEGER REFERENCES food (food_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
+    food_id    INTEGER REFERENCES food (food_id),
     PRIMARY KEY (food_id, alcohol_id)
 
 );
 
 CREATE TABLE alcohol_flavour
 (
-    flavour_id INTEGER REFERENCES flavour (flavour_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id),
+    flavour_id INTEGER REFERENCES flavour (flavour_id),
     PRIMARY KEY (flavour_id, alcohol_id)
 
 );
 CREATE TABLE alcohol_ingredient
 (
-    ingredient_id INTEGER REFERENCES ingredient (ingredient_id),
     alcohol_id    INTEGER REFERENCES alcohol (alcohol_id),
+    ingredient_id INTEGER REFERENCES ingredient (ingredient_id),
     PRIMARY KEY (ingredient_id, alcohol_id)
 
 );

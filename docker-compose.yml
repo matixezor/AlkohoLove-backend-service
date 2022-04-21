@@ -7,7 +7,7 @@ services:
     ports:
       - 8008:8000
     environment:
-      - DATABASE_URL=postgresql://alkoholove_admin:Test1234@db:5432/alkoholove
+      - DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@db:5432/alkoholove
     depends_on:
       - db
   db:
