@@ -1,0 +1,45 @@
+from os import getenv
+from httpx import AsyncClient
+from pytest_asyncio import fixture
+from sqlalchemy.orm import sessionmaker
+from typing import Callable, AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+
+DATABASE_URL = getenv('DATABASE_URL')
+
+
+engine = create_async_engine(DATABASE_URL)
+async_session = sessionmaker(
+    autocommit=False,
+    expire_on_commit=False,
+    autoflush=False,
+    bind=engine,
+    class_=AsyncSession
+)
+
+
+@fixture
+async def db_session() -> AsyncSession:
+    async with async_session() as session:
+        yield session
+        await session.flush()
+        await session.rollback()
+
+
+@fixture
+def override_get_db(db_session: AsyncSession) -> Callable:
+    async def _override_get_db():
+        yield db_session
+
+    return _override_get_db
+
+
+@fixture
+async def async_client(override_get_db: Callable) -> AsyncGenerator:
+    from src.database.database_config import get_db
+    from src.main import app
+
+    app.dependency_overrides[get_db] = override_get_db
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac

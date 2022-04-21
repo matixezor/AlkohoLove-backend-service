@@ -7,7 +7,7 @@ Use `$ pip install -r requirements.txt`
 ## Local development
 
 When running with IDE, set Run/Debug configurations with env variable  
-`DATABASE_URL=postgresql://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
+`DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
 
 ## Docs
 Docs are available under `/docs` path
@@ -21,6 +21,8 @@ Backend on docker will be under `http://localhost:8008/docs`
 
 ## Tests
 
+**Docker container with the database must be running!**  
+Set environment variable `DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
 To run tests use `$ pytest` command in root directory
 
 ## Linters
