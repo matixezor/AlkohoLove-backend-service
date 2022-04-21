@@ -20,7 +20,10 @@ services:
       - POSTGRES_DB=alkoholove
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-      - ./init_db/create_user_table.sql:/docker-entrypoint-initdb.d/create_user_table.sql
-      - ./init_db/populate_users.sql:/docker-entrypoint-initdb.d/populate_users.sql
-      - ./init_db/create_alcohol_tables.sql:/docker-entrypoint-initdb.d/create_alcohol_tables.sql
-      - ./init_db/populate_alcohol_tables.sql:/docker-entrypoint-initdb.d/populate_alcohol_tables.sql
+      - ./init_db/01-create_user_table.sql:/docker-entrypoint-initdb.d/01-create_user_table.sql
+      - ./init_db/05-populate_users.sql:/docker-entrypoint-initdb.d/05-populate_users.sql
+      - ./init_db/02-create_alcohol_tables.sql:/docker-entrypoint-initdb.d/02-create_alcohol_tables.sql
+      - ./init_db/06-populate_alcohol_tables.sql:/docker-entrypoint-initdb.d/06-populate_alcohol_tables.sql
+      - ./init_db/03-create_user_lists_tables.sql:/docker-entrypoint-initdb.d/03-create_user_lists_tables.sql
+      - ./init_db/07-populate_user_lists_tables.sql:/docker-entrypoint-initdb.d/07-populate_user_lists_tables.sql
+      - ./init_db/04-create_user_requests_tables.sql:/docker-entrypoint-initdb.d/04-create_user_requests_tables.sql

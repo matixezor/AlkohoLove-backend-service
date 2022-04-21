@@ -16,6 +16,7 @@ Docs are available under `/docs` path
 
 To run `$ docker-compose up --build -d`
 To stop `$ docker-compose down --volumes`  
+To run just the db `$ docker-compose run -d --service-ports db`
 Db is persisted between launches, to get a brand-new db delete `postgres-data` directory  
 Backend on docker will be under `http://localhost:8008/docs`
 
