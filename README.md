@@ -8,6 +8,7 @@ Use `$ pip install -r requirements.txt`
 
 When running with IDE, set Run/Debug configurations with env variable  
 `DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
+When using docs to test the API use `ModHeader` extension and add header `Authorization: Bearer <token>`
 
 ## Docs
 Docs are available under `/docs` path

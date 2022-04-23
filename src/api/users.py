@@ -1,11 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
+from src.utils.auth import is_admin
 from src.database.database_config import get_db
 from src.domain.user import User, UserCreate, UserUpdate
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
-router = APIRouter(prefix='/users', tags=['users'])
+
+router = APIRouter(prefix='/users', tags=['users'], dependencies=[Depends(is_admin)])
 
 
 def raise_user_not_found():
@@ -14,9 +16,9 @@ def raise_user_not_found():
 
 @router.get(
     path='/{user_id}',
-    summary='Read user information',
     response_model=User,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary='Read user information'
 )
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)) -> User:
     """
@@ -56,11 +58,14 @@ async def update_user(
 
 @router.post(
     path='',
-    summary='Create user',
     response_model=User,
+    summary='Create user',
     status_code=status.HTTP_201_CREATED
 )
-async def post_user(user_create_payload: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
+async def post_user(
+        user_create_payload: UserCreate,
+        db: AsyncSession = Depends(get_db)
+) -> None:
     """
     Create user with request body:
     - **email**: required
@@ -74,4 +79,4 @@ async def post_user(user_create_payload: UserCreate, db: AsyncSession = Depends(
         user_create_payload.email,
         user_create_payload.username
     )
-    return await DatabaseHandler.create_user(db, user_create_payload)
+    await DatabaseHandler.create_user(db, user_create_payload)

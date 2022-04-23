@@ -9,7 +9,7 @@ TEST_EMAIL_FIXTURE = 'admin@admin.com'
 
 
 @mark.asyncio
-async def test_login_for_access_token_with_valid_credentials(async_client: AsyncClient):
+async def test_login_with_valid_credentials(async_client: AsyncClient):
     data = {
         'username': TEST_USERNAME_FIXTURE,
         'password': 'Jan123'
@@ -19,7 +19,7 @@ async def test_login_for_access_token_with_valid_credentials(async_client: Async
 
 
 @mark.asyncio
-async def test_login_for_access_token_with_invalid_credentials(async_client: AsyncClient):
+async def test_login_with_invalid_credentials(async_client: AsyncClient):
     data = {
         'username': TEST_USERNAME_FIXTURE,
         'password': 'Jan1233'
@@ -28,6 +28,15 @@ async def test_login_for_access_token_with_invalid_credentials(async_client: Asy
     assert response.status_code == 401
     assert response.json() == {
         'detail': 'Invalid username or password'
+    }
+
+
+@mark.asyncio
+async def test_refresh_without_token(async_client: AsyncClient):
+    response = await async_client.post('/auth/refresh')
+    assert response.status_code == 401
+    assert response.json() == {
+        'detail': 'Missing Authorization Header'
     }
 
 

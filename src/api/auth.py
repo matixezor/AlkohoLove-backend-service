@@ -1,23 +1,16 @@
-from jose import jwt
-from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, status, Response
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
-from src.config import SECRET_KEY, ALGORITHM
+from src.utils.auth import generate_tokens
 from src.database.database_config import get_db
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
 
 router = APIRouter(prefix='/auth', tags=['auth'])
-
-
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    to_encode.update({'exp': datetime.utcnow() + timedelta(hours=24)})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 @router.post(
@@ -26,13 +19,21 @@ def create_access_token(data: dict):
     status_code=status.HTTP_200_OK,
     tags=['token']
 )
-async def login_for_access_token(
+async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    authorize: AuthJWT = Depends()
 ):
     user = await DatabaseHandler.authenticate_user(db, form_data.username, form_data.password)
-    access_token = create_access_token(data={'sub': user.username})
-    return {'access_token': access_token, 'token_type': 'bearer'}
+    return generate_tokens(user.username, authorize)
+
+
+@router.post('/refresh')
+async def refresh(authorize: AuthJWT = Depends()):
+    authorize.jwt_refresh_token_required()
+
+    current_user = authorize.get_jwt_subject()
+    return generate_tokens(current_user, authorize)
 
 
 @router.post(
