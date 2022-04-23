@@ -39,15 +39,19 @@ class UserDatabaseHandler:
         return pwd_context.hash(salt + password)
 
     @staticmethod
+    def verify_password(password_raw: str, hashed_password: str) -> bool:
+        return pwd_context.verify(password_raw, hashed_password)
+
+    @staticmethod
     async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
         return await db.get(User, user_id)
 
     @staticmethod
     async def check_if_user_exists(db: AsyncSession, email: str, username: str) -> None:
-        if UserDatabaseHandler.get_user_by_email(db, email):
+        if await UserDatabaseHandler.get_user_by_email(db, email):
             UserDatabaseHandler.raise_user_already_exists('email')
 
-        if UserDatabaseHandler.get_user_by_username(db, username):
+        if await UserDatabaseHandler.get_user_by_username(db, username):
             UserDatabaseHandler.raise_user_already_exists('username')
 
     @staticmethod
@@ -63,7 +67,7 @@ class UserDatabaseHandler:
         return result.scalars().first()
 
     @staticmethod
-    async def create_user(db: AsyncSession, user_create_payload: UserCreate) -> User:
+    async def create_user(db: AsyncSession, user_create_payload: UserCreate) -> None:
         password_salt = gensalt().decode("utf-8")
         user_create_payload.password = UserDatabaseHandler.get_password_hash(
             user_create_payload.password,
@@ -77,10 +81,18 @@ class UserDatabaseHandler:
         )
 
         db.add(db_user)
-        await db.commit()
-        await db.refresh(db_user)
 
-        return db_user
+    @staticmethod
+    async def authenticate_user(db: AsyncSession, username: str, password: str) -> User:
+        user = await UserDatabaseHandler.get_user_by_username(db, username)
+        raw_password = user.password_salt + password
+        if not user or not UserDatabaseHandler.verify_password(raw_password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f'Invalid username or password'
+            )
+        return await UserDatabaseHandler\
+            .update_user(db, user.user_id, UserUpdate(last_login=datetime.now()))
 
     @staticmethod
     async def update_user(db: AsyncSession, user_id: int, user_update_payload: UserUpdate) -> User:

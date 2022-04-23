@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI, status
 
+from src.api.auth import router as auth_router
 from src.api.users import router as users_router
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
+app.include_router(auth_router)
 app.include_router(users_router)
 
 
