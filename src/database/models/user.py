@@ -10,7 +10,7 @@ from src.domain.user import UserCreate, UserUpdate
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = 'users'
 
     user_id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
@@ -23,7 +23,7 @@ class User(Base):
     password_salt = Column(String, nullable=False)
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 class UserDatabaseHandler:
@@ -68,7 +68,7 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def create_user(db: AsyncSession, user_create_payload: UserCreate) -> None:
-        password_salt = gensalt().decode("utf-8")
+        password_salt = gensalt().decode('utf-8')
         user_create_payload.password = UserDatabaseHandler.get_password_hash(
             user_create_payload.password,
             password_salt

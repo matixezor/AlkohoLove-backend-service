@@ -9,14 +9,14 @@ from src.database.database_config import get_db
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler, User
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/token')
 
 
 def raise_credentials_exception():
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail='Could not validate credentials',
+        headers={'WWW-Authenticate': 'Bearer'},
     )
 
 
@@ -26,7 +26,7 @@ async def get_current_user(
 ) -> User:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        username: str = payload.get('sub')
         if username is None:
             raise_credentials_exception()
         token_data = TokenData(username=username)

@@ -42,7 +42,7 @@ async def async_client(override_get_db: Callable) -> AsyncGenerator:
     from src.main import app
 
     app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(app=app, base_url='http://test') as ac:
         yield ac
 
 
