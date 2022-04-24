@@ -1,4 +1,5 @@
 from re import compile
+from datetime import datetime
 from pydantic import BaseModel, validator, root_validator
 
 email_pattern = compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}')
@@ -34,6 +35,7 @@ class UserUpdate(UserCreate):
     username: str | None = None
     password: str | None = None
     is_banned: bool | None = None
+    last_login: datetime | None = None
 
     @root_validator
     def any_of(cls, v: dict):

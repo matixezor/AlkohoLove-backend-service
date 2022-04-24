@@ -1,3 +1,4 @@
+from asyncio import get_event_loop
 from os import getenv
 from httpx import AsyncClient
 from pytest_asyncio import fixture
@@ -41,5 +42,12 @@ async def async_client(override_get_db: Callable) -> AsyncGenerator:
     from src.main import app
 
     app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(app=app, base_url='http://test') as ac:
         yield ac
+
+
+@fixture(scope='module')
+def event_loop():
+    loop = get_event_loop()
+    yield loop
+    loop.close()
