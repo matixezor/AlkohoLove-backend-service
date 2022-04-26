@@ -7,7 +7,6 @@ from src.config import DATABASE_URL
 async def get_db():
     async with async_session() as session:
         yield session
-        await session.commit()
 
 
 engine = create_async_engine(DATABASE_URL)

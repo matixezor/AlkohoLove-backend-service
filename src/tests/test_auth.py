@@ -12,7 +12,7 @@ TEST_EMAIL_FIXTURE = 'admin@admin.com'
 async def test_login_with_valid_credentials(async_client: AsyncClient):
     data = {
         'username': TEST_USERNAME_FIXTURE,
-        'password': 'Jan123'
+        'password': 'JanJan123'
     }
     response = await async_client.post('/auth/token', data=data)
     assert response.status_code == 200

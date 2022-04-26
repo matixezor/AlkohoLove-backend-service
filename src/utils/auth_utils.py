@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
 
 from src.config import ALGORITHM
-from src.domain.token import TokenData
 from src.database.database_config import get_db
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler, User
 
@@ -32,16 +31,21 @@ def raise_credentials_exception():
     )
 
 
-async def get_current_user(
-        authorize: AuthJWT = Depends(),
-        db: AsyncSession = Depends(get_db)
-) -> User:
+async def get_current_user_username(
+        authorize: AuthJWT = Depends()
+) -> str:
     authorize.jwt_required()
     username = authorize.get_jwt_subject()
     if username is None:
         raise_credentials_exception()
-    token_data = TokenData(username=username)
-    user = await DatabaseHandler.get_user_by_username(db, token_data.username)
+    return username
+
+
+async def get_current_user(
+        username: str = Depends(get_current_user_username),
+        db: AsyncSession = Depends(get_db)
+) -> User:
+    user = await DatabaseHandler.get_user_by_username(db, username)
     if user is None:
         raise_credentials_exception()
     return user

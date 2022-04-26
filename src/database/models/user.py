@@ -2,11 +2,12 @@ from bcrypt import gensalt
 from datetime import datetime
 from passlib.context import CryptContext
 from fastapi import status, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update
+from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update, func, delete
 
 from src.database.database_metadata import Base
-from src.domain.user import UserCreate, UserUpdate
+from src.domain.user import UserCreate, UserAdminUpdate, UserUpdate
 
 
 class User(Base):
@@ -47,6 +48,24 @@ class UserDatabaseHandler:
         return await db.get(User, user_id)
 
     @staticmethod
+    async def get_users(db: AsyncSession, limit: int, offset: int) -> list[User]:
+        query = select(User).offset(offset).limit(limit)
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    @staticmethod
+    async def count_users(db: AsyncSession) -> int:
+        query = select(func.count()).select_from(select(User).subquery())
+        result = await db.execute(query)
+        return result.scalar_one()
+
+    @staticmethod
+    async def delete_user(db: AsyncSession, username: str) -> None:
+        query = delete(User).\
+            where(User.username == username)
+        await db.execute(query)
+
+    @staticmethod
     async def check_if_user_exists(db: AsyncSession, email: str, username: str) -> None:
         if await UserDatabaseHandler.get_user_by_email(db, email):
             UserDatabaseHandler.raise_user_already_exists('email')
@@ -83,7 +102,12 @@ class UserDatabaseHandler:
         db.add(db_user)
 
     @staticmethod
-    async def authenticate_user(db: AsyncSession, username: str, password: str) -> User:
+    async def authenticate_user(
+            db: AsyncSession,
+            username: str,
+            password: str,
+            update_last_login: bool = False
+    ) -> User:
         user = await UserDatabaseHandler.get_user_by_username(db, username)
         raw_password = user.password_salt + password
         if not user or not UserDatabaseHandler.verify_password(raw_password, user.password):
@@ -91,14 +115,41 @@ class UserDatabaseHandler:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f'Invalid username or password'
             )
-        return await UserDatabaseHandler\
-            .update_user(db, user.user_id, UserUpdate(last_login=datetime.now()))
+        if update_last_login:
+            return await UserDatabaseHandler\
+                .update_user_by_id(db, user.user_id, UserAdminUpdate(last_login=datetime.now()))
+        else:
+            return user
 
     @staticmethod
-    async def update_user(db: AsyncSession, user_id: int, user_update_payload: UserUpdate) -> User:
+    async def update_user_by_id(
+            db: AsyncSession,
+            user_id: int,
+            user_update_payload: UserAdminUpdate
+    ) -> User:
         query = update(User)\
             .where(User.user_id == user_id)\
             .values(user_update_payload.dict(exclude_none=True))
         await db.execute(query)
         await db.commit()
         return await UserDatabaseHandler.get_user_by_id(db, user_id=user_id)
+
+    @staticmethod
+    async def update_user(
+            db: AsyncSession,
+            user: User,
+            user_update_payload: UserUpdate
+    ) -> User:
+        try:
+            query = update(User)\
+                .where(User.username == user.username)\
+                .values(user_update_payload.dict(exclude_none=True))
+            await db.execute(query)
+            await db.commit()
+            await db.refresh(user)
+            return user
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'Account with given email already exists'
+            )

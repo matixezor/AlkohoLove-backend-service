@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
-from src.utils.auth import generate_tokens
+from src.utils.auth_utils import generate_tokens
 from src.database.database_config import get_db
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
@@ -17,18 +17,22 @@ router = APIRouter(prefix='/auth', tags=['auth'])
     '/token',
     response_model=Token,
     status_code=status.HTTP_200_OK,
-    tags=['token']
+    summary='Login for token'
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
     authorize: AuthJWT = Depends()
 ):
-    user = await DatabaseHandler.authenticate_user(db, form_data.username, form_data.password)
+    user = await DatabaseHandler.authenticate_user(db, form_data.username, form_data.password, True)
     return generate_tokens(user.username, authorize)
 
 
-@router.post('/refresh')
+@router.post(
+    '/refresh',
+    response_model=Token,
+    status_code=status.HTTP_200_OK
+)
 async def refresh(authorize: AuthJWT = Depends()):
     authorize.jwt_refresh_token_required()
 
@@ -39,8 +43,7 @@ async def refresh(authorize: AuthJWT = Depends()):
 @router.post(
     '/register',
     response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    tags=['register']
+    status_code=status.HTTP_201_CREATED
 )
 async def register(user_create_payload: UserCreate, db: AsyncSession = Depends(get_db)) -> None:
     """
