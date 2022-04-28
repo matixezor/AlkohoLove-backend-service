@@ -5,12 +5,14 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 
 from src.api.auth import router as auth_router
 from src.api.users import router as users_router
+from src.api.alcohol import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(alcohol_router)
 app.include_router(logged_in_user_router)
 
 

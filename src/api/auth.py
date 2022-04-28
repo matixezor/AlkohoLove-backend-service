@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
-from src.utils.auth_utils import generate_tokens
 from src.database.database_config import get_db
+from src.utils.auth_utils import generate_tokens
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
 

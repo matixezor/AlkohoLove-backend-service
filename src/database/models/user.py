@@ -140,16 +140,10 @@ class UserDatabaseHandler:
             user: User,
             user_update_payload: UserUpdate
     ) -> User:
-        try:
-            query = update(User)\
-                .where(User.username == user.username)\
-                .values(user_update_payload.dict(exclude_none=True))
-            await db.execute(query)
-            await db.commit()
-            await db.refresh(user)
-            return user
-        except IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Account with given email already exists'
-            )
+        query = update(User)\
+            .where(User.username == user.username)\
+            .values(user_update_payload.dict(exclude_none=True))
+        await db.execute(query)
+        await db.commit()
+        await db.refresh(user)
+        return user
