@@ -36,7 +36,7 @@ async def update_self(
             or (not update_payload.password and update_payload.new_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Both password must be provided'
+            detail='Both passwords must be provided'
         )
     elif update_payload.password:
         password_verified = DatabaseHandler.verify_password(

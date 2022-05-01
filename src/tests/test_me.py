@@ -71,7 +71,7 @@ async def test_update_self_with_only_one_password(
     response = await async_client.put('/me', headers=headers, json=data)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Both password must be provided'
+    assert response['detail'] == 'Both passwords must be provided'
 
 
 @mark.asyncio
