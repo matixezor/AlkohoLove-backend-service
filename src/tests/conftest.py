@@ -46,7 +46,27 @@ async def async_client(override_get_db: Callable) -> AsyncGenerator:
         yield ac
 
 
-@fixture(scope='module')
+@fixture
+async def user_token(async_client: AsyncClient) -> str:
+    data = {
+        'username': 'Adam_Skorupa',
+        'password': 'JanJan123'
+    }
+    response = await async_client.post('/auth/token', data=data)
+    return response.json()['access_token']
+
+
+@fixture
+async def admin_token(async_client: AsyncClient) -> str:
+    data = {
+        'username': 'admin',
+        'password': 'JanJan123'
+    }
+    response = await async_client.post('/auth/token', data=data)
+    return response.json()['access_token']
+
+
+@fixture(scope='session')
 def event_loop():
     loop = get_event_loop()
     yield loop
