@@ -3,12 +3,12 @@ from httpx import AsyncClient
 
 
 @mark.asyncio
-async def test_get_users_with_insufficient_permissions(
+async def test_get_reported_error_with_insufficient_permissions(
         async_client: AsyncClient,
         user_token: str
 ):
     response = await async_client.get(
-        '/users', headers={'Authorization': f'Bearer {user_token}'}
+        '/reported_error', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
