@@ -70,33 +70,6 @@ async def delete_self(
     await DatabaseHandler.delete_reported_error(db, reported_error_id)
 
 
-# @router.get(
-#     path='/{user_id}',
-#     response_model=ReportedError,
-#     status_code=status.HTTP_200_OK,
-#     summary='Read full reported error information'
-# )
-# async def get_reported_errors(
-#         user_id: int,
-#         limit: int = 10,
-#         offset: int = 0,
-#         db: AsyncSession = Depends(get_db)
-# ) -> PaginatedReportedErrorInfo:
-#     """
-#     Read reported error by user id with pagination
-#     """
-#     reported_errors = await DatabaseHandler.get_reported_errors(db, limit, offset)
-#     total = await DatabaseHandler.count_reported_errors(db)
-#     return PaginatedReportedErrorInfo(
-#         reported_errors=[ReportedError.from_orm(reported_error) for reported_error in reported_errors],
-#         page_info=PageInfo(
-#             limit=limit,
-#             offset=offset,
-#             total=total
-#         )
-#     )
-
-
 @router.post(
     '',
     response_class=Response,
