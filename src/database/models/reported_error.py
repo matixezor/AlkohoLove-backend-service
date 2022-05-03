@@ -1,10 +1,12 @@
 from fastapi import HTTPException
+from sqlalchemy import Column, Integer, String, select, update, func, delete, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import relationship, selectinload
 from starlette import status
-from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update, func, delete, ForeignKey
-from src.domain.reported_error import ReportedErrorBase
+from typing import List
 
 from src.database.database_metadata import Base
+from src.domain.reported_error import ReportedErrorBase, ReportedErrorCreate
 
 
 class ReportedError(Base):
@@ -12,9 +14,9 @@ class ReportedError(Base):
 
     error_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
-    description = Column(String, unique=True, nullable=False)
+    description = Column(String, nullable=False)
 
-
+    user = relationship('User', uselist=False)
 
 
 class ReportedErrorDatabaseHandler:
@@ -37,8 +39,9 @@ class ReportedErrorDatabaseHandler:
 
     @staticmethod
     async def get_reported_errors(db: AsyncSession, limit: int, offset: int) -> list[ReportedError]:
-        query = select(ReportedError).offset(offset).limit(limit)
+        query = select(ReportedError).offset(offset).limit(limit).options(selectinload(ReportedError.user))
         result = await db.execute(query)
+        response_model = List[ReportedError]
         return result.scalars().all()
 
     @staticmethod
@@ -54,12 +57,11 @@ class ReportedErrorDatabaseHandler:
         await db.execute(query)
 
     @staticmethod
-    async def create_reported_error(db: AsyncSession, reported_error_create_payload: ReportedError) -> None:
-        db_user = ReportedError(
-            **reported_error_create_payload.dict(),
+    async def create_reported_error(db: AsyncSession, reported_error_create_payload: ReportedErrorCreate) -> None:
+        db_reported_error = ReportedError(
+            **reported_error_create_payload.dict(exclude_none=True),
         )
-        db.add(db_user)
-
+        db.add(db_reported_error)
 
     @staticmethod
     async def update_reported_error_by_id(

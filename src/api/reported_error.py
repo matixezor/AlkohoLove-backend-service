@@ -6,7 +6,8 @@ from src.domain.reported_error import PaginatedReportedErrorInfo, ReportedErrorB
 from src.utils.auth_utils import is_admin
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
-from src.database.models.reported_error import ReportedErrorDatabaseHandler as DatabaseHandler, ReportedError
+from src.database.models.reported_error import ReportedErrorDatabaseHandler as DatabaseHandler
+from src.database.models.reported_error import ReportedErrorCreate
 
 router = APIRouter(prefix='/reported_error', tags=['reported_error'])
 
@@ -29,7 +30,7 @@ async def get_reported_errors(
     reported_errors = await DatabaseHandler.get_reported_errors(db, limit, offset)
     total = await DatabaseHandler.count_reported_errors(db)
     return PaginatedReportedErrorInfo(
-        reported_errors=[ReportedErrorBase.from_orm(reported_error) for reported_error in reported_errors],
+        reported_errors=reported_errors,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
@@ -51,6 +52,7 @@ async def delete_self(
     Delete reported error by reported error id
     """
     await DatabaseHandler.delete_reported_error(db, reported_error_id)
+
 
 # @router.get(
 #     path='/{user_id}',
@@ -100,18 +102,17 @@ async def delete_self(
 #     return reported_error
 
 
-# @router.post(
-#     '',
-#     response_class=Response,
-#     status_code=status.HTTP_201_CREATED,
-#     dependencies=[Depends(is_admin)],
-#     summary='Create reported error'
-# )
-# async def create_reported_error(
-#         reported_error_create_payload: ReportedError,
-#         db: AsyncSession = Depends(get_db)
-# ) -> None:
-#     try:
-#         await DatabaseHandler.create_reported_error(db, reported_error_create_payload)
-#     except IntegrityError:
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid payload')
+@router.post(
+    '',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create reported error'
+)
+async def create_reported_error(
+        reported_error_create_payload: ReportedErrorCreate,
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    try:
+        await DatabaseHandler.create_reported_error(db, reported_error_create_payload)
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid payload')
