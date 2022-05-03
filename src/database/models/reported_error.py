@@ -1,12 +1,11 @@
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, String, select, update, func, delete, ForeignKey
+from sqlalchemy import Column, Integer, String, select, func, delete, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship, selectinload
 from starlette import status
-from typing import List
 
 from src.database.database_metadata import Base
-from src.domain.reported_error import ReportedErrorBase, ReportedErrorCreate
+from src.domain.reported_error import ReportedErrorCreate
 
 
 class ReportedError(Base):
@@ -16,7 +15,7 @@ class ReportedError(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'))
     description = Column(String, nullable=False)
 
-    user = relationship('User', uselist=False)
+    user = relationship('User', uselist=False, viewonly=True)
 
 
 class ReportedErrorDatabaseHandler:
@@ -29,19 +28,20 @@ class ReportedErrorDatabaseHandler:
 
     @staticmethod
     async def get_reported_error_by_id(db: AsyncSession, error_id: int) -> ReportedError | None:
-        return await db.get(ReportedError, error_id)
-
-    @staticmethod
-    async def get_reported_errors_by_user_id(db: AsyncSession, user_id: int) -> ReportedError | None:
-        query = select(ReportedError).filter(ReportedError.user_id == user_id)
+        query = select(ReportedError).options(selectinload(ReportedError.user))
         result = await db.execute(query)
-        return result.scalars().all()
+        return result.scalar_one()
+
+    # @staticmethod
+    # async def get_reported_errors_by_user_id(db: AsyncSession, user_id: int) -> ReportedError | None:
+    #     query = select(ReportedError).filter(ReportedError.user_id == user_id)
+    #     result = await db.execute(query)
+    #     return result.scalars().all()
 
     @staticmethod
     async def get_reported_errors(db: AsyncSession, limit: int, offset: int) -> list[ReportedError]:
         query = select(ReportedError).offset(offset).limit(limit).options(selectinload(ReportedError.user))
         result = await db.execute(query)
-        response_model = List[ReportedError]
         return result.scalars().all()
 
     @staticmethod
@@ -63,15 +63,15 @@ class ReportedErrorDatabaseHandler:
         )
         db.add(db_reported_error)
 
-    @staticmethod
-    async def update_reported_error_by_id(
-            db: AsyncSession,
-            error_id: int,
-            reported_error_update_payload: ReportedErrorBase
-    ) -> ReportedError:
-        query = update(ReportedError) \
-            .where(ReportedError.error_id == error_id) \
-            .values(reported_error_update_payload.dict(exclude_none=True))
-        await db.execute(query)
-        await db.commit()
-        return await ReportedErrorDatabaseHandler.get_reported_error_by_id(db, error_id=error_id)
+    # @staticmethod
+    # async def update_reported_error_by_id(
+    #         db: AsyncSession,
+    #         error_id: int,
+    #         reported_error_update_payload: ReportedErrorBase
+    # ) -> ReportedError:
+    #     query = update(ReportedError) \
+    #         .where(ReportedError.error_id == error_id) \
+    #         .values(reported_error_update_payload.dict(exclude_none=True))
+    #     await db.execute(query)
+    #     await db.commit()
+    #     return await ReportedErrorDatabaseHandler.get_reported_error_by_id(db, error_id=error_id)

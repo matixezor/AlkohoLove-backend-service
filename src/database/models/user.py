@@ -64,7 +64,7 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def delete_user(db: AsyncSession, username: str) -> None:
-        query = delete(User).\
+        query = delete(User). \
             where(User.username == username)
         await db.execute(query)
 
@@ -119,7 +119,7 @@ class UserDatabaseHandler:
                 detail=f'Invalid username or password'
             )
         if update_last_login:
-            return await UserDatabaseHandler\
+            return await UserDatabaseHandler \
                 .update_user_by_id(db, user.user_id, UserAdminUpdate(last_login=datetime.now()))
         else:
             return user
@@ -130,8 +130,8 @@ class UserDatabaseHandler:
             user_id: int,
             user_update_payload: UserAdminUpdate
     ) -> User:
-        query = update(User)\
-            .where(User.user_id == user_id)\
+        query = update(User) \
+            .where(User.user_id == user_id) \
             .values(user_update_payload.dict(exclude_none=True))
         await db.execute(query)
         await db.commit()
@@ -143,16 +143,10 @@ class UserDatabaseHandler:
             user: User,
             user_update_payload: UserUpdate
     ) -> User:
-        try:
-            query = update(User)\
-                .where(User.username == user.username)\
-                .values(user_update_payload.dict(exclude_none=True))
-            await db.execute(query)
-            await db.commit()
-            await db.refresh(user)
-            return user
-        except IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Account with given email already exists'
-            )
+        query = update(User) \
+            .where(User.username == user.username) \
+            .values(user_update_payload.dict(exclude_none=True))
+        await db.execute(query)
+        await db.commit()
+        await db.refresh(user)
+        return user

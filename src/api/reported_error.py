@@ -1,15 +1,31 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException, Response
-
-from src.domain.reported_error import PaginatedReportedErrorInfo, ReportedErrorBase
+from src.domain.reported_error import PaginatedReportedErrorInfo, ReportedError
 from src.utils.auth_utils import is_admin
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
 from src.database.models.reported_error import ReportedErrorDatabaseHandler as DatabaseHandler
 from src.database.models.reported_error import ReportedErrorCreate
+from src.utils.reported_error_utils import raise_reported_error_not_found
 
 router = APIRouter(prefix='/reported_error', tags=['reported_error'])
+
+
+@router.get(
+    path='/{error_id}',
+    response_model=ReportedError,
+    status_code=status.HTTP_200_OK,
+    summary='Read full reported error information'
+)
+async def get_reported_error(error_id: int, db: AsyncSession = Depends(get_db)) -> ReportedError:
+    """
+    Read reported error by reported error id
+    """
+    db_reported_error = await DatabaseHandler.get_reported_error_by_id(db, error_id)
+    if not db_reported_error:
+        raise_reported_error_not_found()
+    return db_reported_error
 
 
 @router.get(
@@ -79,27 +95,6 @@ async def delete_self(
 #             total=total
 #         )
 #     )
-
-# @router.get(
-#     path='/{error_id}',
-#     response_model=ReportedError,
-#     status_code=status.HTTP_200_OK,
-#     summary='Read full reported error information'
-# )
-# async def get_reported_error(
-#         error_id: int,
-#         db: AsyncSession = Depends(get_db)
-# ) -> PaginatedReportedErrorInfo:
-#     """
-#     Read reported error by reported error id
-#     """
-#     reported_error = await DatabaseHandler.get_reported_error_by_id(db, error_id)
-#     if not reported_error:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail='Reported error not found'
-#         )
-#     return reported_error
 
 
 @router.post(
