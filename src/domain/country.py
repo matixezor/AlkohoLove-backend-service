@@ -8,3 +8,14 @@ class Country(BaseModel):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
+
+
+class AllCountries(BaseModel):
+    country: list[Country]
+
+
+class CountryCreate(BaseModel):
+    country_name: str
+
+    class Config:
+        orm_mode = True

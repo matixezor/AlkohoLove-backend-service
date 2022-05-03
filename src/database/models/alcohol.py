@@ -118,3 +118,5 @@ class AlcoholDatabaseHandler:
         query = delete(Alcohol).\
             where(Alcohol.alcohol_id == alcohol_id)
         await db.execute(query)
+
+

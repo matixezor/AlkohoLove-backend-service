@@ -8,3 +8,14 @@ class Food(BaseModel):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
+
+
+class AllFood(BaseModel):
+    food: list[Food]
+
+
+class FoodCreate(BaseModel):
+    food_name: str
+
+    class Config:
+        orm_mode = True

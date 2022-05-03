@@ -79,3 +79,9 @@ class AlcoholCreate(BaseModel):
     year: int | None = None
     vine_stock: str | None = None
     image_name: str | None = None
+
+class AlcoholUploadImage:
+    image_name: str
+    # @classmethod
+    # def as_form(cls, name: str = Form(...), price: float = Form(...)) -> 'AlcoholCreate':
+    #     return cls(name=name, price=barcode)
