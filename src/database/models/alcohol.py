@@ -48,7 +48,8 @@ class Alcohol(Base):
 class AlcoholDatabaseHandler:
     @staticmethod
     async def create_alcohol(db: AsyncSession, payload: AlcoholCreate) -> None:
-        fields_to_exclude = {'aroma_ids', 'taste_ids', 'finish_ids', 'food_ids', 'barcode_list', 'ingredient_ids'}
+        fields_to_exclude =\
+            {'aroma_ids', 'taste_ids', 'finish_ids', 'food_ids', 'barcode_list', 'ingredient_ids'}
         db_alcohol = Alcohol(**payload.dict(exclude_none=True, exclude=fields_to_exclude))
 
         db_barcodes = [Barcode(barcode=barcode) for barcode in payload.barcode_list]
@@ -71,7 +72,8 @@ class AlcoholDatabaseHandler:
             db_alcohol.foods = db_foods
 
         if payload.ingredient_ids:
-            db_ingredients = await IngredientDatabaseHandler.get_ingredients(db, payload.ingredient_ids)
+            db_ingredients =\
+                await IngredientDatabaseHandler.get_ingredients(db, payload.ingredient_ids)
             db_alcohol.ingredients = db_ingredients
 
         db.add(db_alcohol)
