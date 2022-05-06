@@ -9,7 +9,6 @@ from src.utils.auth_utils import generate_tokens
 from src.database.database_config import get_db
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 
-
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 
@@ -20,9 +19,9 @@ router = APIRouter(prefix='/auth', tags=['auth'])
     summary='Login for token'
 )
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
-    authorize: AuthJWT = Depends()
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: AsyncSession = Depends(get_db),
+        authorize: AuthJWT = Depends()
 ):
     user = await DatabaseHandler.authenticate_user(db, form_data.username, form_data.password, True)
     return generate_tokens(user.username, authorize)

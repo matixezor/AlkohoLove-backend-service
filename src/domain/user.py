@@ -1,6 +1,6 @@
 from re import compile
 from datetime import datetime
-from pydantic import BaseModel, validator, root_validator, Field
+from pydantic import BaseModel, validator, root_validator
 
 from src.domain.page_info import PageInfo
 
@@ -9,11 +9,10 @@ password_pattern = compile(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$
 
 
 class UserBase(BaseModel):
-    username: str = Field(alias='username')
+    username: str
 
     class Config:
         orm_mode = True
-        allow_population_by_field_name = True
 
 
 class User(UserBase):
@@ -22,7 +21,6 @@ class User(UserBase):
 
 class UserCreate(User):
     password: str
-    reported_error_list: list[int]
 
     @validator('email')
     def email_match(cls, value: str) -> str:

@@ -8,7 +8,6 @@ from src.utils.user_utils import raise_user_not_found
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.domain.user import UserAdminUpdate, UserAdminInfo, PaginatedUserAdminInfo
 
-
 router = APIRouter(prefix='/users', tags=['[for admin] users'], dependencies=[Depends(is_admin)])
 
 
