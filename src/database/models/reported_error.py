@@ -28,7 +28,8 @@ class ReportedErrorDatabaseHandler:
 
     @staticmethod
     async def get_reported_error_by_id(db: AsyncSession, error_id: int) -> ReportedError | None:
-        query = select(ReportedError).options(selectinload(ReportedError.user))
+        query = select(ReportedError).where(ReportedError.error_id == error_id).\
+            options(selectinload(ReportedError.user))
         result = await db.execute(query)
         return result.scalar_one()
 

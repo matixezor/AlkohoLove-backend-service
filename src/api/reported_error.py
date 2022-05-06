@@ -56,11 +56,11 @@ async def get_reported_errors(
 
 
 @router.delete(
-    path='/{error_id}',
+    path='/{reported_error_id}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete reported error'
 )
-async def delete_self(
+async def delete_reported_error_by_id(
         reported_error_id: int,
         db: AsyncSession = Depends(get_db)
 ) -> None:

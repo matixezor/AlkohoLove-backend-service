@@ -36,3 +36,23 @@ async def test_get_reported_errors(
     assert response['reported_errors'][0]['description'] == 'Test error description'
     assert response['reported_errors'][0]['user']['username'] == 'admin'
     assert response['reported_errors'][0]['user']['email'] == 'admin@gmail.com'
+
+
+@mark.asyncio
+async def test_delete_reported_error(
+        async_client: AsyncClient,
+        user_token: str
+):
+    headers = {'Authorization': f'Bearer {user_token}'}
+    response = await async_client.delete('/reported_error/1', headers=headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_post_reported_error(async_client: AsyncClient):
+    data = {
+        'description': 'test',
+        'user_id': 1
+    }
+    response = await async_client.post('/reported_error', json=data)
+    assert response.status_code == 201
