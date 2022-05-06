@@ -1,9 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Column, Integer, String, select
-from fastapi import HTTPException, status
+from sqlalchemy import Column, Integer, String, select, func, delete, update
 
 from src.database.database_metadata import Base
-from src.domain.country import CountryCreate
 
 
 class Country(Base):
@@ -12,14 +10,11 @@ class Country(Base):
     country_id = Column(Integer, primary_key=True, index=True)
     country_name = Column(String)
 
-class CountryDatabaseHandler:
 
+class CountryDatabaseHandler:
     @staticmethod
-    def raise_country_already_exists():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f'Country already exists'
-        )
+    async def get_country_by_id(db: AsyncSession, country_id: int) -> Country | None:
+        return await db.get(Country, country_id)
 
     @staticmethod
     async def get_country_by_name(db: AsyncSession, country_name: str) -> Country | None:
@@ -27,26 +22,56 @@ class CountryDatabaseHandler:
         result = await db.execute(query)
         return result.scalars().first()
 
-
     @staticmethod
-    async def get_all_countries(db: AsyncSession) -> list[Country]:
-        query = select(Country)
-        db_countries = await db.execute(query)
-        return db_countries.scalars().all()
+    async def update_country(db: AsyncSession, country_id: int, country_name: str) -> Country:
+        query = update(Country)\
+            .where(Country.country_id == country_id)\
+            .values(country_name=country_name)
 
-    @staticmethod
-    async def create_country(db: AsyncSession, country_create_payload: CountryCreate) -> Country:
-        db_country = Country(
-            **country_create_payload.dict(),
-        )
-
-        db.add(db_country)
+        await db.execute(query)
         await db.commit()
-        await db.refresh(db_country)
 
-        return db_country
+        return await CountryDatabaseHandler.get_country_by_id(db, country_id)
 
     @staticmethod
-    async def check_if_country_exists(db: AsyncSession, country_name: str, ) -> None:
-        if await CountryDatabaseHandler.get_country_by_name(db, country_name):
-            CountryDatabaseHandler.raise_country_already_exists()
+    async def get_paginated_countries(
+            db: AsyncSession,
+            country_name: str,
+            limit: int,
+            offset: int
+    ) -> list[Country]:
+        query = select(Country).order_by(Country.country_id)\
+            .where(Country.country_name.contains(country_name)).offset(offset).limit(limit)
+        db_countries = await db.execute(query)
+        return db_countries.scalars().unique().all()
+
+    @staticmethod
+    async def count_countries(db: AsyncSession, country_name: str) -> int:
+        query = select(func.count()).select_from(
+            select(Country).where(Country.country_name.contains(country_name)).subquery()
+        )
+        result = await db.execute(query)
+        return result.scalar_one()
+
+    @staticmethod
+    async def create_country(db: AsyncSession, country_name: str) -> None:
+        db_country = Country(country_name=country_name)
+        db.add(db_country)
+
+    @staticmethod
+    async def delete_country(db: AsyncSession, country_id: int) -> None:
+        query = delete(Country).\
+            where(Country.country_id == country_id)
+        await db.execute(query)
+
+    @staticmethod
+    async def check_if_country_exists(
+            db: AsyncSession,
+            country_name: str,
+            country_id: int = None
+    ) -> bool:
+        db_country = await CountryDatabaseHandler.get_country_by_name(db, country_name)
+        if db_country:
+            return True if db_country.country_id != country_id else False
+        else:
+            return False

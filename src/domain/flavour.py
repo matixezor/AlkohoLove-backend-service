@@ -1,20 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from src.domain.page_info import PageInfo
 
 
 class Flavour(BaseModel):
-    flavour_id: int
-    flavour_name: str
+    flavour_id: int = Field(alias='id')
+    flavour_name: str = Field(alias='name')
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
 
 
-class AllFlavours(BaseModel):
-    flavour: list[Flavour]
-
-
-class FlavourCreate(BaseModel):
-    flavour_name: str
-
-    class Config:
-        orm_mode = True
+class PaginatedFlavour(BaseModel):
+    flavours: list[Flavour]
+    page_info: PageInfo

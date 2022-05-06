@@ -1,9 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Column, Integer, String, ForeignKey, select
-from fastapi import HTTPException, status
+from sqlalchemy import Column, Integer, String, ForeignKey, select, func, update, delete
 
 from src.database.database_metadata import Base
-from src.domain.flavour import FlavourCreate
 
 
 class Flavour(Base):
@@ -35,13 +33,9 @@ class AlcoholFinish(Base):
 
 
 class FlavourDatabaseHandler:
-
     @staticmethod
-    def raise_flavour_already_exists():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f'flavour already exists'
-        )
+    async def get_flavour_by_id(db: AsyncSession, flavour_id: int) -> Flavour | None:
+        return await db.get(Flavour, flavour_id)
 
     @staticmethod
     async def get_flavour_by_name(db: AsyncSession, flavour_name: str) -> Flavour | None:
@@ -56,24 +50,54 @@ class FlavourDatabaseHandler:
         return db_flavours.scalars().all()
 
     @staticmethod
-    async def get_all_flavours(db: AsyncSession) -> list[Flavour]:
-        query = select(Flavour)
+    async def get_paginated_flavours(
+            db: AsyncSession,
+            flavour_name: str,
+            limit: int, offset: int
+    ) -> list[Flavour]:
+        query = select(Flavour).order_by(Flavour.flavour_id)\
+            .where(Flavour.flavour_name.contains(flavour_name)).offset(offset).limit(limit)
         db_flavours = await db.execute(query)
         return db_flavours.scalars().all()
 
     @staticmethod
-    async def create_flavour(db: AsyncSession, flavour_create_payload: FlavourCreate) -> Flavour:
-        db_flavour = Flavour(
-            **flavour_create_payload.dict(),
+    async def count_flavours(db: AsyncSession, flavour_name: str) -> int:
+        query = select(func.count()).select_from(
+            select(Flavour).where(Flavour.flavour_name.contains(flavour_name)).subquery()
         )
-
-        db.add(db_flavour)
-        await db.commit()
-        await db.refresh(db_flavour)
-
-        return db_flavour
+        result = await db.execute(query)
+        return result.scalar_one()
 
     @staticmethod
-    async def check_if_flavour_exists(db: AsyncSession, flavour_name: str, ) -> None:
-        if await FlavourDatabaseHandler.get_flavour_by_name(db, flavour_name):
-            FlavourDatabaseHandler.raise_flavour_already_exists()
+    async def create_flavour(db: AsyncSession, flavour_name: str) -> None:
+        db_flavour = Flavour(flavour_name=flavour_name)
+        db.add(db_flavour)
+
+    @staticmethod
+    async def update_flavour(db: AsyncSession, flavour_id: int, flavour_name: str) -> Flavour:
+        query = update(Flavour)\
+            .where(Flavour.flavour_id == flavour_id)\
+            .values(flavour_name=flavour_name)
+
+        await db.execute(query)
+        await db.commit()
+
+        return await FlavourDatabaseHandler.get_flavour_by_id(db, flavour_id)
+
+    @staticmethod
+    async def delete_flavour(db: AsyncSession, flavour_id: int) -> None:
+        query = delete(Flavour).\
+            where(Flavour.flavour_id == flavour_id)
+        await db.execute(query)
+
+    @staticmethod
+    async def check_if_flavour_exists(
+            db: AsyncSession,
+            flavour_name: str,
+            flavour_id: int | None = None
+    ) -> bool:
+        db_flavour = await FlavourDatabaseHandler.get_flavour_by_name(db, flavour_name)
+        if db_flavour:
+            return True if db_flavour.flavour_id != flavour_id else False
+        else:
+            return False

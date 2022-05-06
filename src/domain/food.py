@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
 
+from src.domain.page_info import PageInfo
+
 
 class Food(BaseModel):
-    food_id: int
+    food_id: int = Field(alias='id')
     food_name: str = Field(alias='name')
 
     class Config:
@@ -10,12 +12,6 @@ class Food(BaseModel):
         allow_population_by_field_name = True
 
 
-class AllFood(BaseModel):
-    food: list[Food]
-
-
-class FoodCreate(BaseModel):
-    food_name: str
-
-    class Config:
-        orm_mode = True
+class PaginatedFood(BaseModel):
+    foods: list[Food]
+    page_info: PageInfo

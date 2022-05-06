@@ -2,7 +2,6 @@ from bcrypt import gensalt
 from datetime import datetime
 from passlib.context import CryptContext
 from fastapi import status, HTTPException
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update, func, delete
 
@@ -49,7 +48,7 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def get_users(db: AsyncSession, limit: int, offset: int) -> list[User]:
-        query = select(User).offset(offset).limit(limit)
+        query = select(User).order_by(User.user_id).offset(offset).limit(limit)
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -86,15 +85,15 @@ class UserDatabaseHandler:
         return result.scalars().first()
 
     @staticmethod
-    async def create_user(db: AsyncSession, user_create_payload: UserCreate) -> None:
+    async def create_user(db: AsyncSession, payload: UserCreate) -> None:
         password_salt = gensalt().decode('utf-8')
-        user_create_payload.password = UserDatabaseHandler.get_password_hash(
-            user_create_payload.password,
+        payload.password = UserDatabaseHandler.get_password_hash(
+            payload.password,
             password_salt
         )
 
         db_user = User(
-            **user_create_payload.dict(),
+            **payload.dict(),
             created_on=datetime.now(),
             password_salt=password_salt
         )
@@ -125,11 +124,11 @@ class UserDatabaseHandler:
     async def update_user_by_id(
             db: AsyncSession,
             user_id: int,
-            user_update_payload: UserAdminUpdate
+            payload: UserAdminUpdate
     ) -> User:
         query = update(User)\
             .where(User.user_id == user_id)\
-            .values(user_update_payload.dict(exclude_none=True))
+            .values(payload.dict(exclude_none=True))
         await db.execute(query)
         await db.commit()
         return await UserDatabaseHandler.get_user_by_id(db, user_id=user_id)

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class Finish(BaseModel):
-    flavour_id: int
+    flavour_id: int = Field(alias='id')
     flavour_name: str = Field(alias='name')
 
     class Config:

@@ -1,7 +1,7 @@
 CREATE TABLE alcohol
 (
     alcohol_id          serial PRIMARY KEY,
-    name                VARCHAR(50) NOT NULL,
+    name                VARCHAR(50) UNIQUE NOT NULL,
     kind                VARCHAR(50) NOT NULL,
     rating              FLOAT,
     type                VARCHAR(50),

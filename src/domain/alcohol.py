@@ -1,13 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 from src.domain.food import Food
 from src.domain.taste import Taste
 from src.domain.aroma import Aroma
 from src.domain.finish import Finish
-from src.domain.region import Region
 from src.domain.barcode import Barcode
 from src.domain.page_info import PageInfo
 from src.domain.ingredient import Ingredient
+from src.domain.country_and_region import Region
 
 
 class AlcoholBase(BaseModel):
@@ -58,8 +58,6 @@ class AlcoholCreate(BaseModel):
     type: str
     alcohol_by_volume: float
     manufacturer: str
-    alcohol_by_volume: float
-    manufacturer: str
     description: str
     color: str | None = None
     serving_temperature: str | None = None
@@ -80,8 +78,24 @@ class AlcoholCreate(BaseModel):
     vine_stock: str | None = None
     image_name: str | None = None
 
-class AlcoholUploadImage:
-    image_name: str
-    # @classmethod
-    # def as_form(cls, name: str = Form(...), price: float = Form(...)) -> 'AlcoholCreate':
-    #     return cls(name=name, price=barcode)
+
+class AlcoholUpdate(AlcoholCreate):
+    barcode_list: list[str] | None = None
+    name: str | None = None
+    kind: str | None = None
+    type: str | None = None
+    alcohol_by_volume: float | None = None
+    manufacturer: str | None = None
+    description: str | None = None
+    region_id: int | None = None
+    food_ids: list[int] | None = None
+    aroma_ids: list[int] | None = None
+    taste_ids: list[int] | None = None
+    finish_ids: list[int] | None = None
+    ingredient_ids: list[int] | None = None
+
+    @root_validator(pre=True)
+    def any_of(cls, values: dict):
+        if not any(values.values()):
+            raise ValueError('At least one value needs to be provided')
+        return values

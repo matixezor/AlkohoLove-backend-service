@@ -11,10 +11,12 @@ VALUES ('5900699104827', 1),
        ('5900471025319', 2);
 
 INSERT INTO flavour
-VALUES (DEFAULT, 'kolendra');
+VALUES (DEFAULT, 'kolendra'),
+       (DEFAULT, 'nuty korzenne');
 
 INSERT INTO ingredient
-VALUES (DEFAULT, 'mieszanka zbóż');
+VALUES (DEFAULT, 'mieszanka zbóż'),
+       (DEFAULT, 'chmiel');
 
 INSERT INTO food
 VALUES (DEFAULT, 'białe mięso'),
@@ -31,7 +33,9 @@ VALUES (1, 1);
 VALUES (1, 2);
 
 INSERT INTO country
-VALUES (DEFAULT, 'Polska');
+VALUES (DEFAULT, 'Polska'),
+       (DEFAULT, 'Irlandia');
 
 INSERT INTO region
-VALUES (DEFAULT, 'Polska', 1);
+VALUES (DEFAULT, 'Polska', 1),
+       (DEFAULT, 'Irlandia', 2);
