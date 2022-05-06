@@ -34,7 +34,8 @@ class ReportedErrorDatabaseHandler:
 
     @staticmethod
     async def get_reported_errors(db: AsyncSession, limit: int, offset: int) -> list[ReportedError]:
-        query = select(ReportedError).offset(offset).limit(limit).options(selectinload(ReportedError.user))
+        query = select(ReportedError).offset(offset).limit(limit)\
+            .options(selectinload(ReportedError.user))
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -51,7 +52,8 @@ class ReportedErrorDatabaseHandler:
         await db.execute(query)
 
     @staticmethod
-    async def create_reported_error(db: AsyncSession, reported_error_create_payload: ReportedErrorCreate) -> None:
+    async def create_reported_error(db: AsyncSession,
+                                    reported_error_create_payload: ReportedErrorCreate) -> None:
         db_reported_error = ReportedError(
             **reported_error_create_payload.dict(exclude_none=True),
         )
