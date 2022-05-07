@@ -51,7 +51,7 @@ async def get_image(image_name: str, size: str):
     '/{image_name}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='[For admin] Delete alcohol image',
-    dependencies = [Depends(is_admin)],
+    dependencies=[Depends(is_admin)],
 )
 async def get_image(image_name: str):
     """
