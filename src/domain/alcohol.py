@@ -99,3 +99,11 @@ class AlcoholUpdate(AlcoholCreate):
         if not any(values.values()):
             raise ValueError('At least one value needs to be provided')
         return values
+
+
+class AlcoholBasicInfo(BaseModel):
+    alcohol_id: int
+    name: str
+
+    class Config:
+        orm_mode = True

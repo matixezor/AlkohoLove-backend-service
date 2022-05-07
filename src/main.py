@@ -12,6 +12,7 @@ from src.api.flavours import router as flavour_router
 from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 from src.api.countries import router as country_router
+from src.api.user_tags import router as user_tag_router
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
@@ -25,6 +26,7 @@ app.include_router(flavour_router)
 app.include_router(country_router)
 app.include_router(region_router)
 app.include_router(media_router)
+app.include_router(user_tag_router)
 
 
 @app.exception_handler(AuthJWTException)
