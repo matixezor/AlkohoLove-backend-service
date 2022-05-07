@@ -1,4 +1,5 @@
 from PIL import Image
+from os import remove
 from os.path import exists
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
@@ -39,7 +40,27 @@ async def get_image(image_name: str, size: str):
     """
     Get image by name. Specify size, either sm or md.
     """
-    if exists(f'{IMAGEDIR}{image_name}_{size}.jpg'):
-        return FileResponse(f'{IMAGEDIR}{image_name}.jpg')
+    image_path = f'{IMAGEDIR}{image_name}_{size}.jpg'
+    if exists(image_path):
+        return FileResponse(image_path)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+
+
+@router.delete(
+    '/{image_name}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='[For admin] Delete alcohol image',
+    dependencies = [Depends(is_admin)],
+)
+async def get_image(image_name: str):
+    """
+    Delete image by name.
+    """
+    image_path_md = f'{IMAGEDIR}{image_name}_md.jpg'
+    image_path_sd = f'{IMAGEDIR}{image_name}_sd.jpg'
+    if exists(image_path_md) and exists(image_path_sd):
+        remove(image_path_md)
+        remove(image_path_sd)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
