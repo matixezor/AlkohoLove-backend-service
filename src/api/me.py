@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
@@ -53,11 +54,17 @@ async def update_self(
             salt=current_user.password_salt
         )
         update_payload.new_password = None
-    return await DatabaseHandler.update_user(
-        db,
-        current_user,
-        update_payload
-    )
+    try:
+        return await DatabaseHandler.update_user(
+            db,
+            current_user,
+            update_payload
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Account with given email already exists'
+        )
 
 
 @router.delete(

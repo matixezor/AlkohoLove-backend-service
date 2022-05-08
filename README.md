@@ -24,7 +24,7 @@ Backend on docker will be under `http://localhost:8008/docs`
 ## Tests
 
 **Docker container with the database must be running!**  
-Set environment variable `DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
+Set environment variable `$ export DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@localhost:5432/alkoholove`  
 To run tests use `$ pytest` command in root directory
 
 ## Linters
