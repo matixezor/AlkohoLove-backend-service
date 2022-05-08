@@ -83,7 +83,8 @@ async def test_delete_reported_error_with_insufficient_permissions(
 @mark.asyncio
 async def test_post_reported_error(async_client: AsyncClient):
     data = {
-        'description': 'test'
+        'description': 'test',
+        'user_id': 2
     }
     response = await async_client.post('/reported_error', json=data)
     assert response.status_code == 201

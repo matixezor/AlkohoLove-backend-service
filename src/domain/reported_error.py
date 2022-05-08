@@ -25,3 +25,4 @@ class PaginatedReportedErrorInfo(BaseModel):
 
 class ReportedErrorCreate(BaseModel):
     description: str
+    user_id: int
