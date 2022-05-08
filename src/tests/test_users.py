@@ -59,14 +59,14 @@ async def test_get_users(
         admin_token: str
 ):
     response = await async_client.get(
-        '/users?limit=1&offset=0', headers={'Authorization': f'Bearer {admin_token}'}
+        '/users?limit=1&offset=2', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
     assert len(response['users']) == 1
     assert response['page_info']['total'] == 3
     assert response['page_info']['limit'] == 1
-    assert response['page_info']['offset'] == 0
+    assert response['page_info']['offset'] == 2
     assert response['users'][0]['username'] == 'DariuszGołąbski'
     assert response['users'][0]['email'] == 'dariusz.golabski@gmail.com'
     assert response['users'][0]['last_login'] == '2022-04-21T12:32:43'
