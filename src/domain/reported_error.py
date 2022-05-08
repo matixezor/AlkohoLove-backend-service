@@ -1,10 +1,12 @@
 from pydantic import BaseModel
-from src.domain.page_info import PageInfo
+
 from src.domain.user import User
+from src.domain.page_info import PageInfo
 
 
 class ReportedErrorBase(BaseModel):
     error_id: int
+    user_id: int
     description: str
 
     class Config:
@@ -23,4 +25,3 @@ class PaginatedReportedErrorInfo(BaseModel):
 
 class ReportedErrorCreate(BaseModel):
     description: str
-    user_id: int

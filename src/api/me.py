@@ -7,6 +7,7 @@ from src.database.models.user import User as UserInDb
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.utils.auth_utils import get_current_user, get_current_user_username
 
+
 router = APIRouter(prefix='/me', tags=['me'])
 
 

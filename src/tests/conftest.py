@@ -1,10 +1,11 @@
-from asyncio import get_event_loop
 from os import getenv
 from httpx import AsyncClient
 from pytest_asyncio import fixture
+from asyncio import get_event_loop
 from sqlalchemy.orm import sessionmaker
 from typing import Callable, AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
 
 DATABASE_URL = getenv('DATABASE_URL')
 
