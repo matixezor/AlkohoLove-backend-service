@@ -12,6 +12,7 @@ from src.api.flavours import router as flavour_router
 from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 from src.api.countries import router as country_router
+from src.api.reported_error import router as reported_error_router
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
@@ -20,6 +21,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(alcohol_router)
 app.include_router(logged_in_user_router)
+app.include_router(reported_error_router)
 app.include_router(food_router)
 app.include_router(flavour_router)
 app.include_router(country_router)

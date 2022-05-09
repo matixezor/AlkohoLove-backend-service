@@ -1,4 +1,4 @@
-CREATE TABLE errors_reported
+CREATE TABLE reported_error
 (
  error_id    serial PRIMARY KEY,
  user_id     INTEGER REFERENCES users (user_id),
