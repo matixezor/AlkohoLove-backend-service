@@ -2,14 +2,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from src.database.models.alcohol import AlcoholDatabaseHandler
+from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
 from src.database.models.user_wishlist import WishlistDatabaseHandler
-from src.domain.alcohol import PaginatedAlcoholInfo
 from src.domain.page_info import PageInfo
 from src.domain.user import User, UserUpdate, UserAdminInfo
 from src.database.database_config import get_db
 from src.database.models.user import User as UserInDb
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
+from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
 from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import get_current_user, get_current_user_username
 
@@ -97,7 +97,7 @@ async def get_user_wishlist(
         offset: int = 0
 ):
     """
-    Read wishlist of user with pagination
+    Read your wishlist with pagination
     """
     alcohols = await WishlistDatabaseHandler.get_user_wishlist(user=user, db=db, limit=limit, offset=offset)
     return PaginatedUserWishlist(
@@ -105,6 +105,31 @@ async def get_user_wishlist(
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=1
+            total=len(alcohols)
+        )
+    )
+
+@router.get(
+    '/favourites',
+    summary='Read User favourite alcohols',
+    response_model=PaginatedUserFavouriteAlcohol,
+    status_code=status.HTTP_200_OK
+)
+async def get_user_wishlist(
+        user: UserAdminInfo = Depends(get_self),
+        db: AsyncSession = Depends(get_db),
+        limit: int = 10,
+        offset: int = 0
+):
+    """
+    Read your favourite alcohols with pagination
+    """
+    alcohols = await UserFavouriteAlcoholDatabaseHandler.get_user_favourite_alcohols(user=user, db=db, limit=limit, offset=offset)
+    return PaginatedUserWishlist(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(alcohols)
         )
     )

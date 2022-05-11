@@ -44,6 +44,8 @@ class Alcohol(Base):
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
 
     user_wishlist = relationship('User', secondary='user_wishlist', back_populates='alcohol_wishlist', uselist=False)
+    user_favourite_alcohol = relationship('User', secondary='user_favourite_alcohol', back_populates='alcohol_favourite_alcohol', uselist=False)
+
 
 
 class AlcoholDatabaseHandler:

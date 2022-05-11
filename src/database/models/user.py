@@ -24,6 +24,8 @@ class User(Base):
     password_salt = Column(String, nullable=False)
 
     alcohol_wishlist = relationship('Alcohol', secondary='user_wishlist', back_populates='user_wishlist', uselist=False)
+    alcohol_favourite_alcohol = relationship('Alcohol', secondary='user_favourite_alcohol', back_populates='user_favourite_alcohol', uselist=False)
+
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
