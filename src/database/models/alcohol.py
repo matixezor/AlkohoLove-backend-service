@@ -43,6 +43,8 @@ class Alcohol(Base):
     finishes = relationship('Flavour', secondary='alcohol_finish')
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
 
+    user_wishlist = relationship('User', secondary='user_wishlist', back_populates='alcohol_wishlist', uselist=False)
+
 
 class AlcoholDatabaseHandler:
     @staticmethod

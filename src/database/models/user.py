@@ -4,6 +4,7 @@ from passlib.context import CryptContext
 from fastapi import status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Boolean, Column, Integer, String, TIMESTAMP, select, update, func, delete
+from sqlalchemy.orm import relationship
 
 from src.database.database_metadata import Base
 from src.domain.user import UserCreate, UserAdminUpdate, UserUpdate
@@ -21,6 +22,8 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     is_banned = Column(Boolean, default=False)
     password_salt = Column(String, nullable=False)
+
+    alcohol_wishlist = relationship('Alcohol', secondary='user_wishlist', back_populates='user_wishlist', uselist=False)
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
