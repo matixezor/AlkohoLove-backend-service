@@ -25,7 +25,7 @@ class User(Base):
 
     alcohol_wishlist = relationship('Alcohol', secondary='user_wishlist', back_populates='user_wishlist', uselist=False)
     alcohol_favourite_alcohol = relationship('Alcohol', secondary='user_favourite_alcohol', back_populates='user_favourite_alcohol', uselist=False)
-
+    alcohol_search_history = relationship('Alcohol', secondary='user_search_history', back_populates='user_search_history', uselist=False)
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

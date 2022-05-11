@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
+from src.database.models.user_search_history import UserSearchHistoryDatabaseHandler
 from src.database.models.user_wishlist import WishlistDatabaseHandler
 from src.domain.page_info import PageInfo
 from src.domain.user import User, UserUpdate, UserAdminInfo
@@ -10,6 +11,7 @@ from src.database.database_config import get_db
 from src.database.models.user import User as UserInDb
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
+from src.domain.user_search_history import PaginatedUserSearchHistory
 from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import get_current_user, get_current_user_username
 
@@ -109,13 +111,14 @@ async def get_user_wishlist(
         )
     )
 
+
 @router.get(
     '/favourites',
     summary='Read User favourite alcohols',
     response_model=PaginatedUserFavouriteAlcohol,
     status_code=status.HTTP_200_OK
 )
-async def get_user_wishlist(
+async def get_user_favourite_alcohols(
         user: UserAdminInfo = Depends(get_self),
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
@@ -126,6 +129,31 @@ async def get_user_wishlist(
     """
     alcohols = await UserFavouriteAlcoholDatabaseHandler.get_user_favourite_alcohols(user=user, db=db, limit=limit, offset=offset)
     return PaginatedUserWishlist(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(alcohols)
+        )
+    )
+
+@router.get(
+    '/search_history',
+    summary='Read User search history',
+    response_model=PaginatedUserSearchHistory,
+    status_code=status.HTTP_200_OK
+)
+async def get_user_search_history(
+        user: UserAdminInfo = Depends(get_self),
+        db: AsyncSession = Depends(get_db),
+        limit: int = 10,
+        offset: int = 0
+):
+    """
+    Read your search history with pagination
+    """
+    alcohols = await UserSearchHistoryDatabaseHandler.get_user_search_history(user=user, db=db, limit=limit, offset=offset)
+    return PaginatedUserSearchHistory(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
