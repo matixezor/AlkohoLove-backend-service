@@ -10,6 +10,7 @@ from src.domain.user import User, UserUpdate, UserAdminInfo
 from src.database.database_config import get_db
 from src.database.models.user import User as UserInDb
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
+from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import get_current_user, get_current_user_username
 
 
@@ -86,7 +87,7 @@ async def delete_self(
 @router.get(
     '/wishlist',
     summary='Read User wishlist',
-    response_model=PaginatedAlcoholInfo,
+    response_model=PaginatedUserWishlist,
     status_code=status.HTTP_200_OK
 )
 async def get_user_wishlist(
@@ -99,7 +100,7 @@ async def get_user_wishlist(
     Read wishlist of user with pagination
     """
     alcohols = await WishlistDatabaseHandler.get_user_wishlist(user=user, db=db, limit=limit, offset=offset)
-    return PaginatedAlcoholInfo(
+    return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,

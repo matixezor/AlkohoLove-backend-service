@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 from src.database.database_metadata import Base
 from src.database.models import Alcohol, User
 from src.domain.user import UserAdminInfo
+from src.domain.user_wishlist import PaginatedUserWishlist
 
 
 class UserWishlist(Base):
@@ -21,9 +22,8 @@ class WishlistDatabaseHandler:  # WISHLIST
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> list[Alcohol]:
+    ) -> Alcohol:
         query = select(Alcohol).join(UserWishlist).join(User).filter(User.user_id == user.user_id).offset(offset).limit(
-            limit). \
-            options(selectinload(Alcohol.user_wishlist))
+            limit)
         result = await db.execute(query)
         return result.scalars().all()
