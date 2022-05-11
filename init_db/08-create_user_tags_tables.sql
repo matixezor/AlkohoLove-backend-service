@@ -2,7 +2,7 @@ CREATE TABLE user_tag
 (
     tag_id          serial PRIMARY KEY,
     tag_name        VARCHAR(50) NOT NULL,
-    user_id         INTEGER REFERENCES Users (user_id) NOT NULL
+    user_id         INTEGER REFERENCES Users (user_id) ON DELETE CASCADE NOT NULL
 );
 
 CREATE TABLE alcohol_user_tag

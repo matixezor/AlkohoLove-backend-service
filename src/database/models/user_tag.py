@@ -1,11 +1,11 @@
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import status, HTTPException
-from sqlalchemy import Column, Integer, String, delete, select, ForeignKey, func
-from sqlalchemy.orm import relationship, selectinload
+from sqlalchemy import Column, Integer, String, delete, select, ForeignKey, func, insert, update
 
+from src.domain.user_tag import UserTagCreate, UserTagUpdate
 from src.database.database_metadata import Base
-from src.database.models.alcohol import AlcoholDatabaseHandler
-from src.domain.user_tag import UserTagCreate, UserTagAlcohols, UserTagUpdateAlcohols
+from src.domain.alcohol import AlcoholBasicInfo
+from src.database.models.alcohol import AlcoholDatabaseHandler, Alcohol
 
 
 class UserTag(Base):
@@ -14,7 +14,7 @@ class UserTag(Base):
     tag_id = Column(Integer, primary_key=True, index=True)
     tag_name = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.user_id'))
-    alcohols = relationship('Alcohol', secondary='alcohol_user_tag')
+    alcohols = relationship('Alcohol', secondary='alcohol_user_tag', back_populates='user_tags')
 
 
 class AlcoholUserTag(Base):
@@ -25,12 +25,6 @@ class AlcoholUserTag(Base):
 
 
 class UserTagDatabaseHandler:
-    @staticmethod
-    def raise_user_tag_already_exists():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f'User tag with given name and user id already exists'
-        )
 
     @staticmethod
     async def create_user_tag(db: AsyncSession, payload: UserTagCreate) -> None:
@@ -44,32 +38,71 @@ class UserTagDatabaseHandler:
             db_user_tag.alcohols = db_alcohols
 
         db.add(db_user_tag)
+
+    @staticmethod
+    async def get_user_tag_by_id(db: AsyncSession, tag_id: int) -> UserTag:
+        return await db.get(UserTag, tag_id)
+
+    @staticmethod
+    async def add_alcohol_to_user_tag(db: AsyncSession, tag_id: int, alcohol_id: int) -> UserTag:
+        query = insert(AlcoholUserTag).values(alcohol_id=alcohol_id, tag_id=tag_id)
+        result = await db.execute(query)
         await db.commit()
-        await db.refresh(db_user_tag)
+        return result
 
     @staticmethod
-    async def check_if_user_tag_exists(db: AsyncSession, tag_name, user_id) -> None:
-        if await UserTagDatabaseHandler.get_tag_by_name_and_user_id(db, tag_name, user_id):
-            UserTagDatabaseHandler.raise_user_tag_already_exists()
+    async def delete_alcohol_from_user_tag(db: AsyncSession, tag_id: int, alcohol_id: int) -> None:
+        query = delete(AlcoholUserTag). \
+            where((AlcoholUserTag.tag_id == tag_id) & (AlcoholUserTag.alcohol_id == alcohol_id))
+        await db.execute(query)
 
     @staticmethod
-    async def get_tag_by_name_and_user_id(db: AsyncSession, tag_name, user_id) -> UserTag | None:
-        query = select(UserTag)\
-            .filter((UserTag.tag_name == tag_name) & (UserTag.user_id == user_id))\
+    async def check_if_user_tag_exists(db: AsyncSession, tag_name: str, user_id: int) -> bool:
+        if await UserTagDatabaseHandler.get_user_tag_by_name_and_user_id(db, tag_name, user_id):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    async def check_if_user_tag_exists_by_id(db: AsyncSession, tag_id: int) -> bool:
+        if await UserTagDatabaseHandler.get_user_tag_by_id(db, tag_id):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    async def check_if_alcohol_exists_in_user_tag(db: AsyncSession, tag_id: int, alcohol_id) -> bool:
+        if await UserTagDatabaseHandler.get_user_tag_alcohol(db, tag_id, alcohol_id):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    async def get_user_tag_by_name_and_user_id(db: AsyncSession, tag_name: str, user_id: int) -> UserTag | None:
+        query = select(UserTag) \
+            .filter((UserTag.tag_name == tag_name) & (UserTag.user_id == user_id)) \
             .limit(1)
         result = await db.execute(query)
         return result.scalars().first()
+
+    @staticmethod
+    async def get_user_tag_alcohol(db: AsyncSession, tag_id: int, alcohol_id: int):
+        query = select(Alcohol).join(AlcoholUserTag). \
+            filter((AlcoholUserTag.tag_id == tag_id) & (AlcoholUserTag.alcohol_id == alcohol_id)) \
+            .limit(1)
+        result = await db.execute(query)
+        return result.scalars().first
 
     @staticmethod
     async def get_user_tags_by_user_id(
             db: AsyncSession,
             limit: int,
             offset: int,
-            user_id: int
+            user_id: int,
     ) -> list[UserTag]:
-        query = select(UserTag).order_by(UserTag.tag_id)\
-            .filter(UserTag.user_id == user_id)\
-            .offset(offset)\
+        query = select(UserTag).order_by(UserTag.tag_id) \
+            .filter(UserTag.user_id == user_id) \
+            .offset(offset) \
             .limit(limit)
 
         result = await db.execute(query)
@@ -84,32 +117,40 @@ class UserTagDatabaseHandler:
         return result.scalar_one()
 
     @staticmethod
-    async def get_user_tag_by_id(db: AsyncSession, tag_id: int) -> UserTag | None:
-        query = select(UserTag).filter(UserTag.tag_id == tag_id).options(selectinload(UserTag.alcohols))
+    async def get_user_tag_alcohols(
+            db: AsyncSession,
+            limit: int,
+            offset: int,
+            tag_id: int
+    ) -> list[AlcoholBasicInfo]:
+        query = select(Alcohol).join(AlcoholUserTag). \
+            filter(AlcoholUserTag.tag_id == tag_id). \
+            offset(offset). \
+            limit(limit)
         result = await db.execute(query)
-        return result.scalars().first()
+        return result.scalars().all()
 
-    # @staticmethod
-    # async def get_user_tag_with_alcohols_paginated(db: AsyncSession, tag_id: int) -> UserTag | None:
-    #     db_tag = await db.get(UserTag, tag_id)
-    #     db_tag.alcohols = await AlcoholDatabaseHandler.get_alcohols(db, payload.alcohol_ids)
-    #     return db_tag
+    @staticmethod
+    async def count_user_tag_alcohols(db: AsyncSession, tag_id: int) -> int:
+        query = select(func.count()).select_from(
+            select(AlcoholUserTag).filter(AlcoholUserTag.tag_id == tag_id).subquery()
+        )
+        result = await db.execute(query)
+        return result.scalar_one()
 
     @staticmethod
     async def delete_user_tag(db: AsyncSession, tag_id: int) -> None:
-        query = delete(UserTag).\
+        query = delete(UserTag). \
             where(UserTag.tag_id == tag_id)
         await db.execute(query)
 
-    # @staticmethod
-    # async def update_user_tag_alcohols(db: AsyncSession, tag_id: int, payload: UserTagUpdateAlcohols) -> UserTag:
-    #     # fields_to_exclude = {'alcohol_ids'}
-    #     db_user_tag = await UserTagDatabaseHandler.get_user_tag_by_id(db, tag_id)
-    #
-    #     # payload_dict = payload.dict(exclude_none=True, exclude=fields_to_exclude)
-    #     db_alcohols = await AlcoholDatabaseHandler.get_alcohols_without_pagination(db, payload.alcohol_ids)
-    #     db_user_tag.alcohols = db_alcohols
-    #
-    #     await db.commit()
-    #     await db.refresh(db_user_tag)
-    #     return db_user_tag
+    @staticmethod
+    async def update_user_tag(
+            db: AsyncSession,
+            tag_id: int,
+            payload: UserTagUpdate
+    ) -> UserTag:
+        query = update(UserTag).where(UserTag.tag_id == tag_id).values(payload.dict(exclude_none=True))
+        await db.execute(query)
+        await db.commit()
+        return await UserTagDatabaseHandler.get_user_tag_by_id(db, tag_id)

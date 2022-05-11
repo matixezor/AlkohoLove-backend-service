@@ -42,7 +42,8 @@ class Alcohol(Base):
     tastes = relationship('Flavour', secondary='alcohol_taste')
     finishes = relationship('Flavour', secondary='alcohol_finish')
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
-    user_tags = relationship('UserTag', secondary='alcohol_user_tag')
+    user_tags = relationship('UserTag', secondary='alcohol_user_tag', back_populates='alcohols')
+
 
 class AlcoholDatabaseHandler:
     @staticmethod
@@ -217,3 +218,10 @@ class AlcoholDatabaseHandler:
         query = select(Alcohol).where(Alcohol.alcohol_id.in_(alcohol_ids))
         db_alcohols = await db.execute(query)
         return db_alcohols.scalars().all()
+
+    @staticmethod
+    async def check_if_alcohol_exists_by_id(db: AsyncSession, alcohol_id: int) -> bool:
+        if await AlcoholDatabaseHandler.get_alcohol_by_id(db, alcohol_id):
+            return True
+        else:
+            return False

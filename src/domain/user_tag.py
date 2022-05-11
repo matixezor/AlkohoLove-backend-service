@@ -18,14 +18,15 @@ class UserTagCreate(BaseModel):
     alcohol_ids: list[int] = []
 
 
+class UserTagUpdate(BaseModel):
+    tag_name: str
+
+
 class PaginatedUserTag(BaseModel):
     user_tags: list[UserTag]
     page_info: PageInfo
 
 
-class UserTagUpdateAlcohols(BaseModel):
-    alcohol_ids: list[int] = []
-
-
-class UserTagAlcohols(UserTag):
-    alcohols: list[AlcoholBasicInfo] = []
+class PaginatedUserTagAlcohols(BaseModel):
+    alcohols: list[AlcoholBasicInfo]
+    page_info: PageInfo

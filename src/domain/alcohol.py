@@ -104,6 +104,8 @@ class AlcoholUpdate(AlcoholCreate):
 class AlcoholBasicInfo(BaseModel):
     alcohol_id: int
     name: str
+    kind: str
+    type: str
 
     class Config:
         orm_mode = True
