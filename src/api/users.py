@@ -1,14 +1,6 @@
-import datetime
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
-from src.database.models.user_search_history import UserSearchHistoryDatabaseHandler
-from src.database.models.user_wishlist import WishlistDatabaseHandler
-from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
-from src.domain.user_search_history import PaginatedUserSearchHistory
-from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import is_admin
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db

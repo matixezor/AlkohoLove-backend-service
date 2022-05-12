@@ -2,9 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status
 
 from src.api.users import get_user
-from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
-from src.database.models.user_search_history import UserSearchHistoryDatabaseHandler
-from src.database.models.user_wishlist import WishlistDatabaseHandler
+from src.database.models.user_list import UserListHandler, UserWishlist, UserFavouriteAlcohol
 from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
 from src.domain.user_search_history import PaginatedUserSearchHistory
 from src.domain.user_wishlist import PaginatedUserWishlist
@@ -30,9 +28,9 @@ async def get_user_favourite_alcohols(
     """
     Read your favourite alcohols with pagination
     """
-    alcohols = await UserFavouriteAlcoholDatabaseHandler.get_user_favourite_alcohols_by_id(user_id=user.user_id, db=db,
-                                                                                           limit=limit,
-                                                                                           offset=offset)
+    alcohols = await UserListHandler.get_user_list_by_id(user_id=user.user_id, db=db,
+                                                         limit=limit,
+                                                         offset=offset, model=UserFavouriteAlcohol)
     return PaginatedUserFavouriteAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -58,8 +56,8 @@ async def get_user_wishlist(
     """
     Read user's wishlist with pagination
     """
-    alcohols = await WishlistDatabaseHandler.get_user_wishlist_by_id(user_id=user.user_id, db=db, limit=limit,
-                                                                     offset=offset)
+    alcohols = await UserListHandler.get_user_list_by_id(user_id=user.user_id, db=db, limit=limit,
+                                                         offset=offset, model=UserWishlist)
     return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -68,7 +66,6 @@ async def get_user_wishlist(
             total=len(alcohols)
         )
     )
-
 
 @router.get(
     '/{user_id}/search_history',
@@ -85,9 +82,9 @@ async def get_user_search_history(
     """
     Read user's search history with pagination
     """
-    alcohols = await UserSearchHistoryDatabaseHandler.get_user_search_history_by_id(user_id=user.user_id, db=db,
-                                                                                    limit=limit,
-                                                                                    offset=offset)
+    alcohols = await UserListHandler.get_user_search_history_by_id(user_id=user.user_id, db=db,
+                                                                   limit=limit,
+                                                                   offset=offset)
     return PaginatedUserSearchHistory(
         alcohols=alcohols,
         page_info=PageInfo(

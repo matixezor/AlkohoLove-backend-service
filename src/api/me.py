@@ -2,9 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
-from src.database.models.user_search_history import UserSearchHistoryDatabaseHandler
-from src.database.models.user_wishlist import WishlistDatabaseHandler
+from src.database.models.user_list import UserListHandler, UserWishlist, UserFavouriteAlcohol
 from src.domain.page_info import PageInfo
 from src.domain.user import User, UserUpdate, UserAdminInfo
 from src.database.database_config import get_db
@@ -100,7 +98,7 @@ async def get_user_wishlist(
     """
     Read your wishlist with pagination
     """
-    alcohols = await WishlistDatabaseHandler.get_user_wishlist(user=user, db=db, limit=limit, offset=offset)
+    alcohols = await UserListHandler.get_user_list(user=user, db=db, limit=limit, offset=offset, model=UserWishlist)
     return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -126,8 +124,8 @@ async def get_user_favourite_alcohols(
     """
     Read your favourite alcohols with pagination
     """
-    alcohols = await UserFavouriteAlcoholDatabaseHandler.get_self_favourite_alcohols(user=user, db=db, limit=limit,
-                                                                                     offset=offset)
+    alcohols = await UserListHandler.get_user_list(user=user, db=db, limit=limit,
+                                                   offset=offset, model=UserFavouriteAlcohol)
     return PaginatedUserFavouriteAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -153,8 +151,8 @@ async def get_user_search_history(
     """
     Read your search history with pagination
     """
-    alcohols = await UserSearchHistoryDatabaseHandler.get_user_search_history(user=user, db=db, limit=limit,
-                                                                              offset=offset)
+    alcohols = await UserListHandler.get_user_search_history(user=user, db=db, limit=limit,
+                                                             offset=offset)
     return PaginatedUserSearchHistory(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -175,7 +173,7 @@ async def delete_from_user_wishlist(
         current_user: UserAdminInfo = Depends(get_self),
         db: AsyncSession = Depends(get_db)
 ) -> None:
-    await WishlistDatabaseHandler.delete_from_user_wishlist(user=current_user, alcohol_id=alcohol_id, db=db)
+    await UserListHandler.delete_from_user_list(user=current_user, alcohol_id=alcohol_id, db=db, model=UserWishlist)
 
 
 @router.delete(
@@ -188,8 +186,10 @@ async def delete_from_favourite_alcohol_list(
         current_user: UserAdminInfo = Depends(get_self),
         db: AsyncSession = Depends(get_db)
 ) -> None:
-    await UserFavouriteAlcoholDatabaseHandler.delete_from_user_favourite_alcohols(user=current_user,
-                                                                                  alcohol_id=alcohol_id, db=db)
+    await UserListHandler.delete_from_user_list(user=current_user,
+                                                alcohol_id=alcohol_id, db=db, model=UserFavouriteAlcohol)
+
+
 @router.delete(
     path='/search_history',
     summary='Delete User search history',
@@ -200,4 +200,4 @@ async def delete_from_search_history(
         current_user: UserAdminInfo = Depends(get_self),
         db: AsyncSession = Depends(get_db)
 ) -> None:
-    await UserSearchHistoryDatabaseHandler.delete_from_user_search_history(user=current_user, alcohol_id=alcohol_id, db=db)
+    await UserListHandler.delete_from_user_search_history(user=current_user, alcohol_id=alcohol_id, db=db)
