@@ -18,3 +18,6 @@ class UserSearchHistory(BaseModel):
 class PaginatedUserSearchHistory(BaseModel):
     alcohols: list[AlcoholSearchHistoryInfo]
     page_info: PageInfo
+
+    class Config:
+        orm_mode = True

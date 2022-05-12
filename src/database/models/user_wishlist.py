@@ -20,7 +20,7 @@ class WishlistDatabaseHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> Alcohol:
+    ) -> list[Alcohol] | None:
         query = select(Alcohol).join(UserWishlist).join(User).filter(User.user_id == user.user_id).offset(offset).limit(
             limit)
         result = await db.execute(query)
@@ -32,7 +32,7 @@ class WishlistDatabaseHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> Alcohol:
+    ) -> list[Alcohol] | None:
         query = select(Alcohol).join(UserWishlist).join(User).filter(User.user_id == user_id).offset(offset).limit(
             limit)
         result = await db.execute(query)

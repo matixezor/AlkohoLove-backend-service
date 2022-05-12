@@ -109,6 +109,9 @@ class AlcoholBasicInfo(BaseModel):
     kind: str
     type: str
 
+    class Config:
+        orm_mode = True
+
 
 class AlcoholSearchHistoryInfo(BaseModel):
     alcohol_id: int

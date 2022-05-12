@@ -97,7 +97,7 @@ async def get_user_wishlist(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-):
+) ->PaginatedUserWishlist:
     """
     Read your wishlist with pagination
     """
@@ -123,13 +123,13 @@ async def get_user_favourite_alcohols(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-):
+)->PaginatedUserFavouriteAlcohol:
     """
     Read your favourite alcohols with pagination
     """
     alcohols = await UserFavouriteAlcoholDatabaseHandler.get_self_favourite_alcohols(user=user, db=db, limit=limit,
                                                                                      offset=offset)
-    return PaginatedUserWishlist(
+    return PaginatedUserFavouriteAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
@@ -149,7 +149,7 @@ async def get_user_search_history(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-):
+)->PaginatedUserSearchHistory:
     """
     Read your search history with pagination
     """

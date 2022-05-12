@@ -15,3 +15,6 @@ class UserWishlist(BaseModel):
 class PaginatedUserWishlist(BaseModel):
     alcohols: list[AlcoholBasicInfo]
     page_info: PageInfo
+
+    class Config:
+        orm_mode = True

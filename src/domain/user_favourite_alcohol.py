@@ -12,6 +12,13 @@ class UserFavouriteAlcohol(BaseModel):
         orm_mode = True
 
 
+
+
 class PaginatedUserFavouriteAlcohol(BaseModel):
-    alcohols: list[AlcoholBasicInfo]
+    alcohols: list[AlcoholBasicInfo] | None
     page_info: PageInfo
+
+    class Config:
+        orm_mode = True
+
+
