@@ -1,4 +1,4 @@
-from sqlalchemy import select, Column, Integer, ForeignKey
+from sqlalchemy import select, Column, Integer, ForeignKey, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.database_metadata import Base
@@ -37,3 +37,13 @@ class UserFavouriteAlcoholDatabaseHandler:
             limit)
         result = await db.execute(query)
         return result.scalars().all()
+
+    @staticmethod
+    async def delete_from_user_favourite_alcohols(
+            user: UserAdminInfo,
+            alcohol_id: int,
+            db: AsyncSession,
+    ) -> None:
+        query = delete(UserFavouriteAlcohol). \
+            where((UserFavouriteAlcohol.alcohol_id == alcohol_id) & (UserFavouriteAlcohol.user_id == user.user_id))
+        await db.execute(query)

@@ -15,7 +15,6 @@ from src.domain.user_search_history import PaginatedUserSearchHistory
 from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import get_current_user, get_current_user_username
 
-
 router = APIRouter(prefix='/me', tags=['me'])
 
 
@@ -97,7 +96,7 @@ async def get_user_wishlist(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-) ->PaginatedUserWishlist:
+) -> PaginatedUserWishlist:
     """
     Read your wishlist with pagination
     """
@@ -123,7 +122,7 @@ async def get_user_favourite_alcohols(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-)->PaginatedUserFavouriteAlcohol:
+) -> PaginatedUserFavouriteAlcohol:
     """
     Read your favourite alcohols with pagination
     """
@@ -138,6 +137,7 @@ async def get_user_favourite_alcohols(
         )
     )
 
+
 @router.get(
     '/search_history',
     summary='Read User search history',
@@ -149,11 +149,12 @@ async def get_user_search_history(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-)->PaginatedUserSearchHistory:
+) -> PaginatedUserSearchHistory:
     """
     Read your search history with pagination
     """
-    alcohols = await UserSearchHistoryDatabaseHandler.get_user_search_history(user=user, db=db, limit=limit, offset=offset)
+    alcohols = await UserSearchHistoryDatabaseHandler.get_user_search_history(user=user, db=db, limit=limit,
+                                                                              offset=offset)
     return PaginatedUserSearchHistory(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -162,6 +163,7 @@ async def get_user_search_history(
             total=len(alcohols)
         )
     )
+
 
 @router.delete(
     path='/wishlist',
@@ -174,3 +176,17 @@ async def delete_from_user_wishlist(
         db: AsyncSession = Depends(get_db)
 ) -> None:
     await WishlistDatabaseHandler.delete_from_user_wishlist(user=current_user, alcohol_id=alcohol_id, db=db)
+
+
+@router.delete(
+    path='/favourites',
+    summary='Delete User favourites list',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_from_favourite_alcohol_list(
+        alcohol_id: int,
+        current_user: UserAdminInfo = Depends(get_self),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    await UserFavouriteAlcoholDatabaseHandler.delete_from_user_favourite_alcohols(user=current_user,
+                                                                                  alcohol_id=alcohol_id, db=db)
