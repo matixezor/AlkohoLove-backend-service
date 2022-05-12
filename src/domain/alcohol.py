@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, root_validator
 
 from src.domain.food import Food
@@ -106,6 +108,14 @@ class AlcoholBasicInfo(BaseModel):
     name: str
     kind: str
     type: str
+
+
+class AlcoholSearchHistoryInfo(BaseModel):
+    alcohol_id: int
+    name: str
+    kind: str
+    type: str
+    date: datetime | None
 
     class Config:
         orm_mode = True

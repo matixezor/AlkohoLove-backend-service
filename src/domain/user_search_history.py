@@ -1,21 +1,20 @@
-import datetime
+from datetime import datetime
 
 from pydantic import BaseModel
 
 from src.domain.page_info import PageInfo
-from src.domain.alcohol import AlcoholBasicInfo
+from src.domain.alcohol import AlcoholSearchHistoryInfo
 
 
 class UserSearchHistory(BaseModel):
     user_id: int
     alcohol_ids: list[int] = []
-    date: datetime.date
+    date: datetime | None = None
 
     class Config:
         orm_mode = True
 
 
 class PaginatedUserSearchHistory(BaseModel):
-    alcohols: list[AlcoholBasicInfo]
-    date: datetime.date
+    alcohols: list[AlcoholSearchHistoryInfo]
     page_info: PageInfo
