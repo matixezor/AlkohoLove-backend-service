@@ -190,3 +190,14 @@ async def delete_from_favourite_alcohol_list(
 ) -> None:
     await UserFavouriteAlcoholDatabaseHandler.delete_from_user_favourite_alcohols(user=current_user,
                                                                                   alcohol_id=alcohol_id, db=db)
+@router.delete(
+    path='/search_history',
+    summary='Delete User search history',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_from_search_history(
+        alcohol_id: int,
+        current_user: UserAdminInfo = Depends(get_self),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    await UserSearchHistoryDatabaseHandler.delete_from_user_search_history(user=current_user, alcohol_id=alcohol_id, db=db)

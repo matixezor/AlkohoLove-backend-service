@@ -1,4 +1,4 @@
-from sqlalchemy import select, Column, Integer, ForeignKey, Date
+from sqlalchemy import select, Column, Integer, ForeignKey, Date, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.database_metadata import Base
@@ -38,3 +38,13 @@ class UserSearchHistoryDatabaseHandler:
             limit)
         result = await db.execute(query)
         return result.scalars().all()
+
+    @staticmethod
+    async def delete_from_user_search_history(
+            user: UserAdminInfo,
+            alcohol_id: int,
+            db: AsyncSession,
+    ) -> None:
+        query = delete(UserSearchHistory). \
+            where((UserSearchHistory.alcohol_id == alcohol_id) & (UserSearchHistory.user_id == user.user_id))
+        await db.execute(query)
