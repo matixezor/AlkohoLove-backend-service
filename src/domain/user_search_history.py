@@ -17,4 +17,5 @@ class UserSearchHistory(BaseModel):
 
 class PaginatedUserSearchHistory(BaseModel):
     alcohols: list[AlcoholBasicInfo]
+    date: datetime.date
     page_info: PageInfo

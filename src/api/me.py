@@ -127,7 +127,8 @@ async def get_user_favourite_alcohols(
     """
     Read your favourite alcohols with pagination
     """
-    alcohols = await UserFavouriteAlcoholDatabaseHandler.get_user_favourite_alcohols(user=user, db=db, limit=limit, offset=offset)
+    alcohols = await UserFavouriteAlcoholDatabaseHandler.get_self_favourite_alcohols(user=user, db=db, limit=limit,
+                                                                                     offset=offset)
     return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
