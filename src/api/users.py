@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from src.database.models.user_favourite_alcohol import UserFavouriteAlcoholDatabaseHandler
+from src.database.models.user_wishlist import WishlistDatabaseHandler
 from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
 from src.domain.user_wishlist import PaginatedUserWishlist
 from src.utils.auth_utils import is_admin
@@ -91,8 +92,6 @@ async def update_user(
     return await DatabaseHandler.update_user_by_id(db, user_id, user_update_payload)
 
 
-
-
 @router.get(
     '/{user_id}/favourites',
     summary='Read User favourite alcohols',
@@ -109,6 +108,32 @@ async def get_user_favourite_alcohols(
     Read your favourite alcohols with pagination
     """
     alcohols = await UserFavouriteAlcoholDatabaseHandler.get_user_favourite_alcohols_by_id(user_id=user.user_id, db=db, limit=limit,
+                                                                                     offset=offset)
+    return PaginatedUserWishlist(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(alcohols)
+        )
+    )
+
+@router.get(
+    '/{user_id}/wishlist',
+    summary='Read User wishlist',
+    response_model=PaginatedUserFavouriteAlcohol,
+    status_code=status.HTTP_200_OK
+)
+async def get_user_wishlist(
+        user: UserAdminInfo = Depends(get_user),
+        db: AsyncSession = Depends(get_db),
+        limit: int = 10,
+        offset: int = 0
+):
+    """
+    Read your favourite alcohols with pagination
+    """
+    alcohols = await WishlistDatabaseHandler.get_user_wishlist_by_id(user_id=user.user_id, db=db, limit=limit,
                                                                                      offset=offset)
     return PaginatedUserWishlist(
         alcohols=alcohols,

@@ -25,3 +25,15 @@ class WishlistDatabaseHandler:
             limit)
         result = await db.execute(query)
         return result.scalars().all()
+
+    @staticmethod
+    async def get_user_wishlist_by_id(
+            user_id: int,
+            db: AsyncSession,
+            limit: int,
+            offset: int
+    ) -> Alcohol:
+        query = select(Alcohol).join(UserWishlist).join(User).filter(User.user_id == user_id).offset(offset).limit(
+            limit)
+        result = await db.execute(query)
+        return result.scalars().all()
