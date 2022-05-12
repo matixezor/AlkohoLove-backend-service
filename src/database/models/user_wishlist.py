@@ -1,4 +1,4 @@
-from sqlalchemy import select, Column, Integer, ForeignKey
+from sqlalchemy import select, Column, Integer, ForeignKey, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.database_metadata import Base
@@ -37,3 +37,13 @@ class WishlistDatabaseHandler:
             limit)
         result = await db.execute(query)
         return result.scalars().all()
+
+    @staticmethod
+    async def delete_from_user_wishlist(
+            user: UserAdminInfo,
+            alcohol_id: int,
+            db: AsyncSession,
+    ) -> None:
+        query = delete(UserWishlist). \
+            where((UserWishlist.alcohol_id == alcohol_id) & (UserWishlist.user_id == user.user_id))
+        await db.execute(query)
