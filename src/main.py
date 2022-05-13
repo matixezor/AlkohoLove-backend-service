@@ -12,6 +12,7 @@ from src.api.flavours import router as flavour_router
 from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 from src.api.countries import router as country_router
+from src.api.reported_error import router as reported_error_router
 from src.api.user_tags import router as user_tag_router
 
 
@@ -21,13 +22,13 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(alcohol_router)
 app.include_router(logged_in_user_router)
+app.include_router(reported_error_router)
 app.include_router(food_router)
 app.include_router(flavour_router)
 app.include_router(country_router)
 app.include_router(region_router)
 app.include_router(media_router)
 app.include_router(user_tag_router)
-
 
 @app.exception_handler(AuthJWTException)
 def auth_exception_handler(request: Request, exc: AuthJWTException):

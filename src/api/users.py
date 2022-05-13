@@ -1,15 +1,18 @@
-from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from src.utils.auth_utils import is_admin
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
-from src.utils.user_utils import raise_user_not_found
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.domain.user import UserAdminUpdate, UserAdminInfo, PaginatedUserAdminInfo
 
 
 router = APIRouter(prefix='/users', tags=['[for admin] users'], dependencies=[Depends(is_admin)])
+
+
+def raise_user_not_found():
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
 
 
 @router.get(

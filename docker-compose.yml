@@ -29,3 +29,4 @@ services:
       - ./init_db/04-create_user_requests_tables.sql:/docker-entrypoint-initdb.d/04-create_user_requests_tables.sql
       - ./init_db/09-create_user_tags_tables.sql:/docker-entrypoint-initdb.d/09-create_user_tags_tables.sql
       - ./init_db/10-populate_user_tags_tables.sql:/docker-entrypoint-initdb.d/10-populate_user_tags_tables.sql
+      - ./init_db/08-populate_user_requests_tables.sql:/docker-entrypoint-initdb.d/08-populate_user_requests_tables.sql
