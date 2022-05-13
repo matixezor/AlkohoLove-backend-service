@@ -31,4 +31,3 @@ class PaginatedUserTag(BaseModel):
 class PaginatedUserTagAlcohols(BaseModel):
     alcohols: list[AlcoholBasicInfo]
     page_info: PageInfo
-

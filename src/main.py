@@ -30,6 +30,7 @@ app.include_router(region_router)
 app.include_router(media_router)
 app.include_router(user_tag_router)
 
+
 @app.exception_handler(AuthJWTException)
 def auth_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
