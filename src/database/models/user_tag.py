@@ -44,11 +44,10 @@ class UserTagDatabaseHandler:
         return await db.get(UserTag, tag_id)
 
     @staticmethod
-    async def add_alcohol_to_user_tag(db: AsyncSession, tag_id: int, alcohol_id: int) -> UserTag:
+    async def add_alcohol_to_user_tag(db: AsyncSession, tag_id: int, alcohol_id: int) -> None:
         query = insert(AlcoholUserTag).values(alcohol_id=alcohol_id, tag_id=tag_id)
-        result = await db.execute(query)
+        await db.execute(query)
         await db.commit()
-        return result
 
     @staticmethod
     async def delete_alcohol_from_user_tag(db: AsyncSession, tag_id: int, alcohol_id: int) -> None:
@@ -86,12 +85,12 @@ class UserTagDatabaseHandler:
         return result.scalars().first()
 
     @staticmethod
-    async def get_user_tag_alcohol(db: AsyncSession, tag_id: int, alcohol_id: int):
-        query = select(Alcohol).join(AlcoholUserTag). \
+    async def get_user_tag_alcohol(db: AsyncSession, tag_id: int, alcohol_id: int) -> AlcoholUserTag | None:
+        query = select(AlcoholUserTag). \
             filter((AlcoholUserTag.tag_id == tag_id) & (AlcoholUserTag.alcohol_id == alcohol_id)) \
             .limit(1)
         result = await db.execute(query)
-        return result.scalars().first
+        return result.scalars().first()
 
     @staticmethod
     async def get_user_tags_by_user_id(

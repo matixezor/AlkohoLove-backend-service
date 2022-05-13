@@ -19,6 +19,7 @@ class UserTagCreate(BaseModel):
 
 
 class UserTagUpdate(BaseModel):
+    user_id: int
     tag_name: str
 
 
@@ -30,3 +31,4 @@ class PaginatedUserTag(BaseModel):
 class PaginatedUserTagAlcohols(BaseModel):
     alcohols: list[AlcoholBasicInfo]
     page_info: PageInfo
+

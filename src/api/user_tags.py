@@ -114,10 +114,10 @@ async def get_user_tag_alcohols(
     )
 
 
-@router.put(
+@router.post(
     path='/alcohols/{tag_id}',
-    response_model=UserTag,
-    status_code=status.HTTP_200_OK,
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
     summary='Add alcohol to user tag'
 )
 async def add_alcohol_to_user_tag(
@@ -184,4 +184,6 @@ async def update_user_tag(
 ) -> UserTag:
     if not await DatabaseHandler.check_if_user_tag_exists_by_id(db, tag_id):
         raise_item_not_found('User tag')
+    if await DatabaseHandler.check_if_user_tag_exists(db, payload.tag_name, payload.user_id):
+        raise_user_tag_already_exists()
     return await DatabaseHandler.update_user_tag(db, tag_id, payload)
