@@ -64,6 +64,15 @@ class UserListHandler:
         await db.execute(query)
 
     @staticmethod
+    async def delete_whole_user_search_history(
+            user: UserAdminInfo,
+            db: AsyncSession,
+    ) -> None:
+        query = delete(UserSearchHistory). \
+            where((UserSearchHistory.user_id == user.user_id))
+        await db.execute(query)
+
+    @staticmethod
     async def get_user_list(
             user: UserAdminInfo,
             db: AsyncSession,

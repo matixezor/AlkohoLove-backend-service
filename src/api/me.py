@@ -201,3 +201,16 @@ async def delete_from_search_history(
         db: AsyncSession = Depends(get_db)
 ) -> None:
     await UserListHandler.delete_from_user_search_history(user=current_user, alcohol_id=alcohol_id, db=db)
+
+
+@router.delete(
+    path='/search_history/all',
+    summary='Delete whole User search history',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_whole_search_history(
+        current_user: UserAdminInfo = Depends(get_self),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    await UserListHandler.delete_whole_user_search_history(user=current_user, db=db)
+
