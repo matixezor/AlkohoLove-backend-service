@@ -1,12 +1,11 @@
+from fastapi.openapi.models import Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from src.api.me import get_self
 from src.api.users import get_user
 from src.database.models.user_list import UserListHandler, UserWishlist, UserFavouriteAlcohol
-from src.domain.user_favourite_alcohol import PaginatedUserFavouriteAlcohol
-from src.domain.user_search_history import PaginatedUserSearchHistory
-from src.domain.user_wishlist import PaginatedUserWishlist
+from src.domain.user_list import PaginatedUserList, PaginatedUserSearchHistory
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
 from src.domain.user import UserAdminInfo
@@ -14,10 +13,32 @@ from src.domain.user import UserAdminInfo
 router = APIRouter(prefix='/lists', tags=['lists'])
 
 
+def raise_alcohol_already_exists():
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail='Alcohol already exists in list'
+    )
+
+# @router.post(
+#     '',
+#     response_class=Response,
+#     status_code=status.HTTP_201_CREATED,
+#     summary='Create list'
+# )
+# async def create_list(
+#         list_create_payload: ReportedErrorCreate,
+#         db: AsyncSession = Depends(get_db)
+# ) -> None:
+#     try:
+#         await DatabaseHandler.create_reported_error(db, reported_error_create_payload)
+#     except IntegrityError:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid payload')
+
+
 @router.get(
     '/{user_id}/favourites',
     summary='Read User favourite alcohols',
-    response_model=PaginatedUserFavouriteAlcohol,
+    response_model=PaginatedUserList,
     status_code=status.HTTP_200_OK
 )
 async def get_user_favourite_alcohols(
@@ -25,14 +46,14 @@ async def get_user_favourite_alcohols(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-) -> PaginatedUserFavouriteAlcohol:
+) -> PaginatedUserList:
     """
     Read your favourite alcohols with pagination
     """
     alcohols = await UserListHandler.get_user_list_by_id(user_id=user.user_id, db=db,
                                                          limit=limit,
                                                          offset=offset, model=UserFavouriteAlcohol)
-    return PaginatedUserFavouriteAlcohol(
+    return PaginatedUserList(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
@@ -45,7 +66,7 @@ async def get_user_favourite_alcohols(
 @router.get(
     '/{user_id}/wishlist',
     summary='Read User wishlist',
-    response_model=PaginatedUserWishlist,
+    response_model=PaginatedUserList,
     status_code=status.HTTP_200_OK
 )
 async def get_user_wishlist(
@@ -53,13 +74,13 @@ async def get_user_wishlist(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-) -> PaginatedUserWishlist:
+) -> PaginatedUserList:
     """
     Read user's wishlist with pagination
     """
     alcohols = await UserListHandler.get_user_list_by_id(user_id=user.user_id, db=db, limit=limit,
                                                          offset=offset, model=UserWishlist)
-    return PaginatedUserWishlist(
+    return PaginatedUserList(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
@@ -99,7 +120,7 @@ async def get_user_search_history(
 @router.get(
     '/wishlist',
     summary='Read User wishlist',
-    response_model=PaginatedUserWishlist,
+    response_model=PaginatedUserList,
     status_code=status.HTTP_200_OK
 )
 async def get_user_wishlist(
@@ -107,12 +128,12 @@ async def get_user_wishlist(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-) -> PaginatedUserWishlist:
+) -> PaginatedUserList:
     """
     Read your wishlist with pagination
     """
     alcohols = await UserListHandler.get_user_list(user=user, db=db, limit=limit, offset=offset, model=UserWishlist)
-    return PaginatedUserWishlist(
+    return PaginatedUserList(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
@@ -125,7 +146,7 @@ async def get_user_wishlist(
 @router.get(
     '/favourites',
     summary='Read User favourite alcohols',
-    response_model=PaginatedUserFavouriteAlcohol,
+    response_model=PaginatedUserList,
     status_code=status.HTTP_200_OK
 )
 async def get_user_favourite_alcohols(
@@ -133,13 +154,13 @@ async def get_user_favourite_alcohols(
         db: AsyncSession = Depends(get_db),
         limit: int = 10,
         offset: int = 0
-) -> PaginatedUserFavouriteAlcohol:
+) -> PaginatedUserList:
     """
     Read your favourite alcohols with pagination
     """
     alcohols = await UserListHandler.get_user_list(user=user, db=db, limit=limit,
                                                    offset=offset, model=UserFavouriteAlcohol)
-    return PaginatedUserFavouriteAlcohol(
+    return PaginatedUserList(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
@@ -226,3 +247,5 @@ async def delete_whole_search_history(
         db: AsyncSession = Depends(get_db)
 ) -> None:
     await UserListHandler.delete_whole_user_search_history(user=current_user, db=db)
+
+
