@@ -41,6 +41,5 @@ class PaginatedUserSearchHistory(BaseModel):
 
 
 class UserListCreate(BaseModel):
-    tag_name: str
     user_id: int
     alcohol_ids: list[int] = []
