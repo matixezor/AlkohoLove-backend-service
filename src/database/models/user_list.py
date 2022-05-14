@@ -1,12 +1,12 @@
 import datetime
 
-from sqlalchemy import select, Column, Integer, ForeignKey, Date, delete, update
+from sqlalchemy import select, Column, Integer, ForeignKey, delete, TIMESTAMP
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.database_metadata import Base
 from src.database.models import Alcohol, User
-from src.domain.alcohol import AlcoholSearchHistoryInfo
 from src.domain.user import UserAdminInfo
+from src.domain.user_list import AlcoholSearchHistoryInfo
 
 
 class UserSearchHistory(Base):
@@ -14,7 +14,7 @@ class UserSearchHistory(Base):
 
     alcohol_id = Column(Integer, ForeignKey('alcohol.alcohol_id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    date = Column(Date, primary_key=True)
+    date = Column(TIMESTAMP, primary_key=True)
 
 
 class UserWishlist(Base):
@@ -139,7 +139,7 @@ class UserListHandler:
 
     @staticmethod
     async def create_search_history_entry(db: AsyncSession, user_id: int, alcohol_id: int, date) -> None:
-        db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.date.today())
+        db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.datetime.now())
 
         db.add(db_list)
 

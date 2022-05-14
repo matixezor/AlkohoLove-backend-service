@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from src.domain.page_info import PageInfo
 from src.domain.alcohol import AlcoholBasicInfo
-from src.domain.alcohol import AlcoholSearchHistoryInfo
 
 
 class UserList(BaseModel):
@@ -27,6 +26,17 @@ class UserSearchHistoryInfo(BaseModel):
     user_id: int
     alcohol_ids: list[int] = []
     date: datetime | None = None
+
+    class Config:
+        orm_mode = True
+
+
+class AlcoholSearchHistoryInfo(BaseModel):
+    alcohol_id: int
+    name: str
+    kind: str
+    type: str
+    # date: datetime | None
 
     class Config:
         orm_mode = True

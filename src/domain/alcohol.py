@@ -113,12 +113,3 @@ class AlcoholBasicInfo(BaseModel):
         orm_mode = True
 
 
-class AlcoholSearchHistoryInfo(BaseModel):
-    alcohol_id: int
-    name: str
-    kind: str
-    type: str
-    date: datetime | None
-
-    class Config:
-        orm_mode = True

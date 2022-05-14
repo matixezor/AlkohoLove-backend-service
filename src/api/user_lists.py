@@ -179,7 +179,7 @@ async def get_user_search_history(
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=3
+            total=len(alcohols)
         )
     )
 
@@ -290,6 +290,4 @@ async def create_search_history_entry(
     Update wishlist. Required query param:
     - **alcohol_id**: str
     """
-    # if await UserListHandler.check_if_alcohol_in_list(UserSearchHistory,db, alcohol_id, current_user.user_id):
-    #     raise_alcohol_already_exists()
-    await UserListHandler.create_search_history_entry(db, current_user.user_id, alcohol_id, datetime.date.today())
+    await UserListHandler.create_search_history_entry(db, current_user.user_id, alcohol_id, datetime.datetime.today())
