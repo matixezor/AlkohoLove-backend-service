@@ -23,7 +23,7 @@ class PaginatedUserList(BaseModel):
         orm_mode = True
 
 
-class UserSearchHistory(BaseModel):
+class UserSearchHistoryInfo(BaseModel):
     user_id: int
     alcohol_ids: list[int] = []
     date: datetime | None = None

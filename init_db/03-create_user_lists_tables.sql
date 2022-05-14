@@ -16,6 +16,6 @@ CREATE TABLE user_search_history
 (
     user_id    INTEGER REFERENCES users (user_id),
     alcohol_id INTEGER REFERENCES alcohol (alcohol_id) ON DELETE CASCADE,
-    date       DATE NOT NULL DEFAULT CURRENT_DATE,
-    PRIMARY KEY (user_id, alcohol_id)
+    date       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, alcohol_id, date)
 );

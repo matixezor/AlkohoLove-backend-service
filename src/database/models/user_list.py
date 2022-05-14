@@ -1,9 +1,11 @@
+import datetime
+
 from sqlalchemy import select, Column, Integer, ForeignKey, Date, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.testing.plugin.plugin_base import post
 
 from src.database.database_metadata import Base
 from src.database.models import Alcohol, User
+from src.domain.alcohol import AlcoholSearchHistoryInfo
 from src.domain.user import UserAdminInfo
 
 
@@ -12,7 +14,7 @@ class UserSearchHistory(Base):
 
     alcohol_id = Column(Integer, ForeignKey('alcohol.alcohol_id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    date = Column(Date)
+    date = Column(Date, primary_key=True)
 
 
 class UserWishlist(Base):
@@ -36,7 +38,7 @@ class UserListHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> list[Alcohol] | None:
+    ) -> list[AlcoholSearchHistoryInfo] | None:
         query = select(Alcohol).join(UserSearchHistory).join(User).filter(User.user_id == user.user_id).offset(
             offset).limit(limit)
         result = await db.execute(query)
@@ -48,7 +50,7 @@ class UserListHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> list[Alcohol] | None:
+    ) -> AlcoholSearchHistoryInfo | None:
         query = select(Alcohol).join(UserSearchHistory).join(User).filter(User.user_id == user_id).offset(offset).limit(
             limit)
         result = await db.execute(query)
@@ -125,13 +127,19 @@ class UserListHandler:
     ) -> bool:
         db_alcohol = await UserListHandler.get_alcohol_by_id(db, alcohol_id, user_id, model)
         if db_alcohol:
-            return True if db_alcohol.alcohol_id != alcohol_id else False
+            return True if db_alcohol.alcohol_id == alcohol_id else False
         else:
             return False
 
     @staticmethod
     async def create_list_entry(db: AsyncSession, user_id: int, alcohol_id: int, model) -> None:
         db_list = model(user_id=user_id, alcohol_id=alcohol_id)
+
+        db.add(db_list)
+
+    @staticmethod
+    async def create_search_history_entry(db: AsyncSession, user_id: int, alcohol_id: int, date) -> None:
+        db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.date.today())
 
         db.add(db_list)
 

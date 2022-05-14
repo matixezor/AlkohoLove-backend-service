@@ -1,14 +1,13 @@
 import datetime
 
-from fastapi.openapi.models import Response
-from sqlalchemy.exc import IntegrityError
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException,Response
 
 from src.api.me import get_self
 from src.api.users import get_user
 from src.database.models.user_list import UserListHandler, UserWishlist, UserFavouriteAlcohol, UserSearchHistory
-from src.domain.user_list import PaginatedUserList, PaginatedUserSearchHistory, UserListCreate, UserList
+from src.domain.user_list import PaginatedUserList, PaginatedUserSearchHistory
 from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
 from src.domain.user import UserAdminInfo
@@ -21,21 +20,6 @@ def raise_alcohol_already_exists():
         status_code=status.HTTP_400_BAD_REQUEST,
         detail='Alcohol already exists in list'
     )
-
-# @router.post(
-#     '',
-#     response_class=Response,
-#     status_code=status.HTTP_201_CREATED,
-#     summary='Create list'
-# )
-# async def create_list(
-#         list_create_payload: UserListCreate,
-#         db: AsyncSession = Depends(get_db)
-# ) -> None:
-#     try:
-#         await UserListHandler.create_user_list(db, list_create_payload)
-#     except IntegrityError:
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid payload')
 
 
 @router.get(
@@ -195,7 +179,7 @@ async def get_user_search_history(
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=3
         )
     )
 
@@ -255,6 +239,7 @@ async def delete_whole_search_history(
 @router.post(
     path='/wishlist',
     status_code=status.HTTP_201_CREATED,
+    response_class=Response,
     summary='Update your list'
 )
 async def create_wishlist_entry(
@@ -274,6 +259,7 @@ async def create_wishlist_entry(
 @router.post(
     path='/favourites',
     status_code=status.HTTP_201_CREATED,
+    response_class=Response,
     summary='Update your list'
 )
 async def create_favourites_entry(
@@ -292,10 +278,10 @@ async def create_favourites_entry(
 @router.post(
     path='/search_history',
     status_code=status.HTTP_201_CREATED,
+    response_class=Response,
     summary='Update your list'
 )
 async def create_search_history_entry(
-        date: datetime.date,
         alcohol_id: int,
         current_user: UserAdminInfo = Depends(get_self),
         db: AsyncSession = Depends(get_db),
@@ -304,6 +290,6 @@ async def create_search_history_entry(
     Update wishlist. Required query param:
     - **alcohol_id**: str
     """
-    if await UserListHandler.check_if_alcohol_in_list(UserSearchHistory,db, alcohol_id, current_user.user_id):
-        raise_alcohol_already_exists()
-    await UserListHandler.create_list_entry(db, current_user.user_id, alcohol_id, UserSearchHistory)
+    # if await UserListHandler.check_if_alcohol_in_list(UserSearchHistory,db, alcohol_id, current_user.user_id):
+    #     raise_alcohol_already_exists()
+    await UserListHandler.create_search_history_entry(db, current_user.user_id, alcohol_id, datetime.date.today())
