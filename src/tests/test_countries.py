@@ -93,12 +93,12 @@ async def test_get_countries(
 
 
 @mark.asyncio
-async def test_get_countries_by_country_name(
+async def test_get_countries_by_name(
         async_client: AsyncClient,
         admin_token: str
 ):
     response = await async_client.get(
-        '/countries?country_name=Po', headers={'Authorization': f'Bearer {admin_token}'}
+        '/countries?name=Po', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -126,7 +126,7 @@ async def test_create_country(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.post('/countries?country_name=Hiszpania', headers=headers)
+    response = await async_client.post('/countries?name=Hiszpania', headers=headers)
     assert response.status_code == 201
 
 
@@ -147,7 +147,7 @@ async def test_create_country_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.post(
-        f'/countries?country_name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
+        f'/countries?name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -161,7 +161,7 @@ async def test_update_country_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.put(
-        f'/countries/2?country_name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
+        f'/countries/2?name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -185,7 +185,7 @@ async def test_update_country(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.put(
-        f'/countries/1?country_name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
+        f'/countries/1?name={TAKEN_COUNTRY_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 200
     response = response.json()

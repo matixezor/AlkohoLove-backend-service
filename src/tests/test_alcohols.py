@@ -129,7 +129,7 @@ async def test_get_alcohols_by_alcohol_name(
         admin_token: str
 ):
     response = await async_client.get(
-        '/alcohols/admin?alcohol_name=Ży', headers={'Authorization': f'Bearer {admin_token}'}
+        '/alcohols/admin?name=Ży', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()

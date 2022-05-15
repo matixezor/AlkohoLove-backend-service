@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 
 EXISTING_REGION_PAYLOAD_FIXTURE = {
-        'region_name': 'Polska',
+        'name': 'Polska',
         'country_id': 1
     }
 
@@ -96,12 +96,12 @@ async def test_get_regions(
 
 
 @mark.asyncio
-async def test_get_regions_by_region_name(
+async def test_get_regions_by_name(
         async_client: AsyncClient,
         admin_token: str
 ):
     response = await async_client.get(
-        '/regions?region_name=Po', headers={'Authorization': f'Bearer {admin_token}'}
+        '/regions?name=Po', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -130,7 +130,7 @@ async def test_create_region(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     data = {
-        'region_name': 'Mazowieckie',
+        'name': 'Mazowieckie',
         'country_id': 1
     }
     response = await async_client.post('/regions', headers=headers, json=data)
