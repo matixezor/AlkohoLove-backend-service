@@ -1,15 +1,47 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Response
 
+from src.domain.page_info import PageInfo
 from src.domain.user import User, UserUpdate
 from src.database.database_config import get_db
 from src.database.models.user import User as UserInDb
+from src.database.models.alcohol import AlcoholDatabaseHandler
+from src.database.models.user_tag import UserTagDatabaseHandler
 from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.utils.auth_utils import get_current_user, get_current_user_username
+from src.domain.user_tag import UserTagCreate, PaginatedUserTag, UserTag, PaginatedUserTagAlcohols, UserTagUpdate
 
 
 router = APIRouter(prefix='/me', tags=['me'])
+
+
+def raise_user_tag_already_exists():
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail='User tag with given name already exists'
+    )
+
+
+def raise_item_not_found(item: str):
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f'{item} not found'
+    )
+
+
+def raise_alcohol_already_exists():
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail='Alcohol already exists in given user tag'
+    )
+
+
+def raise_item_does_not_belong_to_user():
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail='User tag does not belong to user'
+    )
 
 
 @router.get(
@@ -77,3 +109,182 @@ async def delete_self(
         db: AsyncSession = Depends(get_db)
 ) -> None:
     await DatabaseHandler.delete_user(db, current_user)
+
+
+@router.post(
+    '/tags',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create user tag'
+)
+async def create_user_tag(
+        payload: UserTagCreate,
+        db: AsyncSession = Depends(get_db),
+        current_user: UserInDb = Depends(get_current_user),
+) -> None:
+    if await UserTagDatabaseHandler.check_if_user_tag_exists(db, payload.tag_name, current_user.user_id):
+        raise_user_tag_already_exists()
+    await UserTagDatabaseHandler.create_user_tag(db, payload, current_user.user_id)
+
+
+@router.get(
+    path='/tags',
+    response_model=PaginatedUserTag,
+    status_code=status.HTTP_200_OK,
+    summary='Read all your user tags',
+)
+async def get_user_tags(
+        limit: int = 10,
+        offset: int = 0,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> PaginatedUserTag:
+    """
+    Get all user tags with pagination. Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    """
+    user_tags = await UserTagDatabaseHandler.get_user_tags_by_user_id(db, limit, offset, current_user.user_id)
+    total = await UserTagDatabaseHandler.count_user_tags(db, current_user.user_id)
+    return PaginatedUserTag(
+        user_tags=user_tags,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/tags/{tag_id}',
+    response_model=PaginatedUserTagAlcohols,
+    status_code=status.HTTP_200_OK,
+    summary='Read your user tag alcohols'
+)
+async def get_user_tag_alcohols(
+        tag_id: int,
+        limit: int = 10,
+        offset: int = 0,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> PaginatedUserTagAlcohols:
+    """
+    Get all alcohols from user tag with pagination. Query params:
+    - **tag id**: int - required
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    """
+    if not await UserTagDatabaseHandler.check_if_user_tag_exists_by_id(db, tag_id):
+        raise_item_not_found('User tag')
+
+    if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
+        raise_item_does_not_belong_to_user()
+
+    alcohols = await UserTagDatabaseHandler.get_user_tag_alcohols(db, limit, offset, tag_id)
+    total = await UserTagDatabaseHandler.count_user_tag_alcohols(db, tag_id)
+
+    return PaginatedUserTagAlcohols(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.post(
+    path='/tags/{tag_id}',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Add alcohol to your user tag'
+)
+async def add_alcohol_to_user_tag(
+        tag_id: int,
+        alcohol_id: int,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    """
+    Add alcohol to user tag by tag id and alcohol id
+    """
+    if not await UserTagDatabaseHandler.check_if_user_tag_exists_by_id(db, tag_id):
+        raise_item_not_found('User tag')
+
+    if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
+        raise_item_does_not_belong_to_user()
+
+    if not await AlcoholDatabaseHandler.check_if_alcohol_exists_by_id(db, alcohol_id):
+        raise_item_not_found('Alcohol')
+
+    if await UserTagDatabaseHandler.check_if_alcohol_exists_in_user_tag(db, tag_id, alcohol_id):
+        raise_alcohol_already_exists()
+
+    await UserTagDatabaseHandler.add_alcohol_to_user_tag(db, tag_id, alcohol_id)
+
+
+@router.delete(
+    path='/tags/{tag_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete your user tag',
+)
+async def delete_user_tag(
+        tag_id: int,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    """
+    Delete user tag by tag id
+    """
+    if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
+        raise_item_does_not_belong_to_user()
+
+    await UserTagDatabaseHandler.delete_user_tag(db, tag_id)
+
+
+@router.delete(
+    path='/tags/{tag_id}/alcohol',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol from your user tag'
+)
+async def delete_alcohol_from_user_tag(
+        tag_id: int,
+        alcohol_id: int,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol from user tag by tag id and alcohol id
+    """
+    if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
+        raise_item_does_not_belong_to_user()
+
+    await UserTagDatabaseHandler.delete_alcohol_from_user_tag(db, tag_id, alcohol_id)
+
+
+@router.put(
+    path='/tags/{tag_id}',
+    response_model=UserTag,
+    status_code=status.HTTP_200_OK,
+    summary='Update your user tag'
+)
+async def update_user_tag(
+        tag_id: int,
+        tag_name: str,
+        current_user: UserInDb = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+) -> UserTag:
+    """
+    Update user tag name by tag id
+    """
+    if not await UserTagDatabaseHandler.check_if_user_tag_exists_by_id(db, tag_id):
+        raise_item_not_found('User tag')
+
+    if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
+        raise_item_does_not_belong_to_user()
+
+    if await UserTagDatabaseHandler.check_if_user_tag_exists(db, tag_name, current_user.user_id):
+        raise_user_tag_already_exists()
+
+    return await UserTagDatabaseHandler.update_user_tag(db, tag_id, tag_name)
