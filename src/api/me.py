@@ -12,7 +12,7 @@ from src.database.models.user import UserDatabaseHandler as DatabaseHandler
 from src.utils.auth_utils import get_current_user, get_current_user_username
 from src.domain.user_list import PaginatedUserList, PaginatedUserSearchHistory
 from src.database.models.user_list import UserListHandler, UserFavouriteAlcohol, UserWishlist
-from src.domain.user_tag import UserTagCreate, PaginatedUserTag, UserTag, PaginatedUserTagAlcohols, UserTagUpdate
+from src.domain.user_tag import UserTagCreate, PaginatedUserTag, UserTag, PaginatedUserTagAlcohols
 
 
 router = APIRouter(prefix='/me', tags=['me'])
