@@ -263,7 +263,7 @@ async def test_add_alcohol_to_user_tag_with_existing_alcohol_in_user_tag(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already exists in given user tag'
+    assert response['detail'] == 'Alcohol already exists'
 
 
 @mark.asyncio
