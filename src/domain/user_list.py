@@ -33,6 +33,3 @@ class PaginatedUserList(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-

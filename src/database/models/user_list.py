@@ -16,7 +16,6 @@ class UserSearchHistory(Base):
     date = Column(TIMESTAMP, primary_key=True)
 
     alcohol = relationship("Alcohol")
-    user = relationship("User")
 
 
 class UserWishlist(Base):
@@ -26,7 +25,6 @@ class UserWishlist(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
 
     alcohol = relationship("Alcohol")
-    user = relationship("User")
 
 
 class UserFavouriteAlcohol(Base):
@@ -36,7 +34,6 @@ class UserFavouriteAlcohol(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
 
     alcohol = relationship("Alcohol")
-    user = relationship("User")
 
 
 class UserListHandler:
@@ -47,7 +44,7 @@ class UserListHandler:
             limit: int,
             offset: int
     ) -> list[UserSearchHistory] | None:
-        query = select(UserSearchHistory).filter(UserSearchHistory.user_id == user.user_id).offset(offset).\
+        query = select(UserSearchHistory).filter(UserSearchHistory.user_id == user.user_id).offset(offset). \
             limit(limit).options(
             selectinload(UserSearchHistory.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
@@ -91,7 +88,7 @@ class UserListHandler:
             limit: int,
             offset: int,
     ) -> list[UserWishlist] | None:
-        query = select(UserWishlist).filter(UserWishlist.user_id == user.user_id).offset(offset).\
+        query = select(UserWishlist).filter(UserWishlist.user_id == user.user_id).offset(offset). \
             limit(limit).options(
             selectinload(UserWishlist.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
@@ -104,7 +101,7 @@ class UserListHandler:
             limit: int,
             offset: int,
     ) -> list[UserFavouriteAlcohol] | None:
-        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user.user_id).offset(offset).\
+        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user.user_id).offset(offset). \
             limit(limit).options(
             selectinload(UserFavouriteAlcohol.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
@@ -117,7 +114,7 @@ class UserListHandler:
             limit: int,
             offset: int,
     ) -> list[UserWishlist] | None:
-        query = select(UserWishlist).filter(UserWishlist.user_id == user_id).offset(offset).\
+        query = select(UserWishlist).filter(UserWishlist.user_id == user_id).offset(offset). \
             limit(limit).options(
             selectinload(UserWishlist.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
@@ -130,7 +127,7 @@ class UserListHandler:
             limit: int,
             offset: int,
     ) -> list[UserFavouriteAlcohol] | None:
-        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user_id).offset(offset).\
+        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user_id).offset(offset). \
             limit(limit).options(
             selectinload(UserFavouriteAlcohol.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
@@ -148,7 +145,7 @@ class UserListHandler:
         await db.execute(query)
 
     @staticmethod
-    async def get_alcohol_by_id(db: AsyncSession, alcohol_id: int, user_id,  model) -> Alcohol | None:
+    async def get_alcohol_by_id(db: AsyncSession, alcohol_id: int, user_id, model) -> Alcohol | None:
         query = select(model).filter((model.alcohol_id == alcohol_id) & (model.user_id == user_id)).limit(1)
         result = await db.execute(query)
         return result.scalars().first()
@@ -169,13 +166,9 @@ class UserListHandler:
     @staticmethod
     async def create_list_entry(db: AsyncSession, user_id: int, alcohol_id: int, model) -> None:
         db_list = model(user_id=user_id, alcohol_id=alcohol_id)
-
         db.add(db_list)
 
     @staticmethod
     async def create_search_history_entry(db: AsyncSession, user_id: int, alcohol_id: int) -> None:
         db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.datetime.now())
-
         db.add(db_list)
-
-

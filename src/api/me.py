@@ -11,7 +11,6 @@ from src.utils.auth_utils import get_current_user, get_current_user_username
 from src.domain.user_list import PaginatedUserList, PaginatedUserSearchHistory
 from src.database.models.user_list import UserListHandler, UserFavouriteAlcohol, UserWishlist
 
-
 router = APIRouter(prefix='/me', tags=['me'])
 
 
@@ -131,7 +130,7 @@ async def get_user_favourite_alcohols(
     Read your favourite alcohols with pagination
     """
     alcohols = await UserListHandler.get_user_favourites_list(user=user, db=db, limit=limit,
-                                                   offset=offset)
+                                                              offset=offset)
     return PaginatedUserList(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -209,7 +208,7 @@ async def delete_from_search_history(
 
 
 @router.delete(
-    path='/search_history/all',
+    path='/search_history',
     summary='Delete your whole search history',
     status_code=status.HTTP_204_NO_CONTENT
 )
@@ -221,7 +220,7 @@ async def delete_whole_search_history(
 
 
 @router.post(
-    path='/wishlist',
+    path='/wishlist/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
     response_class=Response,
     summary='Update your list'
@@ -235,13 +234,13 @@ async def create_wishlist_entry(
     Update wishlist. Required query param:
     - **alcohol_id**: int
     """
-    if await UserListHandler.check_if_alcohol_in_list(UserWishlist,db, alcohol_id, current_user.user_id):
+    if await UserListHandler.check_if_alcohol_in_list(UserWishlist, db, alcohol_id, current_user.user_id):
         raise_alcohol_already_exists()
     await UserListHandler.create_list_entry(db, current_user.user_id, alcohol_id, UserWishlist)
 
 
 @router.post(
-    path='/favourites',
+    path='/favourites/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
     response_class=Response,
     summary='Update your list'
@@ -255,13 +254,13 @@ async def create_favourites_entry(
     Update wishlist. Required query param:
     - **alcohol_id**: int
     """
-    if await UserListHandler.check_if_alcohol_in_list(UserFavouriteAlcohol,db, alcohol_id, current_user.user_id):
+    if await UserListHandler.check_if_alcohol_in_list(UserFavouriteAlcohol, db, alcohol_id, current_user.user_id):
         raise_alcohol_already_exists()
     await UserListHandler.create_list_entry(db, current_user.user_id, alcohol_id, UserFavouriteAlcohol)
 
 
 @router.post(
-    path='/search_history',
+    path='/search_history/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
     response_class=Response,
     summary='Add an entry to search history'

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, root_validator
 
 from src.domain.food import Food
@@ -111,5 +109,3 @@ class AlcoholBasicInfo(BaseModel):
 
     class Config:
         orm_mode = True
-
-
