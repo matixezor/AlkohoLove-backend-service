@@ -148,7 +148,7 @@ async def test_create_user_tag(
         "alcohol_ids": [1]
     }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.post('/me/user_tags', headers=headers, json=data)
+    response = await async_client.post('/me/tags', headers=headers, json=data)
     assert response.status_code == 201
 
 
@@ -162,7 +162,7 @@ async def test_create_user_tag_with_existing_name(
         "alcohol_ids": [2]
     }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.post('/me/user_tags', headers=headers, json=data)
+    response = await async_client.post('/me/tags', headers=headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag with given name already exists'
@@ -174,7 +174,7 @@ async def test_create_user_tag_without_required_data(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.post('/me/user_tags', headers=headers)
+    response = await async_client.post('/me/tags', headers=headers)
     assert response.status_code == 422
 
 
@@ -185,7 +185,7 @@ async def test_get_user_tags(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.get(
-        '/me/user_tags?limit=10&offset=0', headers=headers
+        '/me/tags?limit=10&offset=0', headers=headers
     )
     assert response.status_code == 200
     response = response.json()
@@ -206,7 +206,7 @@ async def test_get_user_tag_alcohols_with_not_existing_tag_id(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.get(
-        '/me/user_tags/alcohols/10?limit=10&offset=0', headers=headers
+        '/me/tags/10?limit=10&offset=0', headers=headers
     )
     assert response.status_code == 404
     response = response.json()
@@ -220,7 +220,7 @@ async def test_get_user_tag_alcohols(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.get(
-        '/me/user_tags/alcohols/1?limit=10&offset=0', headers=headers
+        '/me/tags/1?limit=10&offset=0', headers=headers
     )
     assert response.status_code == 200
     response = response.json()
@@ -245,7 +245,7 @@ async def test_add_alcohol_to_user_tag(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.post(
-        '/me/user_tags/alcohols/2?alcohol_id=1',
+        '/me/tags/2?alcohol_id=1',
         headers=headers
     )
     assert response.status_code == 201
@@ -258,7 +258,7 @@ async def test_add_alcohol_to_user_tag_with_existing_alcohol_in_user_tag(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.post(
-        '/me/user_tags/alcohols/2?alcohol_id=2',
+        '/me/tags/2?alcohol_id=2',
         headers=headers
     )
     assert response.status_code == 400
@@ -273,7 +273,7 @@ async def test_add_alcohol_to_user_tag_without_existing_user_tag(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.post(
-        '/me/user_tags/alcohols/13?alcohol_id=1',
+        '/me/tags/13?alcohol_id=1',
         headers=headers
     )
     assert response.status_code == 404
@@ -288,7 +288,7 @@ async def test_add_alcohol_to_user_tag_without_existing_alcohol(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.post(
-        '/me/user_tags/alcohols/1?alcohol_id=13',
+        '/me/tags/1?alcohol_id=13',
         headers=headers
     )
     assert response.status_code == 404
@@ -303,7 +303,7 @@ async def test_add_alcohol_to_user_tag_that_does_not_belong_to_user(
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.post(
-        '/me/user_tags/alcohols/3?alcohol_id=2',
+        '/me/tags/3?alcohol_id=2',
         headers=headers
     )
     assert response.status_code == 400
@@ -317,7 +317,7 @@ async def test_delete_user_tag(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/user_tags/1', headers=headers)
+    response = await async_client.delete('/me/tags/1', headers=headers)
     assert response.status_code == 204
 
 
@@ -327,7 +327,7 @@ async def test_delete_user_tag_that_does_not_belong_to_user(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/user_tags/3', headers=headers)
+    response = await async_client.delete('/me/tags/3', headers=headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag does not belong to user'
@@ -339,7 +339,7 @@ async def test_delete_alcohol_from_user_tag(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/user_tags/alcohol/2?alcohol_id=2', headers=headers)
+    response = await async_client.delete('/me/tags/alcohol/2?alcohol_id=2', headers=headers)
     assert response.status_code == 204
 
 
@@ -349,7 +349,7 @@ async def test_delete_alcohol_from_user_tag_that_does_not_belong_to_user(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/user_tags/alcohol/3?alcohol_id=2', headers=headers)
+    response = await async_client.delete('/me/tags/alcohol/3?alcohol_id=2', headers=headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag does not belong to user'
@@ -360,11 +360,8 @@ async def test_update_user_tag(
         async_client: AsyncClient,
         user_token: str
 ):
-    data = {
-        "tag_name": "test_name"
-    }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.put('/me/user_tags/2', headers=headers, json=data)
+    response = await async_client.put('/me/tags/2?tag_name=test_name', headers=headers)
     assert response.status_code == 200
     response = response.json()
     assert response['tag_id'] == 2
@@ -376,11 +373,8 @@ async def test_update_user_tag_without_existing_tag_id(
         async_client: AsyncClient,
         user_token: str
 ):
-    data = {
-        "tag_name": "test_name2"
-    }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.put('/me/user_tags/100', headers=headers, json=data)
+    response = await async_client.put('/me/tags/100?tag_name=test_name2', headers=headers)
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == 'User tag not found'
@@ -392,7 +386,7 @@ async def test_update_user_tag_without_required_data(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.put('/me/user_tags/2', headers=headers)
+    response = await async_client.put('/me/tags/2', headers=headers)
     assert response.status_code == 422
 
 
@@ -401,11 +395,8 @@ async def test_update_user_tag_with_existing_name(
         async_client: AsyncClient,
         user_token: str
 ):
-    data = {
-        "tag_name": "test_name",
-    }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.put('/me/user_tags/2', headers=headers, json=data)
+    response = await async_client.put('/me/tags/2?tag_name=test_name', headers=headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag with given name already exists'
@@ -416,11 +407,8 @@ async def test_update_user_tag_that_does_not_belong_to_user(
         async_client: AsyncClient,
         user_token: str
 ):
-    data = {
-        "tag_name": "test_name3",
-    }
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.put('/me/user_tags/3', headers=headers, json=data)
+    response = await async_client.put('/me/tags/3?tag_name=test_name3', headers=headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag does not belong to user'

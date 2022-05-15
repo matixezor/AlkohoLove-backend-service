@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Column, Integer, String, delete, select, ForeignKey, func, insert, update
 
 from src.domain.alcohol import AlcoholBase
+from src.domain.user_tag import UserTagCreate
 from src.database.database_metadata import Base
-from src.domain.user_tag import UserTagCreate, UserTagUpdate
 from src.database.models.alcohol import AlcoholDatabaseHandler, Alcohol
 
 
@@ -30,7 +30,7 @@ class UserTagDatabaseHandler:
     async def create_user_tag(db: AsyncSession, payload: UserTagCreate, user_id: int) -> None:
         fields_to_exclude = {'alcohol_ids'}
         db_user_tag = UserTag(
-            **payload.dict(exclude_none=True, exclude=fields_to_exclude),
+            **payload.dict(exclude=fields_to_exclude),
         )
         db_user_tag.user_id = user_id
         if payload.alcohol_ids:
@@ -70,7 +70,7 @@ class UserTagDatabaseHandler:
             return False
 
     @staticmethod
-    async def check_if_user_tag_belongs_to_user(db, tag_id: int, user_id: int):
+    async def check_if_user_tag_belongs_to_user(db, tag_id: int, user_id: int) -> bool:
         if await UserTagDatabaseHandler.get_user_tag_by_tag_id_and_user_id(db, tag_id, user_id):
             return True
         else:
@@ -84,7 +84,7 @@ class UserTagDatabaseHandler:
             return False
 
     @staticmethod
-    async def get_user_tag_by_tag_id_and_user_id(db, tag_id: int, user_id: int):
+    async def get_user_tag_by_tag_id_and_user_id(db, tag_id: int, user_id: int) -> UserTag | None:
         query = select(UserTag) \
             .filter((UserTag.tag_id == tag_id) & (UserTag.user_id == user_id)) \
             .limit(1)
@@ -162,9 +162,9 @@ class UserTagDatabaseHandler:
     async def update_user_tag(
             db: AsyncSession,
             tag_id: int,
-            payload: UserTagUpdate
+            tag_name: str
     ) -> UserTag:
-        query = update(UserTag).where(UserTag.tag_id == tag_id).values(payload.dict(exclude_none=True))
+        query = update(UserTag).where(UserTag.tag_id == tag_id).values(tag_name=tag_name)
         await db.execute(query)
         await db.commit()
         return await UserTagDatabaseHandler.get_user_tag_by_id(db, tag_id)

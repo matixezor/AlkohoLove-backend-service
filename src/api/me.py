@@ -112,7 +112,7 @@ async def delete_self(
 
 
 @router.post(
-    '/user_tags',
+    '/tags',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     summary='Create user tag'
@@ -128,7 +128,7 @@ async def create_user_tag(
 
 
 @router.get(
-    path='/user_tags',
+    path='/tags',
     response_model=PaginatedUserTag,
     status_code=status.HTTP_200_OK,
     summary='Read all your user tags',
@@ -157,7 +157,7 @@ async def get_user_tags(
 
 
 @router.get(
-    path='/user_tags/alcohols/{tag_id}',
+    path='/tags/{tag_id}',
     response_model=PaginatedUserTagAlcohols,
     status_code=status.HTTP_200_OK,
     summary='Read your user tag alcohols'
@@ -195,7 +195,7 @@ async def get_user_tag_alcohols(
 
 
 @router.post(
-    path='/user_tags/alcohols/{tag_id}',
+    path='/tags/{tag_id}',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol to your user tag'
@@ -225,7 +225,7 @@ async def add_alcohol_to_user_tag(
 
 
 @router.delete(
-    path='/user_tags/{tag_id}',
+    path='/tags/{tag_id}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete your user tag',
 )
@@ -244,7 +244,7 @@ async def delete_user_tag(
 
 
 @router.delete(
-    path='/user_tags/alcohol/{tag_id}',
+    path='/tags/alcohol/{tag_id}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete alcohol from your user tag'
 )
@@ -264,14 +264,14 @@ async def delete_alcohol_from_user_tag(
 
 
 @router.put(
-    path='/user_tags/{tag_id}',
+    path='/tags/{tag_id}',
     response_model=UserTag,
     status_code=status.HTTP_200_OK,
     summary='Update your user tag'
 )
 async def update_user_tag(
         tag_id: int,
-        payload: UserTagUpdate,
+        tag_name: str,
         current_user: UserInDb = Depends(get_current_user),
         db: AsyncSession = Depends(get_db)
 ) -> UserTag:
@@ -284,7 +284,7 @@ async def update_user_tag(
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(db, tag_id, current_user.user_id):
         raise_item_does_not_belong_to_user()
 
-    if await UserTagDatabaseHandler.check_if_user_tag_exists(db, payload.tag_name, current_user.user_id):
+    if await UserTagDatabaseHandler.check_if_user_tag_exists(db, tag_name, current_user.user_id):
         raise_user_tag_already_exists()
 
-    return await UserTagDatabaseHandler.update_user_tag(db, tag_id, payload)
+    return await UserTagDatabaseHandler.update_user_tag(db, tag_id, tag_name)
