@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from src.domain.page_info import PageInfo
-from src.domain.alcohol import AlcoholBasicInfo
+from src.domain.alcohol import AlcoholBasicInfo, Alcohol
 
 
 class UserTag(BaseModel):
@@ -14,12 +14,10 @@ class UserTag(BaseModel):
 
 class UserTagCreate(BaseModel):
     tag_name: str
-    user_id: int
     alcohol_ids: list[int] = []
 
 
 class UserTagUpdate(BaseModel):
-    user_id: int
     tag_name: str
 
 

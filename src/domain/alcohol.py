@@ -106,6 +106,7 @@ class AlcoholBasicInfo(BaseModel):
     name: str
     kind: str
     type: str
+    image_name: str | None = None
 
     class Config:
         orm_mode = True

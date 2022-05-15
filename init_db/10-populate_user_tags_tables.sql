@@ -1,6 +1,6 @@
 INSERT INTO user_tag
-VALUES  (DEFAULT, 'Wakacje 2022', 1),
-        (DEFAULT, 'Wakacje Grecja', 1),
+VALUES  (DEFAULT, 'Wakacje 2022', 2),
+        (DEFAULT, 'Wakacje Grecja', 2),
         (DEFAULT, 'Alkohole do grilla', 3),
         (DEFAULT, 'Grill u Huberta', 3);
 

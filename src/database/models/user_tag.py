@@ -2,9 +2,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Column, Integer, String, delete, select, ForeignKey, func, insert, update
 
-from src.domain.user_tag import UserTagCreate, UserTagUpdate
 from src.database.database_metadata import Base
 from src.domain.alcohol import AlcoholBasicInfo
+from src.domain.user_tag import UserTagCreate, UserTagUpdate
 from src.database.models.alcohol import AlcoholDatabaseHandler, Alcohol
 
 
@@ -27,12 +27,12 @@ class AlcoholUserTag(Base):
 class UserTagDatabaseHandler:
 
     @staticmethod
-    async def create_user_tag(db: AsyncSession, payload: UserTagCreate) -> None:
+    async def create_user_tag(db: AsyncSession, payload: UserTagCreate, user_id: int) -> None:
         fields_to_exclude = {'alcohol_ids'}
         db_user_tag = UserTag(
             **payload.dict(exclude_none=True, exclude=fields_to_exclude),
         )
-
+        db_user_tag.user_id = user_id
         if payload.alcohol_ids:
             db_alcohols = await AlcoholDatabaseHandler.get_alcohols_without_pagination(db, payload.alcohol_ids)
             db_user_tag.alcohols = db_alcohols
@@ -70,11 +70,26 @@ class UserTagDatabaseHandler:
             return False
 
     @staticmethod
+    async def check_if_user_tag_belongs_to_user(db, tag_id: int, user_id: int):
+        if await UserTagDatabaseHandler.get_user_tag_by_tag_id_and_user_id(db, tag_id, user_id):
+            return True
+        else:
+            return False
+
+    @staticmethod
     async def check_if_alcohol_exists_in_user_tag(db: AsyncSession, tag_id: int, alcohol_id) -> bool:
         if await UserTagDatabaseHandler.get_user_tag_alcohol(db, tag_id, alcohol_id):
             return True
         else:
             return False
+
+    @staticmethod
+    async def get_user_tag_by_tag_id_and_user_id(db, tag_id: int, user_id: int):
+        query = select(UserTag) \
+            .filter((UserTag.tag_id == tag_id) & (UserTag.user_id == user_id)) \
+            .limit(1)
+        result = await db.execute(query)
+        return result.scalars().first()
 
     @staticmethod
     async def get_user_tag_by_name_and_user_id(db: AsyncSession, tag_name: str, user_id: int) -> UserTag | None:
