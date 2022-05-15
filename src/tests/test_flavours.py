@@ -94,12 +94,12 @@ async def test_get_flavours(
 
 
 @mark.asyncio
-async def test_get_flavours_by_flavour_name(
+async def test_get_flavours_by_name(
         async_client: AsyncClient,
         admin_token: str
 ):
     response = await async_client.get(
-        '/flavours?flavour_name=kole', headers={'Authorization': f'Bearer {admin_token}'}
+        '/flavours?name=kole', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -128,7 +128,7 @@ async def test_create_flavour(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.post(
-        '/flavours?flavour_name=test_flavour', headers=headers
+        '/flavours?name=test_flavour', headers=headers
     )
     assert response.status_code == 201
 
@@ -150,7 +150,7 @@ async def test_create_flavour_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.post(
-        f'/flavours?flavour_name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
+        f'/flavours?name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -164,7 +164,7 @@ async def test_update_flavour_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.put(
-        f'/flavours/1?flavour_name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
+        f'/flavours/1?name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -188,7 +188,7 @@ async def test_update_flavour(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.put(
-        '/flavours/2?flavour_name=nuty korzenne', headers=headers
+        '/flavours/2?name=nuty korzenne', headers=headers
     )
     assert response.status_code == 200
     response = response.json()

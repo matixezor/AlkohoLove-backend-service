@@ -40,12 +40,12 @@ class PaginatedRegion(BaseModel):
 
 
 class RegionCreate(BaseModel):
-    region_name: str
+    name: str
     country_id: int
 
 
 class RegionUpdate(RegionCreate):
-    region_name: str | None = None
+    name: str | None = None
     country_id: int | None = None
 
     @root_validator(pre=True)

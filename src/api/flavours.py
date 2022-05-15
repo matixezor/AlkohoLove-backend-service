@@ -31,7 +31,7 @@ def raise_flavour_already_exists():
 async def get_flavours(
         limit: int = 10,
         offset: int = 0,
-        flavour_name: str = "",
+        name: str = "",
         db: AsyncSession = Depends(get_db)
 ) -> PaginatedFlavour:
     """
@@ -39,10 +39,10 @@ async def get_flavours(
     Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
-    - **flavour_name**: str - default ''
+    - **name**: str - default ''
     """
-    flavours = await DatabaseHandler.get_paginated_flavours(db, flavour_name, limit, offset)
-    total = await DatabaseHandler.count_flavours(db, flavour_name)
+    flavours = await DatabaseHandler.get_paginated_flavours(db, name, limit, offset)
+    total = await DatabaseHandler.count_flavours(db, name)
     return PaginatedFlavour(
         flavours=flavours,
         page_info=PageInfo(
@@ -82,16 +82,16 @@ async def get_flavour(
     status_code=status.HTTP_201_CREATED
 )
 async def create_flavour(
-        flavour_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> None:
     """
     Create flavour with query param:
-    - **flavour_name**: required
+    - **name**: required
     """
-    if await DatabaseHandler.check_if_flavour_exists(db, flavour_name):
+    if await DatabaseHandler.check_if_flavour_exists(db, name):
         raise_flavour_already_exists()
-    await DatabaseHandler.create_flavour(db, flavour_name)
+    await DatabaseHandler.create_flavour(db, name)
 
 
 @router.put(
@@ -102,16 +102,16 @@ async def create_flavour(
 )
 async def update_flavour(
         flavour_id: int,
-        flavour_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> Flavour:
     """
     Update flavour by id. Required query param:
-    - **flavour_name**: str
+    - **name**: str
     """
-    if await DatabaseHandler.check_if_flavour_exists(db, flavour_name, flavour_id):
+    if await DatabaseHandler.check_if_flavour_exists(db, name, flavour_id):
         raise_flavour_already_exists()
-    return await DatabaseHandler.update_flavour(db, flavour_id, flavour_name)
+    return await DatabaseHandler.update_flavour(db, flavour_id, name)
 
 
 @router.delete(
