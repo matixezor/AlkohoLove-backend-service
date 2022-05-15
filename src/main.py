@@ -2,7 +2,7 @@ from uvicorn import run
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_jwt_auth.exceptions import AuthJWTException
+from async_fastapi_jwt_auth.exceptions import AuthJWTException
 
 from src.api.auth import router as auth_router
 from src.api.foods import router as food_router
@@ -43,9 +43,9 @@ app.include_router(media_router)
 def auth_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.message}
+        content={'detail': exc.message}
     )
 
 
-if __name__ == "__main__":
-    run("main:app", host="127.0.0.1", port=8080, reload=True)
+if __name__ == '__main__':
+    run('main:app', host='127.0.0.1', port=8080, reload=True)
