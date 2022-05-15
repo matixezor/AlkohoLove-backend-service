@@ -134,7 +134,7 @@ async def get_user_tags(
 
 
 @router.get(
-    path='/tags/alcohols/{tag_id}',
+    path='/tags/{tag_id}/alcohols',
     response_model=PaginatedUserTagAlcohols,
     status_code=status.HTTP_200_OK,
     summary='Read user tag alcohols'

@@ -339,7 +339,7 @@ async def test_delete_alcohol_from_user_tag(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/tags/alcohol/2?alcohol_id=2', headers=headers)
+    response = await async_client.delete('/me/tags/2/alcohol?alcohol_id=2', headers=headers)
     assert response.status_code == 204
 
 
@@ -349,7 +349,7 @@ async def test_delete_alcohol_from_user_tag_that_does_not_belong_to_user(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/me/tags/alcohol/3?alcohol_id=2', headers=headers)
+    response = await async_client.delete('/me/tags/3/alcohol?alcohol_id=2', headers=headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User tag does not belong to user'

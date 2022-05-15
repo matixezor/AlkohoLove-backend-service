@@ -106,7 +106,7 @@ async def test_get_user_tag_alcohols(
         async_client: AsyncClient,
 ):
     response = await async_client.get(
-        '/users/tags/alcohols/3?limit=10&offset=0'
+        '/users/tags/3/alcohols?limit=10&offset=0'
     )
     assert response.status_code == 200
     response = response.json()
@@ -127,7 +127,7 @@ async def test_get_user_tag_alcohols(
 @mark.asyncio
 async def test_get_user_tag_alcohols_without_existing_tag_id(async_client: AsyncClient):
     response = await async_client.get(
-        '/users/tags/alcohols/10?limit=10&offset=0'
+        '/users/tags/10/alcohols?limit=10&offset=0'
     )
     assert response.status_code == 404
     response = response.json()

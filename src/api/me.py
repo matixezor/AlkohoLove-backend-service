@@ -244,7 +244,7 @@ async def delete_user_tag(
 
 
 @router.delete(
-    path='/tags/alcohol/{tag_id}',
+    path='/tags/{tag_id}/alcohol',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete alcohol from your user tag'
 )
