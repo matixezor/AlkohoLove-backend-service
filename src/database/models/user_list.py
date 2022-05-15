@@ -1,12 +1,11 @@
 import datetime
-
-from sqlalchemy import select, Column, Integer, ForeignKey, delete, TIMESTAMP
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, Column, Integer, ForeignKey, delete, TIMESTAMP
+from sqlalchemy.orm import selectinload, relationship
 
-from src.database.database_metadata import Base
-from src.database.models import Alcohol, User
 from src.domain.user import UserAdminInfo
-from src.domain.user_list import AlcoholSearchHistoryInfo
+from src.database.models import Alcohol, User
+from src.database.database_metadata import Base
 
 
 class UserSearchHistory(Base):
@@ -16,12 +15,18 @@ class UserSearchHistory(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
     date = Column(TIMESTAMP, primary_key=True)
 
+    alcohol = relationship("Alcohol")
+    user = relationship("User")
+
 
 class UserWishlist(Base):
     __tablename__ = 'user_wishlist'
 
     alcohol_id = Column(Integer, ForeignKey('alcohol.alcohol_id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+
+    # order = relationship("Alcohol", backref=backref("user_wishlist", cascade="all, delete-orphan"))
+    # product = relationship("User", backref=backref("user_wishlist", cascade="all, delete-orphan"))
 
 
 class UserFavouriteAlcohol(Base):
@@ -38,9 +43,11 @@ class UserListHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> list[AlcoholSearchHistoryInfo] | None:
-        query = select(Alcohol).join(UserSearchHistory).join(User).filter(User.user_id == user.user_id).offset(
-            offset).limit(limit)
+    ) -> list[UserSearchHistory] | None:
+        query = select(UserSearchHistory).filter(UserSearchHistory.user_id == user.user_id).offset(
+            offset).limit(limit).options(
+            selectinload(UserSearchHistory.alcohol).selectinload(Alcohol.barcodes)
+            )
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -50,7 +57,7 @@ class UserListHandler:
             db: AsyncSession,
             limit: int,
             offset: int
-    ) -> AlcoholSearchHistoryInfo | None:
+    ) -> list[UserSearchHistory] | None:
         query = select(Alcohol).join(UserSearchHistory).join(User).filter(User.user_id == user_id).offset(offset).limit(
             limit)
         result = await db.execute(query)
@@ -142,4 +149,5 @@ class UserListHandler:
         db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.datetime.now())
 
         db.add(db_list)
+
 

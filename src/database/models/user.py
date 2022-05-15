@@ -23,10 +23,14 @@ class User(Base):
     is_banned = Column(Boolean, default=False)
     password_salt = Column(String, nullable=False)
 
-    alcohol_wishlist = relationship('Alcohol', secondary='user_wishlist', back_populates='user_wishlist', uselist=False)
-    alcohol_favourite_alcohol = relationship('Alcohol', secondary='user_favourite_alcohol', back_populates='user_favourite_alcohol', uselist=False)
-    alcohol_search_history = relationship('Alcohol', secondary='user_search_history', back_populates='user_search_history', uselist=False)
+    # alcohol_wishlist = relationship('Alcohol', secondary='user_wishlist', back_populates='user_wishlist', uselist=False)
+    # alcohol_favourite_alcohol = relationship('Alcohol', secondary='user_favourite_alcohol', back_populates='user_favourite_alcohol', uselist=False)
+    # alcohol_search_history = relationship('Alcohol', secondary='user_search_history', back_populates='user_search_history', uselist=False)
+    # user_wishlist_alcohol = relationship("UserWishlist", secondary="user_wishlist", viewonly=True)
+    date = relationship("UserSearchHistory", viewonly=True)
 
+    # user_favourite_alcohol = relationship('UserFavouriteAlcohol')
+    # user_search_history = relationship('UserSearchHistory')
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 

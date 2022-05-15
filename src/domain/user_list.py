@@ -1,55 +1,36 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-
 from src.domain.page_info import PageInfo
-from src.domain.alcohol import AlcoholBasicInfo
+from src.domain.alcohol import AlcoholBase
 
 
-class UserList(BaseModel):
-    user_id: int
-    alcohol_ids: list[int] = []
-
-    class Config:
-        orm_mode = True
+class Date(BaseModel):
+    date: datetime
 
 
-class PaginatedUserList(BaseModel):
-    alcohols: list[AlcoholBasicInfo]
-    page_info: PageInfo
-
-    class Config:
-        orm_mode = True
-
-
-class UserSearchHistoryInfo(BaseModel):
-    user_id: int
-    alcohol_ids: list[int] = []
-    date: datetime | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class AlcoholSearchHistoryInfo(BaseModel):
-    alcohol_id: int
-    name: str
-    kind: str
-    type: str
-    # date: datetime | None
+class UserSearchHistory(BaseModel):
+    date: datetime
+    alcohol: AlcoholBase
 
     class Config:
         orm_mode = True
 
 
 class PaginatedUserSearchHistory(BaseModel):
-    alcohols: list[AlcoholSearchHistoryInfo]
+    alcohols: list[UserSearchHistory]
     page_info: PageInfo
 
     class Config:
         orm_mode = True
 
 
-class UserListCreate(BaseModel):
-    user_id: int
-    alcohol_ids: list[int] = []
+class PaginatedUserList(BaseModel):
+    alcohols: list[AlcoholBase]
+    page_info: PageInfo
+
+    class Config:
+        orm_mode = True
+
+
+

@@ -43,11 +43,11 @@ class Alcohol(Base):
     finishes = relationship('Flavour', secondary='alcohol_finish')
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
 
-    user_wishlist = relationship('User', secondary='user_wishlist', back_populates='alcohol_wishlist', uselist=False)
-    user_favourite_alcohol = relationship('User', secondary='user_favourite_alcohol', back_populates='alcohol_favourite_alcohol', uselist=False)
-    user_search_history = relationship('User', secondary='user_search_history', back_populates='alcohol_search_history', uselist=False)
+    # user_wishlist_user = relationship("UserWishlist", secondary="user_wishlist", viewonly=True)
+    # user_search_history = relationship("UserSearchHistory")
 
-
+    # user_favourite_alcohol = relationship('UserFavouriteAlcohol')
+    # user_search_history = relationship('UserSearchHistory')
 
 
 class AlcoholDatabaseHandler:
@@ -63,7 +63,7 @@ class AlcoholDatabaseHandler:
                 selectinload(Alcohol.tastes),
                 selectinload(Alcohol.finishes),
                 selectinload(Alcohol.region),
-                selectinload(Alcohol.ingredients)
+                selectinload(Alcohol.ingredients),
             )
         )
 
