@@ -94,12 +94,12 @@ async def test_get_foods(
 
 
 @mark.asyncio
-async def test_get_foods_by_food_name(
+async def test_get_foods_by_name(
         async_client: AsyncClient,
         admin_token: str
 ):
     response = await async_client.get(
-        '/foods?food_name=bia', headers={'Authorization': f'Bearer {admin_token}'}
+        '/foods?name=bia', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -127,7 +127,7 @@ async def test_create_food(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.post('/foods?food_name=test_food', headers=headers)
+    response = await async_client.post('/foods?name=test_food', headers=headers)
     assert response.status_code == 201
 
 
@@ -148,7 +148,7 @@ async def test_create_food_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.post(
-        f'/foods?food_name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
+        f'/foods?name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -162,7 +162,7 @@ async def test_update_food_with_existing_name(
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
     response = await async_client.put(
-        f'/foods/1?food_name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
+        f'/foods/1?name={TAKEN_FOOD_NAME_FIXTURE}', headers=headers
     )
     assert response.status_code == 400
     response = response.json()
@@ -185,7 +185,7 @@ async def test_update_food(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.put('/foods/2?food_name=przekąski', headers=headers)
+    response = await async_client.put('/foods/2?name=przekąski', headers=headers)
     assert response.status_code == 200
     response = response.json()
     assert response['id'] == 2

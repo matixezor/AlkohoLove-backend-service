@@ -9,3 +9,5 @@ CREATE TABLE Users (
   	is_banned BOOLEAN,
   	password_salt VARCHAR ( 50 ) NOT NULL
 );
+
+CREATE INDEX ON Users (username);

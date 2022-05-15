@@ -19,6 +19,28 @@ async def test_login_with_valid_credentials(async_client: AsyncClient):
 
 
 @mark.asyncio
+async def test_logout(async_client: AsyncClient):
+    # login
+    data = {
+        'username': TEST_USERNAME_FIXTURE,
+        'password': 'JanJan123'
+    }
+    response = await async_client.post('/auth/token', data=data)
+    assert response.status_code == 200
+    response = response.json()
+
+    # logout
+    access_token = response['access_token']
+    refresh_token = response['refresh_token']
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Authorization-refresh': refresh_token
+    }
+    response = await async_client.post('/auth/logout', headers=headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
 async def test_login_with_invalid_credentials(async_client: AsyncClient):
     data = {
         'username': TEST_USERNAME_FIXTURE,

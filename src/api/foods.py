@@ -27,7 +27,7 @@ def raise_food_already_exists():
 async def get_foods(
         limit: int = 10,
         offset: int = 0,
-        food_name: str = "",
+        name: str = "",
         db: AsyncSession = Depends(get_db)
 ) -> PaginatedFood:
     """
@@ -35,10 +35,10 @@ async def get_foods(
     Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
-    - **food_name**: str - default ''
+    - **name**: str - default ''
     """
-    foods = await DatabaseHandler.get_paginated_foods(db, food_name, limit, offset)
-    total = await DatabaseHandler.count_foods(db, food_name)
+    foods = await DatabaseHandler.get_paginated_foods(db, name, limit, offset)
+    total = await DatabaseHandler.count_foods(db, name)
     return PaginatedFood(
         foods=foods,
         page_info=PageInfo(
@@ -78,16 +78,16 @@ async def get_food(
     status_code=status.HTTP_201_CREATED
 )
 async def create_food(
-        food_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> None:
     """
     Create food with query param:
-    - **food_name**: required
+    - **name**: required
     """
-    if await DatabaseHandler.check_if_food_exists(db, food_name):
+    if await DatabaseHandler.check_if_food_exists(db, name):
         raise_food_already_exists()
-    await DatabaseHandler.create_food(db, food_name)
+    await DatabaseHandler.create_food(db, name)
 
 
 @router.put(
@@ -98,16 +98,16 @@ async def create_food(
 )
 async def update_food(
         food_id: int,
-        food_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> Food:
     """
     Update food by id. Required query param:
-    - **food_name**: str
+    - **name**: str
     """
-    if await DatabaseHandler.check_if_food_exists(db, food_name, food_id):
+    if await DatabaseHandler.check_if_food_exists(db, name, food_id):
         raise_food_already_exists()
-    return await DatabaseHandler.update_food(db, food_id, food_name)
+    return await DatabaseHandler.update_food(db, food_id, name)
 
 
 @router.delete(

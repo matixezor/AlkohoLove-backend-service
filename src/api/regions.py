@@ -27,7 +27,7 @@ def raise_region_already_exists():
 async def get_regions(
         limit: int = 10,
         offset: int = 0,
-        region_name: str = "",
+        name: str = "",
         db: AsyncSession = Depends(get_db)
 ) -> PaginatedRegion:
     """
@@ -35,10 +35,10 @@ async def get_regions(
     Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
-    - **region_name**: str - default ''
+    - **name**: str - default ''
     """
-    regions = await DatabaseHandler.get_paginated_regions(db, region_name, limit, offset)
-    total = await DatabaseHandler.count_regions(db, region_name)
+    regions = await DatabaseHandler.get_paginated_regions(db, name, limit, offset)
+    total = await DatabaseHandler.count_regions(db, name)
     return PaginatedRegion(
         regions=regions,
         page_info=PageInfo(
@@ -83,10 +83,10 @@ async def create_region(
 ) -> None:
     """
     Create region with body:
-    - **region_name**: required str
+    - **name**: required str
     - **country_id**:  required int
     """
-    if await DatabaseHandler.check_if_region_exists(db, region_create_payload.region_name):
+    if await DatabaseHandler.check_if_region_exists(db, region_create_payload.name):
         raise_region_already_exists()
     await DatabaseHandler.create_region(db, region_create_payload)
 
@@ -104,11 +104,11 @@ async def update_region(
 ) -> Region:
     """
     Update region by id. Required body:
-    - **region_name**: str
+    - **name**: str
     - **country_id**:  int
     """
     if await DatabaseHandler\
-            .check_if_region_exists(db, region_update_payload.region_name, region_id):
+            .check_if_region_exists(db, region_update_payload.name, region_id):
         raise_region_already_exists()
     return await DatabaseHandler.update_region(db, region_id, region_update_payload)
 
