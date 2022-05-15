@@ -229,6 +229,9 @@ async def test_get_user_tag_alcohols(
     assert response['alcohols'][0]['name'] == 'Żywiec białe'
     assert response['alcohols'][0]['kind'] == 'piwo'
     assert response['alcohols'][0]['type'] == 'witbier'
+    assert response['alcohols'][0]['alcohol_by_volume'] == 4.9
+    assert response['alcohols'][0]['manufacturer'] == 'Żywiec'
+    assert response['alcohols'][0]['rating'] == 5
     assert response['alcohols'][0]['image_name'] == 'zywiec_biale'
     assert response['page_info']['offset'] == 0
     assert response['page_info']['limit'] == 10

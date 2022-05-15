@@ -2,8 +2,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Column, Integer, String, delete, select, ForeignKey, func, insert, update
 
+from src.domain.alcohol import AlcoholBase
 from src.database.database_metadata import Base
-from src.domain.alcohol import AlcoholBasicInfo
 from src.domain.user_tag import UserTagCreate, UserTagUpdate
 from src.database.models.alcohol import AlcoholDatabaseHandler, Alcohol
 
@@ -136,7 +136,7 @@ class UserTagDatabaseHandler:
             limit: int,
             offset: int,
             tag_id: int
-    ) -> list[AlcoholBasicInfo]:
+    ) -> list[AlcoholBase]:
         query = select(Alcohol).join(AlcoholUserTag). \
             filter(AlcoholUserTag.tag_id == tag_id). \
             offset(offset). \

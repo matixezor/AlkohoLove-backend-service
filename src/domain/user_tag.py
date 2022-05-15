@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from src.domain.page_info import PageInfo
-from src.domain.alcohol import AlcoholBasicInfo, Alcohol
+from src.domain.alcohol import AlcoholBase
 
 
 class UserTag(BaseModel):
@@ -27,5 +27,5 @@ class PaginatedUserTag(BaseModel):
 
 
 class PaginatedUserTagAlcohols(BaseModel):
-    alcohols: list[AlcoholBasicInfo]
+    alcohols: list[AlcoholBase]
     page_info: PageInfo

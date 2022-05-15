@@ -12,7 +12,6 @@ from src.domain.country_and_region import Region
 
 class AlcoholBase(BaseModel):
     alcohol_id: int
-    barcodes: list[Barcode]
     name: str
     kind: str
     type: str
@@ -26,6 +25,7 @@ class AlcoholBase(BaseModel):
 
 
 class Alcohol(AlcoholBase):
+    barcodes: list[Barcode]
     description: str
     color: str | None
     serving_temperature: str | None
@@ -99,14 +99,3 @@ class AlcoholUpdate(AlcoholCreate):
         if not any(values.values()):
             raise ValueError('At least one value needs to be provided')
         return values
-
-
-class AlcoholBasicInfo(BaseModel):
-    alcohol_id: int
-    name: str
-    kind: str
-    type: str
-    image_name: str | None = None
-
-    class Config:
-        orm_mode = True
