@@ -42,6 +42,7 @@ class Alcohol(Base):
     tastes = relationship('Flavour', secondary='alcohol_taste')
     finishes = relationship('Flavour', secondary='alcohol_finish')
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
+    user_tags = relationship('UserTag', secondary='alcohol_user_tag', back_populates='alcohols')
 
 
 class AlcoholDatabaseHandler:
@@ -209,5 +210,18 @@ class AlcoholDatabaseHandler:
         db_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_name(db, alcohol_name)
         if db_alcohol:
             return True if db_alcohol.alcohol_id != alcohol_id else False
+        else:
+            return False
+
+    @staticmethod
+    async def get_alcohols_without_pagination(db: AsyncSession, alcohol_ids: list[int]) -> list[Alcohol]:
+        query = select(Alcohol).where(Alcohol.alcohol_id.in_(alcohol_ids))
+        db_alcohols = await db.execute(query)
+        return db_alcohols.scalars().all()
+
+    @staticmethod
+    async def check_if_alcohol_exists_by_id(db: AsyncSession, alcohol_id: int) -> bool:
+        if await AlcoholDatabaseHandler.get_alcohol_by_id(db, alcohol_id):
+            return True
         else:
             return False

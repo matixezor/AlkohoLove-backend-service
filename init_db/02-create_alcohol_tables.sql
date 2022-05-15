@@ -23,6 +23,8 @@ CREATE TABLE alcohol
     image_name          VARCHAR(50)
 );
 
+CREATE INDEX ON alcohol (name);
+
 CREATE TABLE barcode
 (
     barcode    VARCHAR(13) PRIMARY KEY,

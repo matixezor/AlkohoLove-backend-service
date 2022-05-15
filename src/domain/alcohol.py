@@ -12,7 +12,6 @@ from src.domain.country_and_region import Region
 
 class AlcoholBase(BaseModel):
     alcohol_id: int
-    barcodes: list[Barcode]
     name: str
     kind: str
     type: str
@@ -26,6 +25,7 @@ class AlcoholBase(BaseModel):
 
 
 class Alcohol(AlcoholBase):
+    barcodes: list[Barcode]
     description: str
     color: str | None
     serving_temperature: str | None
