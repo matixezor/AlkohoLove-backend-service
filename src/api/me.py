@@ -3,8 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.page_info import PageInfo
-from src.domain.user import User, UserUpdate
-from src.domain.page_info import PageInfo
 from src.database.database_config import get_db
 from src.database.models.user import User as UserInDb
 from src.domain.user import User, UserUpdate, UserAdminInfo
