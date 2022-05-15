@@ -29,7 +29,7 @@ def raise_alcohol_already_exists():
 async def get_alcohols(
         limit: int = 10,
         offset: int = 0,
-        alcohol_name: str = "",
+        name: str = "",
         db: AsyncSession = Depends(get_db)
 ) -> PaginatedAlcoholInfo:
     """
@@ -38,8 +38,8 @@ async def get_alcohols(
     - **offset**: int - default 0
     - **flavour_name**: str - default ''
     """
-    alcohols = await DatabaseHandler.get_alcohols(db, limit, offset, alcohol_name)
-    total = await DatabaseHandler.count_alcohols(db, alcohol_name)
+    alcohols = await DatabaseHandler.get_alcohols(db, limit, offset, name)
+    total = await DatabaseHandler.count_alcohols(db, name)
     return PaginatedAlcoholInfo(
         alcohols=alcohols,
         page_info=PageInfo(

@@ -31,7 +31,7 @@ def raise_country_already_exists():
 async def get_countries(
         limit: int = 10,
         offset: int = 0,
-        country_name: str = "",
+        name: str = "",
         db: AsyncSession = Depends(get_db)
 ) -> PaginatedCountry:
     """
@@ -39,10 +39,10 @@ async def get_countries(
     Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
-    - **country_name**: str - default ''
+    - **name**: str - default ''
     """
-    countries = await DatabaseHandler.get_paginated_countries(db, country_name, limit, offset)
-    total = await DatabaseHandler.count_countries(db, country_name)
+    countries = await DatabaseHandler.get_paginated_countries(db, name, limit, offset)
+    total = await DatabaseHandler.count_countries(db, name)
     return PaginatedCountry(
         countries=countries,
         page_info=PageInfo(
@@ -82,16 +82,16 @@ async def get_country(
     status_code=status.HTTP_201_CREATED
 )
 async def create_country(
-        country_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> None:
     """
     Create country with query param:
-    - **country_name**: required
+    - **name**: required
     """
-    if await DatabaseHandler.check_if_country_exists(db, country_name):
+    if await DatabaseHandler.check_if_country_exists(db, name):
         raise_country_already_exists()
-    await DatabaseHandler.create_country(db, country_name)
+    await DatabaseHandler.create_country(db, name)
 
 
 @router.put(
@@ -102,16 +102,16 @@ async def create_country(
 )
 async def update_country(
         country_id: int,
-        country_name: str,
+        name: str,
         db: AsyncSession = Depends(get_db)
 ) -> Country:
     """
     Update country by id with query param:
-    - **country_name**: required
+    - **name**: required
     """
-    if await DatabaseHandler.check_if_country_exists(db, country_name, country_id):
+    if await DatabaseHandler.check_if_country_exists(db, name, country_id):
         raise_country_already_exists()
-    return await DatabaseHandler.update_country(db, country_id, country_name)
+    return await DatabaseHandler.update_country(db, country_id, name)
 
 
 @router.delete(

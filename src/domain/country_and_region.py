@@ -40,12 +40,12 @@ class PaginatedRegion(BaseModel):
 
 
 class RegionCreate(BaseModel):
-    region_name: str
+    name: str
     country_id: int
 
 
 class RegionUpdate(RegionCreate):
-    region_name: str | None = None
+    name: str | None = Field(default=None, alias='region_name')
     country_id: int | None = None
 
     @root_validator(pre=True)
@@ -53,3 +53,6 @@ class RegionUpdate(RegionCreate):
         if not any(values.values()):
             raise ValueError('At least one value needs to be provided')
         return values
+
+    class Config:
+        allow_population_by_field_name = True
