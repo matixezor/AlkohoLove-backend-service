@@ -28,3 +28,4 @@ services:
       - ./init_db/07-populate_user_lists_tables.sql:/docker-entrypoint-initdb.d/07-populate_user_lists_tables.sql
       - ./init_db/04-create_user_requests_tables.sql:/docker-entrypoint-initdb.d/04-create_user_requests_tables.sql
       - ./init_db/08-populate_user_requests_tables.sql:/docker-entrypoint-initdb.d/08-populate_user_requests_tables.sql
+      - ./init_db/09-create_token_blacklist_table.sql:/docker-entrypoint-initdb.d/09-create_token_blacklist_table.sql
