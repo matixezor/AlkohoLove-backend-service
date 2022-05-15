@@ -1,6 +1,7 @@
 from uvicorn import run
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_jwt_auth.exceptions import AuthJWTException
 
 from src.api.auth import router as auth_router
@@ -13,9 +14,18 @@ from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 from src.api.countries import router as country_router
 from src.api.reported_error import router as reported_error_router
+from src.config import ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=ALLOW_CREDENTIALS,
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
+)
 
 app.include_router(auth_router)
 app.include_router(users_router)
