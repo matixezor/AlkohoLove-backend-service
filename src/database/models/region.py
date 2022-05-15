@@ -54,8 +54,8 @@ class RegionDatabaseHandler:
         return result.scalar_one()
 
     @staticmethod
-    async def create_region(db: AsyncSession, region_create_payload: RegionCreate) -> None:
-        db_region = Region(**region_create_payload.dict())
+    async def create_region(db: AsyncSession, payload: RegionCreate) -> None:
+        db_region = Region(region_name=payload.name, country_id=payload.country_id)
         db.add(db_region)
 
     @staticmethod
@@ -66,7 +66,7 @@ class RegionDatabaseHandler:
     ) -> Region:
         query = update(Region)\
             .where(Region.region_id == region_id)\
-            .values(payload.dict(exclude_none=True))
+            .values(payload.dict(exclude_none=True, by_alias=True))
 
         await db.execute(query)
         await db.commit()

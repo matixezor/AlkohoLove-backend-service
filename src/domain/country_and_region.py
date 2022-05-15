@@ -45,7 +45,7 @@ class RegionCreate(BaseModel):
 
 
 class RegionUpdate(RegionCreate):
-    name: str | None = None
+    name: str | None = Field(default=None, alias='region_name')
     country_id: int | None = None
 
     @root_validator(pre=True)
@@ -53,3 +53,6 @@ class RegionUpdate(RegionCreate):
         if not any(values.values()):
             raise ValueError('At least one value needs to be provided')
         return values
+
+    class Config:
+        allow_population_by_field_name = True
