@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship, selectinload
-from sqlalchemy import Column, Integer, String, Float, delete, select, func, Boolean, ForeignKey, update
+from sqlalchemy import Column, Integer, String, Float, delete, select, func, Boolean, ForeignKey
 
 from src.database.database_metadata import Base
 from src.database.models.barcode import Barcode
@@ -42,12 +42,6 @@ class Alcohol(Base):
     tastes = relationship('Flavour', secondary='alcohol_taste')
     finishes = relationship('Flavour', secondary='alcohol_finish')
     ingredients = relationship('Ingredient', secondary='alcohol_ingredient')
-
-    # user_wishlist_user = relationship("UserWishlist", secondary="user_wishlist", viewonly=True)
-    # user_search_history = relationship("UserSearchHistory")
-
-    # user_favourite_alcohol = relationship('UserFavouriteAlcohol')
-    # user_search_history = relationship('UserSearchHistory')
 
 
 class AlcoholDatabaseHandler:

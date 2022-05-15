@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, Column, Integer, ForeignKey, delete, TIMESTAMP
 from sqlalchemy.orm import selectinload, relationship
+from sqlalchemy import select, Column, Integer, ForeignKey, delete, TIMESTAMP
 
 from src.domain.user import UserAdminInfo
 from src.database.models import Alcohol, User
@@ -25,8 +25,8 @@ class UserWishlist(Base):
     alcohol_id = Column(Integer, ForeignKey('alcohol.alcohol_id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
 
-    # order = relationship("Alcohol", backref=backref("user_wishlist", cascade="all, delete-orphan"))
-    # product = relationship("User", backref=backref("user_wishlist", cascade="all, delete-orphan"))
+    alcohol = relationship("Alcohol")
+    user = relationship("User")
 
 
 class UserFavouriteAlcohol(Base):
@@ -34,6 +34,9 @@ class UserFavouriteAlcohol(Base):
 
     alcohol_id = Column(Integer, ForeignKey('alcohol.alcohol_id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+
+    alcohol = relationship("Alcohol")
+    user = relationship("User")
 
 
 class UserListHandler:
@@ -44,10 +47,9 @@ class UserListHandler:
             limit: int,
             offset: int
     ) -> list[UserSearchHistory] | None:
-        query = select(UserSearchHistory).filter(UserSearchHistory.user_id == user.user_id).offset(
-            offset).limit(limit).options(
-            selectinload(UserSearchHistory.alcohol).selectinload(Alcohol.barcodes)
-            )
+        query = select(UserSearchHistory).filter(UserSearchHistory.user_id == user.user_id).offset(offset).\
+            limit(limit).options(
+            selectinload(UserSearchHistory.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -83,28 +85,54 @@ class UserListHandler:
         await db.execute(query)
 
     @staticmethod
-    async def get_user_list(
+    async def get_user_wishlist(
             user: UserAdminInfo,
             db: AsyncSession,
             limit: int,
             offset: int,
-            model
-    ) -> list[Alcohol] | None:
-        query = select(Alcohol).join(model).join(User).filter(User.user_id == user.user_id).offset(offset).limit(
-            limit)
+    ) -> list[UserWishlist] | None:
+        query = select(UserWishlist).filter(UserWishlist.user_id == user.user_id).offset(offset).\
+            limit(limit).options(
+            selectinload(UserWishlist.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
         return result.scalars().all()
 
     @staticmethod
-    async def get_user_list_by_id(
+    async def get_user_favourites_list(
+            user: UserAdminInfo,
+            db: AsyncSession,
+            limit: int,
+            offset: int,
+    ) -> list[UserFavouriteAlcohol] | None:
+        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user.user_id).offset(offset).\
+            limit(limit).options(
+            selectinload(UserFavouriteAlcohol.alcohol).selectinload(Alcohol.barcodes))
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    @staticmethod
+    async def get_user_wishlist_by_user_id(
             user_id: int,
             db: AsyncSession,
             limit: int,
             offset: int,
-            model
-    ) -> list[Alcohol] | None:
-        query = select(Alcohol).join(model).join(User).filter(User.user_id == user_id).offset(offset).limit(
-            limit)
+    ) -> list[UserWishlist] | None:
+        query = select(UserWishlist).filter(UserWishlist.user_id == user_id).offset(offset).\
+            limit(limit).options(
+            selectinload(UserWishlist.alcohol).selectinload(Alcohol.barcodes))
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    @staticmethod
+    async def get_user_favourites_by_user_id(
+            user_id: int,
+            db: AsyncSession,
+            limit: int,
+            offset: int,
+    ) -> list[UserFavouriteAlcohol] | None:
+        query = select(UserFavouriteAlcohol).filter(UserFavouriteAlcohol.user_id == user_id).offset(offset).\
+            limit(limit).options(
+            selectinload(UserFavouriteAlcohol.alcohol).selectinload(Alcohol.barcodes))
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -145,7 +173,7 @@ class UserListHandler:
         db.add(db_list)
 
     @staticmethod
-    async def create_search_history_entry(db: AsyncSession, user_id: int, alcohol_id: int, date) -> None:
+    async def create_search_history_entry(db: AsyncSession, user_id: int, alcohol_id: int) -> None:
         db_list = UserSearchHistory(user_id=user_id, alcohol_id=alcohol_id, date=datetime.datetime.now())
 
         db.add(db_list)
