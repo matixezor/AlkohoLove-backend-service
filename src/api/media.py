@@ -1,5 +1,5 @@
 from PIL import Image
-from os import remove
+from os import remove, makedirs
 from os.path import exists
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
@@ -9,6 +9,11 @@ from src.utils.auth_utils import is_admin
 
 
 router = APIRouter(prefix='/media', tags=['media'])
+
+
+def create_alcohol_image_dir():
+    if not exists(IMAGEDIR):
+        makedirs(IMAGEDIR)
 
 
 @router.post(
@@ -21,6 +26,8 @@ router = APIRouter(prefix='/media', tags=['media'])
 async def upload_image(image_name: str = Form(...), file: UploadFile = File(...)):
     if file.content_type not in ['image/jpeg', 'image/png']:
         raise HTTPException(status_code=404, detail='Only .jpeg or .png  files allowed')
+
+    create_alcohol_image_dir()
 
     image_sm = Image.open(file.file).convert('RGB')
     image_md = Image.open(file.file).convert('RGB')
@@ -58,7 +65,7 @@ async def get_image(image_name: str):
     Delete image by name.
     """
     image_path_md = f'{IMAGEDIR}{image_name}_md.jpg'
-    image_path_sd = f'{IMAGEDIR}{image_name}_sd.jpg'
+    image_path_sd = f'{IMAGEDIR}{image_name}_sm.jpg'
     if exists(image_path_md) and exists(image_path_sd):
         remove(image_path_md)
         remove(image_path_sd)
