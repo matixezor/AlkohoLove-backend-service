@@ -1,16 +1,16 @@
 from datetime import datetime
 from operator import itemgetter
 from async_fastapi_jwt_auth import AuthJWT
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status, Response, Header, HTTPException
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
-from src.database.database_config import get_db
-from src.database.models.user import UserDatabaseHandler
-from src.utils.auth_utils import generate_tokens, get_valid_token
-from src.database.models.token_blacklist import TokenBlacklistDatabaseHandler
+from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
+from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
+from src.infrastructure.exceptions.auth_exceptions \
+    import UserBannedException, TokenRevokedException, CredentialsException
 
 
 router = APIRouter(prefix='/auth', tags=['auth'])
@@ -24,22 +24,31 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
     authorize: AuthJWT = Depends()
 ):
-    user = await UserDatabaseHandler.authenticate_user(db, form_data.username, form_data.password, True)
-    return await generate_tokens(user.username, authorize)
+    user = await UserDatabaseHandler.authenticate_user(form_data.username, form_data.password, True)
+    return await generate_tokens(user['username'], authorize)
 
 
 @router.post(
     '/refresh',
     response_model=Token,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def refresh(authorize: AuthJWT = Depends()):
     await authorize.jwt_refresh_token_required()
 
-    current_user = await authorize.get_jwt_subject()
+    token_jti, current_user = itemgetter('jti', 'sub')(await authorize.get_raw_jwt())
+
+    if await TokenBlacklistDatabaseHandler.check_if_token_is_blacklisted(token_jti):
+        raise TokenRevokedException(token_type='Refresh')
+
+    db_user = await UserDatabaseHandler.get_user_by_username(current_user)
+    if not db_user:
+        raise CredentialsException()
+    if db_user['is_banned']:
+        raise UserBannedException()
+
     return await generate_tokens(current_user, authorize)
 
 
@@ -48,7 +57,7 @@ async def refresh(authorize: AuthJWT = Depends()):
     response_class=Response,
     status_code=status.HTTP_201_CREATED
 )
-async def register(user_create_payload: UserCreate, db: AsyncSession = Depends(get_db)) -> None:
+async def register(user_create_payload: UserCreate) -> None:
     """
     Create user with request body:
     - **email**: required
@@ -58,11 +67,10 @@ async def register(user_create_payload: UserCreate, db: AsyncSession = Depends(g
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
     await UserDatabaseHandler.check_if_user_exists(
-        db,
         user_create_payload.email,
         user_create_payload.username
     )
-    await UserDatabaseHandler.create_user(db, user_create_payload)
+    await UserDatabaseHandler.create_user(user_create_payload)
 
 
 @router.post(
@@ -71,10 +79,9 @@ async def register(user_create_payload: UserCreate, db: AsyncSession = Depends(g
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def logout(
-        db: AsyncSession = Depends(get_db),
-        access_token: str = Depends(get_valid_token),
-        authorization_refresh: str | None = Header(default=None),
-        authorize: AuthJWT = Depends(AuthJWT)
+    access_token: str = Depends(get_valid_token),
+    authorization_refresh: str | None = Header(default=None),
+    authorize: AuthJWT = Depends(AuthJWT)
 ) -> None:
     """
     Logout endpoint. This endpoint requires two tokens to be sent.
@@ -92,16 +99,15 @@ async def logout(
     refresh_token_jti, refresh_token_exp = itemgetter('jti', 'exp')(await authorize.get_raw_jwt(authorization_refresh))
     access_token_jti, access_token_exp = itemgetter('jti', 'exp')(await authorize.get_raw_jwt(access_token))
 
-    if await TokenBlacklistDatabaseHandler.check_if_token_is_blacklisted(token_jti=refresh_token_jti, db=db):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Refresh token is already blacklisted'
+    if await TokenBlacklistDatabaseHandler.check_if_token_is_blacklisted(token_jti=refresh_token_jti):
+        raise TokenRevokedException(
+            token_type='Refresh'
         )
 
     await TokenBlacklistDatabaseHandler.add_token_to_blacklist(
-        db=db, token_jti=access_token_jti, expiration_date=datetime.fromtimestamp(access_token_exp)
+        token_jti=access_token_jti, expiration_date=datetime.fromtimestamp(access_token_exp)
     )
 
     await TokenBlacklistDatabaseHandler.add_token_to_blacklist(
-        db=db, token_jti=refresh_token_jti, expiration_date=datetime.fromtimestamp(refresh_token_exp)
+       token_jti=refresh_token_jti, expiration_date=datetime.fromtimestamp(refresh_token_exp)
     )

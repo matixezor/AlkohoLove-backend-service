@@ -8,14 +8,14 @@ async def test_get_reported_error(
         admin_token: str
 ):
     response = await async_client.get(
-        '/reported_error/admin/1', headers={'Authorization': f'Bearer {admin_token}'}
+        '/reported_error/user/1', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
     assert response['error_id'] == 1
     assert response['description'] == 'Test error description'
-    assert response['user']['username'] == 'admin'
-    assert response['user']['email'] == 'admin@gmail.com'
+    assert response['user']['username'] == 'user'
+    assert response['user']['email'] == 'user@gmail.com'
 
 
 @mark.asyncio
@@ -24,7 +24,7 @@ async def test_get_reported_error_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.get(
-        '/reported_error/admin/1', headers={'Authorization': f'Bearer {user_token}'}
+        '/reported_error/user/1', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -35,7 +35,7 @@ async def test_get_reported_errors(
         admin_token: str
 ):
     response = await async_client.get(
-        '/reported_error/admin?limit=1&offset=0', headers={'Authorization': f'Bearer {admin_token}'}
+        '/reported_error/user?limit=1&offset=0', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -45,8 +45,8 @@ async def test_get_reported_errors(
     assert response['page_info']['offset'] == 0
     assert response['reported_errors'][0]['error_id'] == 1
     assert response['reported_errors'][0]['description'] == 'Test error description'
-    assert response['reported_errors'][0]['user']['username'] == 'admin'
-    assert response['reported_errors'][0]['user']['email'] == 'admin@gmail.com'
+    assert response['reported_errors'][0]['user']['username'] == 'user'
+    assert response['reported_errors'][0]['user']['email'] == 'user@gmail.com'
 
 
 @mark.asyncio
@@ -55,7 +55,7 @@ async def test_get_reported_errors_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.get(
-        '/reported_error/admin?limit=1&offset=0', headers={'Authorization': f'Bearer {user_token}'}
+        '/reported_error/user?limit=1&offset=0', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -66,7 +66,7 @@ async def test_delete_reported_error(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.delete('/reported_error/admin/1', headers=headers)
+    response = await async_client.delete('/reported_error/user/1', headers=headers)
     assert response.status_code == 204
 
 
@@ -76,7 +76,7 @@ async def test_delete_reported_error_with_insufficient_permissions(
         user_token: str
 ):
     headers = {'Authorization': f'Bearer {user_token}'}
-    response = await async_client.delete('/reported_error/admin/1', headers=headers)
+    response = await async_client.delete('/reported_error/user/1', headers=headers)
     assert response.status_code == 403
 
 

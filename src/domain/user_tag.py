@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from src.domain.page_info import PageInfo
 from src.domain.alcohol import AlcoholBase
+from src.domain.common.page_info import PageInfo
 
 
 class UserTag(BaseModel):

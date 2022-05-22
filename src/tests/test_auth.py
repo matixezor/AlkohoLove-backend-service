@@ -4,8 +4,8 @@ from httpx import AsyncClient
 
 TEST_PASSWORD_FIXTURE = 'TestTest1234'
 TEST_INVALID_PASSWORD_FIXTURE = 'Test'
-TEST_USERNAME_FIXTURE = 'admin'
-TEST_EMAIL_FIXTURE = 'admin@admin.com'
+TEST_USERNAME_FIXTURE = 'user'
+TEST_EMAIL_FIXTURE = 'user@user.com'
 
 
 @mark.asyncio
@@ -91,8 +91,8 @@ async def test_register_with_invalid_request_body(
 @mark.parametrize(
     'username,email,reason',
     [
-        (TEST_USERNAME_FIXTURE, 'admin@admin.com', 'username'),
-        ('test', 'admin@gmail.com', 'email')
+        (TEST_USERNAME_FIXTURE, 'user@user.com', 'username'),
+        ('test', 'user@gmail.com', 'email')
     ]
 )
 async def test_register_with_existing_user(

@@ -21,7 +21,7 @@ async def test_update_self_with_taken_email(
         user_token: str
 ):
     data = {
-        'email': 'admin@gmail.com'
+        'email': 'user@gmail.com'
     }
     headers = {'Authorization': f'Bearer {user_token}'}
     response = await async_client.put('/me', headers=headers, json=data)

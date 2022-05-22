@@ -37,7 +37,7 @@ def override_get_db(db_session: AsyncSession) -> Callable:
 
 @fixture
 async def async_client(override_get_db: Callable) -> AsyncGenerator:
-    from src.database.database_config import get_db
+    from infrastructure.database.database_config import get_db
     from src.main import app
 
     app.dependency_overrides[get_db] = override_get_db
@@ -58,7 +58,7 @@ async def user_token(async_client: AsyncClient) -> str:
 @fixture
 async def admin_token(async_client: AsyncClient) -> str:
     data = {
-        'username': 'admin',
+        'username': 'user',
         'password': 'JanJan123'
     }
     response = await async_client.post('/auth/token', data=data)

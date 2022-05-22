@@ -19,7 +19,7 @@ async def test_create_alcohol_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.post(
-        '/alcohols/admin', headers={'Authorization': f'Bearer {user_token}'}
+        '/alcohols/user', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -30,7 +30,7 @@ async def test_get_alcohols_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.get(
-        '/alcohols/admin', headers={'Authorization': f'Bearer {user_token}'}
+        '/alcohols/user', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -41,7 +41,7 @@ async def test_update_alcohol_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.put(
-        '/alcohols/admin/1', headers={'Authorization': f'Bearer {user_token}'}
+        '/alcohols/user/1', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -52,7 +52,7 @@ async def test_delete_alcohol_with_insufficient_permissions(
         user_token: str
 ):
     response = await async_client.delete(
-        '/alcohols/admin/1', headers={'Authorization': f'Bearer {user_token}'}
+        '/alcohols/user/1', headers={'Authorization': f'Bearer {user_token}'}
     )
     assert response.status_code == 403
 
@@ -111,7 +111,7 @@ async def test_get_alcohols(
         admin_token: str
 ):
     response = await async_client.get(
-        '/alcohols/admin', headers={'Authorization': f'Bearer {admin_token}'}
+        '/alcohols/user', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -129,7 +129,7 @@ async def test_get_alcohols_by_alcohol_name(
         admin_token: str
 ):
     response = await async_client.get(
-        '/alcohols/admin?name=Ży', headers={'Authorization': f'Bearer {admin_token}'}
+        '/alcohols/user?name=Ży', headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert response.status_code == 200
     response = response.json()
@@ -147,7 +147,7 @@ async def test_delete_alcohol(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.delete('/alcohols/admin/1', headers=headers)
+    response = await async_client.delete('/alcohols/user/1', headers=headers)
     assert response.status_code == 204
 
 
@@ -157,7 +157,7 @@ async def test_create_alcohol(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.post('/alcohols/admin', headers=headers, json=PAYLOAD_FIXTURE)
+    response = await async_client.post('/alcohols/user', headers=headers, json=PAYLOAD_FIXTURE)
     assert response.status_code == 201
 
 
@@ -167,7 +167,7 @@ async def test_create_alcohol_without_required_data(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.post('/alcohols/admin', headers=headers)
+    response = await async_client.post('/alcohols/user', headers=headers)
     assert response.status_code == 422
 
 
@@ -179,7 +179,7 @@ async def test_create_alcohol_with_existing_name(
     headers = {'Authorization': f'Bearer {admin_token}'}
     data = PAYLOAD_FIXTURE
     data['name'] = 'Żywiec białe'
-    response = await async_client.post('/alcohols/admin', headers=headers, json=data)
+    response = await async_client.post('/alcohols/user', headers=headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol with given name already exists'
@@ -193,7 +193,7 @@ async def test_update_alcohol_with_existing_name(
     headers = {'Authorization': f'Bearer {admin_token}'}
     data = PAYLOAD_FIXTURE
     data['name'] = 'Żywiec białe'
-    response = await async_client.put('/alcohols/admin/2', headers=headers, json=data)
+    response = await async_client.put('/alcohols/user/2', headers=headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol with given name already exists'
@@ -205,7 +205,7 @@ async def test_update_alcohol_without_required_data(
         admin_token: str
 ):
     headers = {'Authorization': f'Bearer {admin_token}'}
-    response = await async_client.put('/alcohols/admin/1', headers=headers)
+    response = await async_client.put('/alcohols/user/1', headers=headers)
     assert response.status_code == 422
 
 
@@ -220,7 +220,7 @@ async def test_update_alcohol(
         'food_ids': [1, 2],
         'ingredient_ids': [1]
     }
-    response = await async_client.put('/alcohols/admin/2', headers=headers, json=data)
+    response = await async_client.put('/alcohols/user/2', headers=headers, json=data)
     assert response.status_code == 200
     response = response.json()
     assert response['alcohol_id'] == 2
