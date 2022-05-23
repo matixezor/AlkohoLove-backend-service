@@ -6,7 +6,7 @@ from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
 from src.domain.common.page_info import PageInfo
-from src.infrastructure.config.app_config import IMAGEDIR
+from src.infrastructure.config.app_config import STATIC_DIR
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
@@ -15,6 +15,7 @@ from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
@@ -22,7 +23,6 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
 from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
-
 
 router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_permission)])
 
@@ -35,16 +35,16 @@ router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_
     response_model_by_alias=False
 )
 async def get_users(
-    limit: int = 10,
-    offset: int = 0,
-    username: str = '',
-    db: Database = Depends(get_db)
+        limit: int = 10,
+        offset: int = 0,
+        username: str = '',
+        db: Database = Depends(get_db)
 ):
     """
     Search for users with pagination by optional username
     """
-    users = await UserDatabaseHandler.get_users(limit, offset, username, db.users)
-    total = await UserDatabaseHandler.count_users(username, db.users)
+    users = await UserDatabaseHandler.get_users(db.users, limit, offset, username)
+    total = await UserDatabaseHandler.count_users(db.users, username)
     return PaginatedUserAdminInfo(
         users=users,
         page_info=PageInfo(
@@ -63,13 +63,13 @@ async def get_users(
     response_model_by_alias=False,
 )
 async def get_user(
-    user_id: str,
-    db: Database = Depends(get_db)
+        user_id: str,
+        db: Database = Depends(get_db)
 ):
     """
     Read user information
     """
-    db_user = await UserDatabaseHandler.get_user_by_id(user_id, db.users)
+    db_user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
     if not db_user:
         raise UserNotFoundException()
     return db_user
@@ -81,18 +81,18 @@ async def get_user(
     summary='[For Admin] Ban or unban user',
 )
 async def ban_user(
-    user_id: str,
-    to_ban: bool = True,
-    db: Database = Depends(get_db)
+        user_id: str,
+        to_ban: bool = True,
+        db: Database = Depends(get_db)
 ):
     """
     Ban user by id.
     *to_ban: bool = True* - query param that specifies if the user should be banned or unbanned
     """
     if to_ban:
-        await UserDatabaseHandler.ban_user(user_id, db.users)
+        await UserDatabaseHandler.ban_user(db.users, user_id)
     else:
-        await UserDatabaseHandler.unban_user(user_id, db.users)
+        await UserDatabaseHandler.unban_user(db.users, user_id)
 
 
 @router.get(
@@ -106,7 +106,7 @@ async def get_reported_error(error_id: str, db: Database = Depends(get_db)):
     """
     Read reported error by id
     """
-    db_reported_error = await ReportedErrorDatabaseHandler.get_reported_error_by_id(error_id)
+    db_reported_error = await ReportedErrorDatabaseHandler.get_reported_error_by_id(db.reported_errors, error_id)
     if not db_reported_error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Reported error not found')
     return db_reported_error
@@ -120,17 +120,19 @@ async def get_reported_error(error_id: str, db: Database = Depends(get_db)):
     response_model_by_alias=False
 )
 async def get_reported_errors(
-    limit: int = 10,
-    offset: int = 0,
-    user_id: str = None,
-    db: Database = Depends(get_db)
+        limit: int = 10,
+        offset: int = 0,
+        user_id: str = None,
+        db: Database = Depends(get_db)
 ) -> PaginatedReportedErrorInfo:
     """
     Search reported errors with pagination.
     You can specify user_id to fetch errors reported by given user
     """
-    reported_errors = await ReportedErrorDatabaseHandler.get_reported_errors(limit, offset, user_id)
-    total = await ReportedErrorDatabaseHandler.count_reported_errors(user_id)
+    reported_errors = await ReportedErrorDatabaseHandler.get_reported_errors(
+        db.reported_errors, limit, offset, user_id
+    )
+    total = await ReportedErrorDatabaseHandler.count_reported_errors(db.reported_errors, user_id)
     return PaginatedReportedErrorInfo(
         reported_errors=reported_errors,
         page_info=PageInfo(
@@ -144,17 +146,16 @@ async def get_reported_errors(
 @router.delete(
     path='/errors/{error_id}',
     status_code=status.HTTP_204_NO_CONTENT,
-    summary='Delete reported error',
-    dependencies=[Depends(admin_permission)],
+    summary='Delete reported error'
 )
 async def delete_reported_error_by_id(
-    reported_error_id: str,
-    db: Database = Depends(get_db)
+        error_id: str,
+        db: Database = Depends(get_db)
 ) -> None:
     """
     Delete reported error by reported error id
     """
-    await ReportedErrorDatabaseHandler.delete_reported_error(reported_error_id)
+    await ReportedErrorDatabaseHandler.delete_reported_error(db.reported_errors, error_id)
 
 
 @router.delete(
@@ -163,13 +164,13 @@ async def delete_reported_error_by_id(
     summary='Delete alcohol',
 )
 async def delete_alcohol(
-    alcohol_id: str,
-    db: Database = Depends(get_db)
+        alcohol_id: str,
+        db: Database = Depends(get_db)
 ) -> None:
     """
     Delete alcohol by id
     """
-    await AlcoholDatabaseHandler.delete_alcohol(alcohol_id)
+    await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
 
 
 @router.put(
@@ -177,16 +178,24 @@ async def delete_alcohol(
     response_model=Alcohol,
     status_code=status.HTTP_200_OK,
     summary='Update alcohol',
+    response_model_by_alias=False
 )
 async def update(
-    alcohol_id: str,
-    payload: AlcoholUpdate,
-    db: Database = Depends(get_db)
+        alcohol_id: str,
+        payload: AlcoholUpdate,
+        db: Database = Depends(get_db)
 ):
     """
     Update alcohol by id
     """
-    return await AlcoholDatabaseHandler.update_alcohol(alcohol_id, payload)
+    if (
+            payload.barcode
+            and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
+    ):
+        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
+    if alcohol := await AlcoholDatabaseHandler.get_alcohol_by_name(db.alcohols, payload.name):
+        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
+    return await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
 
 
 @router.post(
@@ -196,24 +205,24 @@ async def update(
     summary='Create alcohol'
 )
 async def create_alcohol(
-    payload: AlcoholCreate,
-    db: Database = Depends(get_db)
+        payload: AlcoholCreate,
+        db: Database = Depends(get_db)
 ):
     """
     Create alcohol
     """
     if (
-            await AlcoholDatabaseHandler.get_alcohol_by_barcode(payload.barcode)
-            or await AlcoholDatabaseHandler.get_alcohol_by_name(payload.name)
+            await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode)
+            or await AlcoholDatabaseHandler.get_alcohol_by_name(db.alcohols, payload.name)
     ):
-        raise AlcoholCategoryExistsException()
-    if not await AlcoholCategoryDatabaseHandler.check_if_category_exist(payload.kind):
+        raise AlcoholExistsException()
+    if not await AlcoholCategoryDatabaseHandler.check_if_category_exist(db.alcohol_categories, payload.kind):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Alcohol category does not exist. Create one first!'
         )
 
-    await AlcoholDatabaseHandler.add_alcohol(payload)
+    await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
 
 
 @router.get(
@@ -223,12 +232,16 @@ async def create_alcohol(
     summary='Read alcohol categories schema',
     response_model_by_alias=False
 )
-async def get_schemas(limit: int = 10, offset: int = 0):
+async def get_schemas(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+):
     alcohol_categories = [
         map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
-        await AlcoholCategoryDatabaseHandler.get_categories(limit, offset)
+        await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, limit, offset)
     ]
-    total = await AlcoholCategoryDatabaseHandler.count_categories()
+    total = await AlcoholCategoryDatabaseHandler.count_categories(db.alcohol_categories)
     return PaginatedAlcoholCategories(
         categories=alcohol_categories,
         page_info=PageInfo(
@@ -244,9 +257,14 @@ async def get_schemas(limit: int = 10, offset: int = 0):
     response_model=AlcoholCategory,
     status_code=status.HTTP_200_OK,
     summary='Add alcohol traits',
+    response_model_by_alias=False
 )
-async def add_category_trait(category_id: str, payload: AlcoholCategoryUpdate):
-    db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(category_id)
+async def add_category_trait(
+        category_id: str,
+        payload: AlcoholCategoryUpdate,
+        db: Database = Depends(get_db)
+):
+    db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -258,11 +276,13 @@ async def add_category_trait(category_id: str, payload: AlcoholCategoryUpdate):
             detail='Properties already exist'
         )
     try:
-        updated_category = await AlcoholCategoryDatabaseHandler.update_category(db_category, payload)
-        await AlcoholDatabaseHandler.update_validation()
+        updated_category = await AlcoholCategoryDatabaseHandler.update_category(
+            db.alcohol_categories, db_category, payload
+        )
+        await AlcoholDatabaseHandler.update_validation(db)
         return map_to_alcohol_category(updated_category)
     except OperationFailure as ex:
-        await AlcoholCategoryDatabaseHandler.revert(db_category)
+        await AlcoholCategoryDatabaseHandler.revert(db.alcohol_categories, db_category)
         raise ValidationErrorException(ex.args[0])
 
 
@@ -271,9 +291,14 @@ async def add_category_trait(category_id: str, payload: AlcoholCategoryUpdate):
     response_model=AlcoholCategory,
     status_code=status.HTTP_200_OK,
     summary='Remove alcohol traits',
+    response_model_by_alias=False
 )
-async def remove_category_trait(category_id: str, payload: AlcoholCategoryDelete):
-    db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(category_id)
+async def remove_category_trait(
+        category_id: str,
+        payload: AlcoholCategoryDelete,
+        db: Database = Depends(get_db)
+):
+    db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -285,12 +310,16 @@ async def remove_category_trait(category_id: str, payload: AlcoholCategoryDelete
             detail='Properties do not exist'
         )
     try:
-        updated_category = await AlcoholCategoryDatabaseHandler.remove_properties(db_category, payload)
-        await AlcoholDatabaseHandler.update_validation()
-        await AlcoholDatabaseHandler.remove_fields_for_kind(updated_category['title'], payload.properties)
+        updated_category = await AlcoholCategoryDatabaseHandler.remove_properties(
+            db.alcohol_categories, db_category, payload
+        )
+        await AlcoholDatabaseHandler.update_validation(db)
+        await AlcoholDatabaseHandler.remove_fields_for_kind(
+            db.alcohols, updated_category['title'], payload.properties
+        )
         return map_to_alcohol_category(updated_category)
     except OperationFailure as ex:
-        await AlcoholCategoryDatabaseHandler.revert(db_category)
+        await AlcoholCategoryDatabaseHandler.revert(db.alcohol_categories, db_category)
         raise ValidationErrorException(ex.args[0])
 
 
@@ -299,15 +328,19 @@ async def remove_category_trait(category_id: str, payload: AlcoholCategoryDelete
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol category',
+    response_model_by_alias=False
 )
-async def remove_category_trait(payload: AlcoholCategoryCreate):
-    if await AlcoholCategoryDatabaseHandler.check_if_category_exist(payload.title):
+async def remove_category_trait(
+        payload: AlcoholCategoryCreate,
+        db: Database = Depends(get_db)
+):
+    if await AlcoholCategoryDatabaseHandler.check_if_category_exist(db.alcohol_categories, payload.title):
         raise AlcoholCategoryExistsException()
     try:
-        await AlcoholCategoryDatabaseHandler.add_category(payload)
-        await AlcoholDatabaseHandler.update_validation()
+        await AlcoholCategoryDatabaseHandler.add_category(db.alcohol_categories, payload)
+        await AlcoholDatabaseHandler.update_validation(db)
     except OperationFailure as ex:
-        await AlcoholCategoryDatabaseHandler.revert_by_removal(payload.title)
+        await AlcoholCategoryDatabaseHandler.revert_by_removal(db.alcohol_categories, payload.title)
         raise ValidationErrorException(ex.args[0])
 
 
@@ -319,8 +352,8 @@ async def remove_category_trait(payload: AlcoholCategoryCreate):
     summary='[For admin] Upload image'
 )
 async def upload_image(
-    image_name: str = Form(...),
-    file: UploadFile = File(...),
+        image_name: str = Form(...),
+        file: UploadFile = File(...),
 ):
     """
     Upload file with:
@@ -332,7 +365,7 @@ async def upload_image(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
     image = Image.open(file.file)
-    image.save(f'{IMAGEDIR}/{image_name}.png')
+    image.save(f'{STATIC_DIR}/{image_name}.png')
 
 
 @router.delete(
@@ -345,7 +378,7 @@ async def get_image(image_name: str):
     """
     Delete image by name. It should contain `_sm` or `_md` if there are multiple variants
     """
-    image_path = f'{IMAGEDIR}/{image_name}.png'
+    image_path = f'{STATIC_DIR}/{image_name}.png'
     if exists(image_path):
         remove(image_path)
     else:

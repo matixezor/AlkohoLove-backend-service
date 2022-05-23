@@ -138,4 +138,4 @@ dmypy.json
 .idea
 
 # static
-/src/static/*
+/static/*

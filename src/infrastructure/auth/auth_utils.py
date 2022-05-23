@@ -13,11 +13,12 @@ from src.infrastructure.exceptions.auth_exceptions \
 
 async def get_valid_token(
         authorization: str | None = Header(default=None),
-        authorize: AuthJWT = Depends()
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db)
 ) -> str:
     await authorize.jwt_required()
     jti = (await authorize.get_raw_jwt())['jti']
-    if await TokenBlacklistDatabaseHandler.check_if_token_is_blacklisted(jti):
+    if await TokenBlacklistDatabaseHandler.check_if_token_is_blacklisted(db.tokens_blacklist, jti):
         raise TokenRevokedException(token_type='Access')
     return authorization.replace('Bearer ', '')
 
@@ -45,7 +46,7 @@ async def get_valid_user(
     username = (await authorize.get_raw_jwt(token))['sub']
     if username is None:
         raise CredentialsException()
-    user = await DatabaseHandler.get_user_by_username(username, db.users)
+    user = await DatabaseHandler.get_user_by_username(db.users, username)
     if not user:
         raise CredentialsException()
     if user['is_banned']:

@@ -61,9 +61,9 @@ async def update_self(
         update_payload.new_password = None
 
     return await DatabaseHandler.update_user(
+        db.users,
         current_user['_id'],
-        update_payload,
-        db.users
+        update_payload
     )
 
 
@@ -76,4 +76,4 @@ async def delete_self(
     current_user: UserDb = Depends(get_valid_user),
     db: Database = Depends(get_db)
 ) -> None:
-    await DatabaseHandler.delete_user(current_user['_id'], db.users)
+    await DatabaseHandler.delete_user(db.users, current_user['_id'])

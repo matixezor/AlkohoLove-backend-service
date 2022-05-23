@@ -10,12 +10,13 @@ from src.api.admin import router as admin_router
 from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
 from src.api.reported_errors import router as reported_error_router
-from src.infrastructure.config.app_config import ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
+from src.infrastructure.config.app_config import \
+    ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS, STATIC_DIR
 
 
 app = FastAPI(title='AlkohoLove-backend-service')
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.add_middleware(
     CORSMiddleware,

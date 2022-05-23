@@ -1,7 +1,9 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
+from pymongo.database import Database
 
 from src.domain.common import PageInfo
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
+from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 
 
@@ -19,6 +21,7 @@ async def search_alcohols(
     limit: int = 10,
     offset: int = 0,
     phrase: str = None,
+    db: Database = Depends(get_db)
 ):
     """
     Search for alcohols with pagination. Query params:
@@ -26,7 +29,7 @@ async def search_alcohols(
     - **offset**: int - default 0
     - **phrase**: str - default ''
     """
-    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(limit, offset, phrase)
+    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -44,11 +47,11 @@ async def search_alcohols(
     status_code=status.HTTP_200_OK,
     summary='Read alcohol information by barcode'
 )
-async def get_alcohol_by_barcode(barcode: str):
+async def get_alcohol_by_barcode(barcode: str, db: Database = Depends(get_db)):
     """
     Read alcohol by barcode
     """
-    db_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_barcode(list(barcode))
+    db_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, [barcode])
     if not db_alcohol:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

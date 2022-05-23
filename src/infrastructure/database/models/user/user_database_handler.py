@@ -25,55 +25,55 @@ class UserDatabaseHandler:
         return pwd_context.verify(password_raw, hashed_password)
 
     @staticmethod
-    async def ban_user(user_id: str, users_collection: Collection[User]) -> None:
-        users_collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': True}})
+    async def ban_user(collection: Collection[User], user_id: str) -> None:
+        collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': True}})
 
     @staticmethod
-    async def unban_user(user_id: str, users_collection: Collection[User]) -> None:
-        users_collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': False}})
+    async def unban_user(collection: Collection[User], user_id: str) -> None:
+        collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': False}})
 
     @staticmethod
-    async def get_user_by_id(user_id: str, users_collection: Collection[User]) -> User | None:
-        return users_collection.find_one({'_id': ObjectId(user_id)})
+    async def get_user_by_id(collection: Collection[User], user_id: str) -> User | None:
+        return collection.find_one({'_id': ObjectId(user_id)})
 
     @staticmethod
-    async def get_users(limit: int, offset: int, username: str, users_collection: Collection[User]) -> list[User]:
+    async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:
         return list(
-            users_collection
+            collection
                 .find({'username': {'$regex': username, '$options': 'i'}})
                 .skip(offset)
                 .limit(limit)
         )
 
     @staticmethod
-    async def count_users(username: str, users_collection: Collection[User]) -> int:
+    async def count_users(collection: Collection[User], username: str) -> int:
         return (
-            users_collection.count_documents(filter={'username': {'$regex': username, '$options': 'i'}})
+            collection.count_documents(filter={'username': {'$regex': username, '$options': 'i'}})
             if username
-            else users_collection.estimated_document_count()
+            else collection.estimated_document_count()
         )
 
     @staticmethod
-    async def delete_user(user_id: ObjectId, users_collection: Collection[User]) -> None:
-        users_collection.delete_one({'_id': user_id})
+    async def delete_user(collection: Collection[User], user_id: ObjectId) -> None:
+        collection.delete_one({'_id': user_id})
 
     @staticmethod
-    async def check_if_user_exists(users_collection: Collection[User], email: str = None, username: str = None) -> None:
-        if email and await UserDatabaseHandler.get_user_by_email(email, users_collection):
+    async def check_if_user_exists(collection: Collection[User], email: str = None, username: str = None) -> None:
+        if email and await UserDatabaseHandler.get_user_by_email(collection, email):
             raise UserExistsException()
-        if username and await UserDatabaseHandler.get_user_by_username(username, users_collection):
+        if username and await UserDatabaseHandler.get_user_by_username(collection, username):
             raise UserExistsException()
 
     @staticmethod
-    async def get_user_by_email(email: str, users_collection: Collection[User]) -> User | None:
-        return users_collection.find_one({'email': email})
+    async def get_user_by_email(collection: Collection[User], email: str) -> User | None:
+        return collection.find_one({'email': email})
 
     @staticmethod
-    async def get_user_by_username(username: str, users_collection: Collection[User]) -> User | None:
-        return users_collection.find_one({'username': username})
+    async def get_user_by_username(collection: Collection[User], username: str) -> User | None:
+        return collection.find_one({'username': username})
 
     @staticmethod
-    async def create_user(payload: UserCreate, users_collection: Collection[User]) -> None:
+    async def create_user(collection: Collection[User], payload: UserCreate) -> None:
         password_salt = gensalt().decode('utf-8')
         payload.password = UserDatabaseHandler.get_password_hash(
             payload.password,
@@ -89,16 +89,16 @@ class UserDatabaseHandler:
             last_login=None
         )
 
-        users_collection.insert_one(db_user)
+        collection.insert_one(db_user)
 
     @staticmethod
     async def authenticate_user(
+        collection: Collection[User],
         username: str,
         password: str,
-        users_collection: Collection[User],
         update_last_login: bool = False
     ) -> User:
-        user = await UserDatabaseHandler.get_user_by_username(username, users_collection)
+        user = await UserDatabaseHandler.get_user_by_username(collection, username)
         if user['is_banned']:
             raise UserBannedException()
         raw_password = user['password_salt'] + password
@@ -108,16 +108,16 @@ class UserDatabaseHandler:
                 detail=f'Invalid username or password'
             )
         if update_last_login:
-            users_collection.update_one({'_id': user['_id']}, {'$set': {'last_login': datetime.now()}})
+            collection.update_one({'_id': user['_id']}, {'$set': {'last_login': datetime.now()}})
         return user
 
     @staticmethod
     async def update_user(
+        collection: Collection[User],
         user_id: ObjectId,
-        user_update_payload: UserUpdate,
-        users_collection: Collection[User]
+        user_update_payload: UserUpdate
     ) -> User:
-        return users_collection.find_one_and_update(
+        return collection.find_one_and_update(
             {'_id': user_id},
             {'$set': user_update_payload.dict(exclude_none=True)},
             return_document=ReturnDocument.AFTER
