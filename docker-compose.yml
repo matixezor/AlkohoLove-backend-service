@@ -7,7 +7,7 @@ services:
     ports:
       - 8008:8000
     environment:
-      - DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority
+      - DATABASE_URL=mongodb://alkoholove_admin:Test1234@mongodb/alkoholove?retryWrites=true&w=majority
       - STATIC_DIR=./static
     depends_on:
       - mongodb
