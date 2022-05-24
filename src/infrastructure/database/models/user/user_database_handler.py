@@ -11,7 +11,6 @@ from src.infrastructure.database.models.user import User
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
 
-
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
@@ -39,10 +38,7 @@ class UserDatabaseHandler:
     @staticmethod
     async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:
         return list(
-            collection
-                .find({'username': {'$regex': username, '$options': 'i'}})
-                .skip(offset)
-                .limit(limit)
+            collection.find({'username': {'$regex': username, '$options': 'i'}}).skip(offset).limit(limit)
         )
 
     @staticmethod
@@ -93,10 +89,10 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def authenticate_user(
-        collection: Collection[User],
-        username: str,
-        password: str,
-        update_last_login: bool = False
+            collection: Collection[User],
+            username: str,
+            password: str,
+            update_last_login: bool = False
     ) -> User:
         user = await UserDatabaseHandler.get_user_by_username(collection, username)
         if user['is_banned']:
@@ -113,9 +109,9 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def update_user(
-        collection: Collection[User],
-        user_id: ObjectId,
-        user_update_payload: UserUpdate
+            collection: Collection[User],
+            user_id: ObjectId,
+            user_update_payload: UserUpdate
     ) -> User:
         return collection.find_one_and_update(
             {'_id': user_id},

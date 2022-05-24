@@ -8,12 +8,12 @@ db.createUser(
                 db: "admin"
             },
             {
-                role : "dbAdminAnyDatabase",
-                db : "admin"
+                role: "dbAdminAnyDatabase",
+                db: "admin"
             },
             {
-                role : "clusterAdmin",
-                db : "admin"
+                role: "clusterAdmin",
+                db: "admin"
             }
         ]
     }
@@ -22,31 +22,31 @@ db.createUser(
 let users = {
     $jsonSchema: {
         bsonType: 'object',
-        required: [ 'username', 'password', 'email', 'created_on', 'password_salt' ],
+        required: ['username', 'password', 'email', 'created_on', 'password_salt'],
         properties: {
             username: {
-               bsonType: 'string',
-               description: 'must be a string and is required'
+                bsonType: 'string',
+                description: 'must be a string and is required'
             },
             password: {
-               bsonType: 'string',
-               description: 'must be a string and is required'
+                bsonType: 'string',
+                description: 'must be a string and is required'
             },
             email: {
-               bsonType: 'string',
-               description: 'must be a string and is required'
+                bsonType: 'string',
+                description: 'must be a string and is required'
             },
             created_on: {
-               bsonType: 'date',
-               description: 'must be a date'
+                bsonType: 'date',
+                description: 'must be a date'
             },
             password_salt: {
-               bsonType: 'string',
-               description: 'must be a string and is required'
+                bsonType: 'string',
+                description: 'must be a string and is required'
             },
             last_login: {
-               bsonType: ['date', 'null'],
-               description: 'must be a date'
+                bsonType: ['date', 'null'],
+                description: 'must be a date'
             },
             is_admin: {
                 bsonType: 'bool',
@@ -63,12 +63,12 @@ let users = {
 db.createCollection(
     'users',
     {
-     validator: users,
+        validator: users,
     }
 )
 
-db.users.createIndex( { username: 1 } )
-db.users.createIndex( { email: 1 } )
+db.users.createIndex({username: 1})
+db.users.createIndex({email: 1})
 
 db.users.insertMany(
     [

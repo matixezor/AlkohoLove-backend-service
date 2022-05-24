@@ -3,7 +3,7 @@ from pydantic import BaseModel, Extra, root_validator
 
 class AlcoholUpdate(BaseModel):
     name: str | None
-    kind: str| None
+    kind: str | None
     type: str | None
     alcohol_by_volume: float | None
     description: str | None

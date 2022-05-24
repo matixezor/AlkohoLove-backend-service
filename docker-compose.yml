@@ -7,7 +7,8 @@ services:
     ports:
       - 8008:8000
     environment:
-      - DATABASE_URL=postgresql+asyncpg://alkoholove_admin:Test1234@db:5432/alkoholove
+      - DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority
+      - STATIC_PATH=./static
     depends_on:
       - mongodb
   mongodb:

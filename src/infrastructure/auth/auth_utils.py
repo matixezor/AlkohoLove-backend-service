@@ -39,9 +39,9 @@ async def generate_tokens(subject: str, authorize: AuthJWT):
 
 
 async def get_valid_user(
-    token: str = Depends(get_valid_token),
-    authorize: AuthJWT = Depends(),
-    db: Database = Depends(get_db)
+        token: str = Depends(get_valid_token),
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db)
 ) -> User:
     username = (await authorize.get_raw_jwt(token))['sub']
     if username is None:

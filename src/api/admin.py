@@ -34,7 +34,7 @@ router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_
     summary='[For Admin] Read users',
     response_model_by_alias=False
 )
-async def get_users(
+async def search_users(
         limit: int = 10,
         offset: int = 0,
         username: str = '',
@@ -102,7 +102,7 @@ async def ban_user(
     summary='Read full reported error information',
     response_model_by_alias=False
 )
-async def get_reported_error(error_id: str, db: Database = Depends(get_db)):
+async def get_error(error_id: str, db: Database = Depends(get_db)):
     """
     Read reported error by id
     """
@@ -119,7 +119,7 @@ async def get_reported_error(error_id: str, db: Database = Depends(get_db)):
     summary='Read full reported error information',
     response_model_by_alias=False
 )
-async def get_reported_errors(
+async def get_errors(
         limit: int = 10,
         offset: int = 0,
         user_id: str = None,
@@ -148,7 +148,7 @@ async def get_reported_errors(
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete reported error'
 )
-async def delete_reported_error_by_id(
+async def delete_error(
         error_id: str,
         db: Database = Depends(get_db)
 ) -> None:
@@ -180,7 +180,7 @@ async def delete_alcohol(
     summary='Update alcohol',
     response_model_by_alias=False
 )
-async def update(
+async def update_alcohol(
         alcohol_id: str,
         payload: AlcoholUpdate,
         db: Database = Depends(get_db)
@@ -252,14 +252,14 @@ async def get_schemas(
     )
 
 
-@router.post(
+@router.put(
     path='/alcohols/metadata/categories/{category_id}',
     response_model=AlcoholCategory,
     status_code=status.HTTP_200_OK,
     summary='Add alcohol traits',
     response_model_by_alias=False
 )
-async def add_category_trait(
+async def add_category_traits(
         category_id: str,
         payload: AlcoholCategoryUpdate,
         db: Database = Depends(get_db)
@@ -293,7 +293,7 @@ async def add_category_trait(
     summary='Remove alcohol traits',
     response_model_by_alias=False
 )
-async def remove_category_trait(
+async def remove_category_traits(
         category_id: str,
         payload: AlcoholCategoryDelete,
         db: Database = Depends(get_db)
@@ -304,7 +304,7 @@ async def remove_category_trait(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Category not found'
         )
-    if any(_key not in list(db_category['properties'].keys()) for _key in payload):
+    if any(_key not in list(db_category['properties'].keys()) for _key in payload.properties):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Properties do not exist'
@@ -330,7 +330,7 @@ async def remove_category_trait(
     summary='Add alcohol category',
     response_model_by_alias=False
 )
-async def remove_category_trait(
+async def add_category(
         payload: AlcoholCategoryCreate,
         db: Database = Depends(get_db)
 ):
@@ -374,7 +374,7 @@ async def upload_image(
     summary='[For admin] Delete image',
     dependencies=[Depends(admin_permission)],
 )
-async def get_image(image_name: str):
+async def delete_image(image_name: str):
     """
     Delete image by name. It should contain `_sm` or `_md` if there are multiple variants
     """

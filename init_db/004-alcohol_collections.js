@@ -114,7 +114,7 @@ let core = {
     }
 }
 
-let beer =  {
+let beer = {
     title: 'piwo',
     required: [
         'ibu',
@@ -126,7 +126,7 @@ let beer =  {
     ],
     properties: {
         kind: {
-            enum: [ 'piwo' ]
+            enum: ['piwo']
         },
         ibu: {
             bsonType: ['int', 'null'],
@@ -155,12 +155,12 @@ let beer =  {
     }
 }
 
-let whisky =  {
+let whisky = {
     title: 'whisky',
     required: ['age'],
     properties: {
         kind: {
-            enum: [ 'whisky' ]
+            enum: ['whisky']
         },
         age: {
             bsonType: 'int',
@@ -169,26 +169,26 @@ let whisky =  {
     }
 }
 
-let vodka =  {
+let vodka = {
     title: 'wódka',
     properties: {
         kind: {
-            enum: [ 'wódka' ]
+            enum: ['wódka']
         }
     }
 }
 
-let wine =  {
+let wine = {
     title: 'wino',
     required: ['vine_strain', 'winery'],
     properties: {
         kind: {
-            enum: [ 'wino' ]
+            enum: ['wino']
         },
         vine_strain: {
             bsonType: ['string', 'null'],
             description: 'Chardonnay'
-        }       ,
+        },
         winery: {
             bsonType: ['string', 'null'],
             description: 'Château de Cremat'
@@ -196,31 +196,31 @@ let wine =  {
     }
 }
 
-let rum =  {
+let rum = {
     title: 'rum',
     required: ['age'],
     properties: {
         kind: {
-            enum: [ 'rum' ]
+            enum: ['rum']
         },
         age: {
             bsonType: ['int', 'null'],
             description: '3'
         }
-   }
+    }
 }
 
 let liqueur = {
     title: 'likier',
     properties: {
         kind: {
-            enum: [ 'likier' ]
+            enum: ['likier']
         }
     }
 }
 
 db.createCollection('alcohol_categories')
-db.alcohol_categories.createIndex( { title: 1 } )
+db.alcohol_categories.createIndex({title: 1})
 
 db.alcohol_categories.insertMany(
     [
@@ -253,12 +253,12 @@ let alcohol = {
 db.createCollection(
     'alcohols',
     {
-     validator: alcohol,
+        validator: alcohol,
     }
 )
 
 db.alcohols.createIndex(
-    { barcode: 1 }
+    {barcode: 1}
 )
 
 db.alcohols.createIndex(
@@ -384,7 +384,7 @@ db.alcohols.insertMany(
             manufacturer: 'Corporación Cuba Ron',
             food: [],
             taste: ['owoce', 'banany', 'gruszki', 'cynamon', 'pieprz'],
-            aroma: ['pieprz', 'lukrecja','gruszka', 'cytrusy', 'toffi'],
+            aroma: ['pieprz', 'lukrecja', 'gruszka', 'cytrusy', 'toffi'],
             finish: ['średnio długi', 'lekka goryczka'],
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),

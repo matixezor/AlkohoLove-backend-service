@@ -27,7 +27,11 @@ class AlcoholDatabaseHandler:
             raise ValidationErrorException(ex.args[0])
 
     @staticmethod
-    async def search_alcohols(collection: Collection, limit: int, offset: int, phrase: str = None) -> tuple[list[dict], int]:
+    async def search_alcohols(
+            collection: Collection,
+            limit: int, offset: int,
+            phrase: str = None
+    ) -> tuple[list[dict], int]:
         if phrase:
             result = list(collection.aggregate([
                 {'$match': {'$text': {'$search': phrase}}},

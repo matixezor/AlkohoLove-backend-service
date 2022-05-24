@@ -1,7 +1,6 @@
 from pytest import mark
 from httpx import AsyncClient
 
-
 ALCOHOL_FIXTURE = {
     'name': 'Jameson',
     'kind': 'whisky',

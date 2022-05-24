@@ -1,15 +1,15 @@
 let error = {
     $jsonSchema: {
         bsonType: 'object',
-        required: [ 'user_id', 'description' ],
+        required: ['user_id', 'description'],
         properties: {
             user_id: {
-               bsonType: 'objectId',
-               description: 'must be an objectId'
+                bsonType: 'objectId',
+                description: 'must be an objectId'
             },
             description: {
-               bsonType: 'string',
-               description: 'must be a string'
+                bsonType: 'string',
+                description: 'must be a string'
             }
         }
     }
@@ -18,11 +18,11 @@ let error = {
 db.createCollection(
     'reported_errors',
     {
-     validator: error
+        validator: error
     }
 )
 
-db.reported_errors.createIndex( { user_id: 1 } )
+db.reported_errors.createIndex({user_id: 1})
 
 db.reported_errors.insertMany(
     [

@@ -6,7 +6,6 @@ from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
 
-
 router = APIRouter(prefix='/me', tags=['me'])
 
 
@@ -28,9 +27,9 @@ async def get_self(current_user: UserDb = Depends(get_valid_user)):
     summary='Update your account data'
 )
 async def update_self(
-    update_payload: UserUpdate,
-    current_user: UserDb = Depends(get_valid_user),
-    db: Database = Depends(get_db)
+        update_payload: UserUpdate,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
 ):
     await DatabaseHandler.check_if_user_exists(db.users, email=update_payload.email)
 
@@ -73,7 +72,7 @@ async def update_self(
     summary='Delete your account'
 )
 async def delete_self(
-    current_user: UserDb = Depends(get_valid_user),
-    db: Database = Depends(get_db)
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
 ) -> None:
     await DatabaseHandler.delete_user(db.users, current_user['_id'])

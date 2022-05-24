@@ -1,7 +1,6 @@
 from pytest import mark
 from httpx import AsyncClient
 
-
 TEST_PASSWORD_FIXTURE = 'TestTest1234'
 TEST_INVALID_PASSWORD_FIXTURE = 'Test'
 TEST_USERNAME_FIXTURE = 'admin'

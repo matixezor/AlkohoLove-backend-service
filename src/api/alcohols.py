@@ -1,11 +1,10 @@
-from fastapi import APIRouter, status, HTTPException, Depends
 from pymongo.database import Database
+from fastapi import APIRouter, status, HTTPException, Depends
 
 from src.domain.common import PageInfo
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
-
 
 router = APIRouter(prefix='/alcohols', tags=['alcohol'])
 
@@ -18,10 +17,10 @@ router = APIRouter(prefix='/alcohols', tags=['alcohol'])
     response_model_by_alias=False,
 )
 async def search_alcohols(
-    limit: int = 10,
-    offset: int = 0,
-    phrase: str = None,
-    db: Database = Depends(get_db)
+        limit: int = 10,
+        offset: int = 0,
+        phrase: str = None,
+        db: Database = Depends(get_db)
 ):
     """
     Search for alcohols with pagination. Query params:

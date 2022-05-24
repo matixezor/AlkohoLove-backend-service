@@ -1,46 +1,54 @@
 [
-    {
-        "_id": { "$oid": "6288e2fdd5ab6070dde8db8b" },
-        "username": "admin",
-        "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
-        "email": "admin@gmail.com",
-        "created_on": "2022-03-22T19:10:25Z",
-        "last_login": "2022-03-22T19:13:25Z",
-        "is_admin": true,
-        "is_banned": false,
-        "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
     },
-    {
-        "_id": { "$oid": "6288e2fdd5ab6070dde8db8c" },
-        "username": "Adam_Skorupa",
-        "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
-        "email": "adam.skorupa@gmail.com",
-        "created_on": "2022-04-12T06:11:15Z",
-        "last_login": "2022-04-22T16:24:21Z",
-        "is_admin": false,
-        "is_banned": false,
-        "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "username": "admin",
+    "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
+    "email": "admin@gmail.com",
+    "created_on": "2022-03-22T19:10:25Z",
+    "last_login": "2022-03-22T19:13:25Z",
+    "is_admin": true,
+    "is_banned": false,
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
     },
-    {
-        "_id": { "$oid": "6288e2fdd5ab6070dde8db8d" },
-        "username": "DariuszGołąbski",
-        "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
-        "email": "dariusz.golabski@gmail.com",
-        "created_on": "2022-01-08T08:16:42Z",
-        "last_login": "2022-04-21T12:32:43Z",
-        "is_admin": false,
-        "is_banned": false,
-        "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "username": "Adam_Skorupa",
+    "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
+    "email": "adam.skorupa@gmail.com",
+    "created_on": "2022-04-12T06:11:15Z",
+    "last_login": "2022-04-22T16:24:21Z",
+    "is_admin": false,
+    "is_banned": false,
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8d"
     },
-    {
-        "_id": { "$oid": "6288e2fdd5ab6070dde8db8e" },
-        "username": "ZbanowanyJeleń",
-        "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
-        "email": "jeleń@gmail.com",
-        "created_on": "2022-01-08T08:16:42Z",
-        "last_login": "2022-04-21T12:32:43Z",
-        "is_admin": false,
-        "is_banned": true,
-        "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
-    }
+    "username": "DariuszGołąbski",
+    "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
+    "email": "dariusz.golabski@gmail.com",
+    "created_on": "2022-01-08T08:16:42Z",
+    "last_login": "2022-04-21T12:32:43Z",
+    "is_admin": false,
+    "is_banned": false,
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8e"
+    },
+    "username": "ZbanowanyJeleń",
+    "password": "$2b$12$6MDWT6CUgpAnva9fMnL0N.cGGDRyy5xcR472RiHA5pCSQZ.ZUvvk6",
+    "email": "jeleń@gmail.com",
+    "created_on": "2022-01-08T08:16:42Z",
+    "last_login": "2022-04-21T12:32:43Z",
+    "is_admin": false,
+    "is_banned": true,
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+  }
 ]

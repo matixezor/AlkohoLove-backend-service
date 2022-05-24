@@ -1,7 +1,6 @@
 from pytest import mark
 from httpx import AsyncClient
 
-
 REPORTED_ERROR_ID_FIXTURE = '507f191e810c19729de860ea'
 REPORTED_DESCRIPTION_FIXTURE = 'This app sucks'
 USER_ID_FIXTURE = '6288e2fdd5ab6070dde8db8b'
@@ -23,11 +22,46 @@ ALCOHOL_FIXTURE = {
     'barcode': ['123456789'],
     'age': 12
 }
+ALCOHOL_CATEGORY_FIXTURE = {
+    'id': '628d20d87bde3e0dcb2ed69b',
+    'properties': {
+      'kind': {
+        'enum': ['piwo']
+      },
+      'ibu': {
+        'bsonType': ['int', 'null'],
+        'description': '4'
+      },
+      'srm': {
+        'bsonType': ['double', 'null'],
+        'description': '4'
+      },
+      'extract': {
+        'bsonType': ['double', 'null'],
+        'description': '11.6'
+      },
+      'fermentation': {
+        'bsonType': ['string'],
+        'description': 'górna'
+      },
+      'is_filtered': {
+        'bsonType': ['bool'],
+        'description': 'true'
+      },
+      'is_pasteurized': {
+        'bsonType': ['bool'],
+        'description': 'true'
+      }
+    },
+    'required': ['ibu', 'srm', 'extract', 'fermentation', 'is_filtered', 'is_pasteurized'],
+    'title': 'piwo'
+}
+
 ALCOHOL_ID_FIXTURE = '6288e32dd5ab6070dde8db8f'
 
 
 @mark.asyncio
-async def test_get_users(
+async def test_search_users(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -49,7 +83,7 @@ async def test_get_users(
 
 
 @mark.asyncio
-async def test_get_users_by_username_search(
+async def test_search_users_by_username(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -72,7 +106,7 @@ async def test_get_users_by_username_search(
 
 
 @mark.asyncio
-async def test_get_user_by_id(
+async def test_get_user(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -107,7 +141,7 @@ async def test_ban_user(
 
 
 @mark.asyncio
-async def test_get_reported_error(
+async def test_get_error(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -122,7 +156,7 @@ async def test_get_reported_error(
 
 
 @mark.asyncio
-async def test_get_reported_error_with_insufficient_permissions(
+async def test_get_error_with_insufficient_permissions(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
@@ -133,7 +167,7 @@ async def test_get_reported_error_with_insufficient_permissions(
 
 
 @mark.asyncio
-async def test_get_reported_errors(
+async def test_get_errors(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -152,7 +186,7 @@ async def test_get_reported_errors(
 
 
 @mark.asyncio
-async def test_get_reported_errors_with_insufficient_permissions(
+async def test_get_errors_with_insufficient_permissions(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
@@ -163,7 +197,7 @@ async def test_get_reported_errors_with_insufficient_permissions(
 
 
 @mark.asyncio
-async def test_delete_reported_error(
+async def test_delete_error(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
@@ -174,7 +208,7 @@ async def test_delete_reported_error(
 
 
 @mark.asyncio
-async def test_delete_reported_error_with_insufficient_permissions(
+async def test_delete_error_with_insufficient_permissions(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
@@ -216,7 +250,7 @@ async def test_create_alcohol_without_barcode(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    data = ALCOHOL_FIXTURE
+    data = ALCOHOL_FIXTURE.copy()
     data['barcode'] = []
     response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=data)
     assert response.status_code == 422
@@ -227,7 +261,7 @@ async def test_create_alcohol_with_existing_name(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    data = ALCOHOL_FIXTURE
+    data = ALCOHOL_FIXTURE.copy()
     data['name'] = 'Jameson'
     response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=data)
     assert response.status_code == 400
@@ -288,3 +322,28 @@ async def test_update_alcohol(
     assert response['age'] == 25
     assert response['food'] == ['test_food']
     assert response['color'] == 'czarny'
+
+
+@mark.asyncio
+async def test_get_schemas(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get('admin/alcohols/metadata/categories', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['total'] == 7
+    assert response['categories'][1]['id'] == ALCOHOL_CATEGORY_FIXTURE['id']
+    assert response['categories'][1]['title'] == ALCOHOL_CATEGORY_FIXTURE['title']
+    assert response['categories'][1]['required'] == ALCOHOL_CATEGORY_FIXTURE['required']
+    assert response['categories'][1]['properties'] == [
+        {'name': 'kind', 'metadata': {'enum': ['piwo']}},
+        {'name': 'ibu', 'metadata': {'bsonType': ['int', 'null'], 'description': '4'}},
+        {'name': 'srm', 'metadata': {'bsonType': ['double', 'null'], 'description': '4'}},
+        {'name': 'extract', 'metadata': {'bsonType': ['double', 'null'], 'description': '11.6'}},
+        {'name': 'fermentation', 'metadata': {'bsonType': ['string'], 'description': 'górna'}},
+        {'name': 'is_filtered', 'metadata': {'bsonType': ['bool'], 'description': 'true'}},
+        {'name': 'is_pasteurized', 'metadata': {'bsonType': ['bool'], 'description': 'true'}}
+    ]

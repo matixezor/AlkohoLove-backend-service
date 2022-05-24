@@ -16,9 +16,9 @@ class AlcoholCategoryDatabaseHandler:
 
     @staticmethod
     async def get_categories(
-        collection: Collection[AlcoholCategory],
-        limit: int,
-        offset: int
+            collection: Collection[AlcoholCategory],
+            limit: int,
+            offset: int
     ) -> list[AlcoholCategory]:
         return list(collection.find({}).skip(offset).limit(limit))
 
@@ -28,8 +28,8 @@ class AlcoholCategoryDatabaseHandler:
 
     @staticmethod
     async def get_category_by_id(
-        collection: Collection[AlcoholCategory],
-        category_id: str
+            collection: Collection[AlcoholCategory],
+            category_id: str
     ) -> AlcoholCategory | None:
         return collection.find_one({'_id': ObjectId(category_id)})
 

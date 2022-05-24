@@ -1,13 +1,11 @@
-from os import environ
 from httpx import AsyncClient
 from pytest_asyncio import fixture
 from typing import Callable, AsyncGenerator
 
-from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
-
 
 @fixture(autouse=True)
 def mock_settings_env_vars():
+    from os import environ
     from unittest import mock
     with mock.patch.dict(environ, {'STATIC_DIR': '../../static'}):
         yield
@@ -16,7 +14,6 @@ def mock_settings_env_vars():
 @fixture
 def override_get_db(mongodb) -> Callable:
     def _override_get_db():
-        AlcoholDatabaseHandler.update_validation(mongodb)
         return mongodb
 
     return _override_get_db

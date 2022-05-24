@@ -1,9 +1,9 @@
 from datetime import datetime
 from operator import itemgetter
+from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status, Response, Header, HTTPException
-from pymongo.database import Database
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
@@ -13,7 +13,6 @@ from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException
-
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -25,9 +24,9 @@ router = APIRouter(prefix='/auth', tags=['auth'])
     summary='Login for token'
 )
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    authorize: AuthJWT = Depends(),
-    db: Database = Depends(get_db)
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db)
 ):
     user = await UserDatabaseHandler.authenticate_user(db.users, form_data.username, form_data.password, True)
     return await generate_tokens(user['username'], authorize)
@@ -39,8 +38,8 @@ async def login(
     status_code=status.HTTP_200_OK,
 )
 async def refresh(
-    authorize: AuthJWT = Depends(),
-    db: Database = Depends(get_db)
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db)
 ):
     await authorize.jwt_refresh_token_required()
 
@@ -64,8 +63,8 @@ async def refresh(
     status_code=status.HTTP_201_CREATED
 )
 async def register(
-    user_create_payload: UserCreate,
-    db: Database = Depends(get_db)
+        user_create_payload: UserCreate,
+        db: Database = Depends(get_db)
 ) -> None:
     """
     Create user with request body:
@@ -89,10 +88,10 @@ async def register(
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def logout(
-    access_token: str = Depends(get_valid_token),
-    authorization_refresh: str | None = Header(default=None),
-    authorize: AuthJWT = Depends(AuthJWT),
-    db: Database = Depends(get_db)
+        access_token: str = Depends(get_valid_token),
+        authorization_refresh: str | None = Header(default=None),
+        authorize: AuthJWT = Depends(AuthJWT),
+        db: Database = Depends(get_db)
 ) -> None:
     """
     Logout endpoint. This endpoint requires two tokens to be sent.
@@ -123,5 +122,5 @@ async def logout(
     )
 
     await TokenBlacklistDatabaseHandler.add_token_to_blacklist(
-       db.tokens_blacklist, token_jti=refresh_token_jti, expiration_date=datetime.fromtimestamp(refresh_token_exp)
+        db.tokens_blacklist, token_jti=refresh_token_jti, expiration_date=datetime.fromtimestamp(refresh_token_exp)
     )

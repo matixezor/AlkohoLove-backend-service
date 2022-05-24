@@ -1,7 +1,7 @@
 from uvicorn import run
-from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from async_fastapi_jwt_auth.exceptions import AuthJWTException
 
@@ -12,7 +12,6 @@ from src.api.me import router as logged_in_user_router
 from src.api.reported_errors import router as reported_error_router
 from src.infrastructure.config.app_config import \
     ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS, STATIC_DIR
-
 
 app = FastAPI(title='AlkohoLove-backend-service')
 
@@ -36,7 +35,7 @@ app.include_router(reported_error_router)
 @app.exception_handler(AuthJWTException)
 def auth_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
-        status_code=exc.status_code,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         content={'detail': exc.message}
     )
 

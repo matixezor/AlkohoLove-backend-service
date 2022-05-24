@@ -7,8 +7,7 @@ from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler as DatabaseHandler
 
-
-router = APIRouter(prefix='/reported_errors', tags=['reported_errors'])
+router = APIRouter(prefix='/errors', tags=['errors'])
 
 
 @router.post(
@@ -17,10 +16,10 @@ router = APIRouter(prefix='/reported_errors', tags=['reported_errors'])
     status_code=status.HTTP_201_CREATED,
     summary='Report an error'
 )
-async def create_reported_error(
-    reported_error_create_payload: ReportedErrorCreate,
-    current_user: User = Depends(get_valid_user),
-    db: Database = Depends(get_db)
+async def create_error(
+        reported_error_create_payload: ReportedErrorCreate,
+        current_user: User = Depends(get_valid_user),
+        db: Database = Depends(get_db)
 ):
     await DatabaseHandler.create_reported_error(
         db.reported_errors, str(current_user['_id']), reported_error_create_payload

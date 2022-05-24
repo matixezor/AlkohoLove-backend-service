@@ -8,17 +8,17 @@ from src.infrastructure.database.models.reported_error import ReportedError
 class ReportedErrorDatabaseHandler:
     @staticmethod
     async def get_reported_error_by_id(
-        collection: Collection[ReportedError],
-        error_id: str
+            collection: Collection[ReportedError],
+            error_id: str
     ) -> ReportedError | None:
         return collection.find_one({'_id': ObjectId(error_id)})
 
     @staticmethod
     async def get_reported_errors(
-        collection: Collection[ReportedError],
-        limit: int,
-        offset: int,
-        user_id: str = None
+            collection: Collection[ReportedError],
+            limit: int,
+            offset: int,
+            user_id: str = None
     ) -> list[ReportedError]:
         return (
             list(collection.find({}).skip(offset).limit(limit))
@@ -28,8 +28,8 @@ class ReportedErrorDatabaseHandler:
 
     @staticmethod
     async def count_reported_errors(
-        collection: Collection[ReportedError],
-        user_id: str = None
+            collection: Collection[ReportedError],
+            user_id: str = None
     ) -> int:
         return (
             collection.estimated_document_count()
