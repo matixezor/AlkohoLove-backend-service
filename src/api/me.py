@@ -1,10 +1,13 @@
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException
 
+from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
+from src.domain.user.lists import PaginatedUserWishlist
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
+from src.infrastructure.database.models.user_list.wishlist_database_handler import UserListHandler
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -76,3 +79,31 @@ async def delete_self(
         db: Database = Depends(get_db)
 ) -> None:
     await DatabaseHandler.delete_user(db.users, current_user['_id'])
+
+
+@router.get(
+    '/wishlist',
+    summary='Read your wishlist',
+    response_model=PaginatedUserWishlist,
+    status_code=status.HTTP_200_OK
+)
+async def get_user_wishlist(
+        db: Database = Depends(get_db),
+        limit: int = 10,
+        offset: int = 0
+) -> PaginatedUserWishlist:
+    """
+    Read your wishlist with pagination
+    """
+    current_user = Depends(get_valid_user)
+    alcohols = await DatabaseHandler.get_user_wishlist(user=current_user, collection=db.user_wishlist, limit=limit, offset=offset)
+    return PaginatedUserWishlist(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(alcohols)
+        )
+    )
+
+
