@@ -30,7 +30,7 @@ let core = {
         },
         kind: {
             bsonType: 'string',
-            description: 'piwo'
+            description: 'whisky'
         },
         name: {
             bsonType: 'string',
@@ -358,8 +358,8 @@ db.alcohols.insertMany(
             description: 'Lorem ipsum',
             alcohol_by_volume: 30.0,
             color: 'pomarańczowy',
-            country: 'Szwecja',
-            region: 'Ahus',
+            country: 'Polska',
+            region: null,
             manufacturer: 'Sobieski Sp. z o.o.',
             food: [],
             taste: ['pigwa'],

@@ -34,7 +34,7 @@
       },
       "kind": {
         "bsonType": "string",
-        "description": "piwo"
+        "description": "whisky"
       },
       "name": {
         "bsonType": "string",
