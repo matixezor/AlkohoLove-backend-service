@@ -1,11 +1,10 @@
 from pytest import mark
 from httpx import AsyncClient
 
-
 TEST_PASSWORD_FIXTURE = 'TestTest1234'
 TEST_INVALID_PASSWORD_FIXTURE = 'Test'
 TEST_USERNAME_FIXTURE = 'admin'
-TEST_EMAIL_FIXTURE = 'admin@admin.com'
+TEST_EMAIL_FIXTURE = 'user@user.com'
 
 
 @mark.asyncio
@@ -89,17 +88,16 @@ async def test_register_with_invalid_request_body(
 
 @mark.asyncio
 @mark.parametrize(
-    'username,email,reason',
+    'username,email',
     [
-        (TEST_USERNAME_FIXTURE, 'admin@admin.com', 'username'),
-        ('test', 'admin@gmail.com', 'email')
+        (TEST_USERNAME_FIXTURE, 'user@user.com'),
+        ('test', 'admin@gmail.com')
     ]
 )
 async def test_register_with_existing_user(
         async_client: AsyncClient,
         username: str,
-        email: str,
-        reason: str
+        email: str
 ):
     data = {
         'username': username,
@@ -109,7 +107,7 @@ async def test_register_with_existing_user(
     response = await async_client.post('/auth/register', json=data)
     assert response.status_code == 400
     assert response.json() == {
-        'detail': f'User with given {reason} already exists'
+        'detail': f'User already exists'
     }
 
 

@@ -1,0 +1,1 @@
+from src.infrastructure.database.models.alcohol.alcohol_database_handler import AlcoholDatabaseHandler

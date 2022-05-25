@@ -1,23 +1,21 @@
 from uvicorn import run
-from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from async_fastapi_jwt_auth.exceptions import AuthJWTException
 
 from src.api.auth import router as auth_router
-from src.api.foods import router as food_router
-from src.api.media import router as media_router
-from src.api.users import router as users_router
-from src.api.regions import router as region_router
-from src.api.flavours import router as flavour_router
+from src.api.admin import router as admin_router
 from src.api.alcohols import router as alcohol_router
 from src.api.me import router as logged_in_user_router
-from src.api.countries import router as country_router
-from src.api.reported_error import router as reported_error_router
-from src.config import ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
-
+from src.api.reported_errors import router as reported_error_router
+from src.infrastructure.config.app_config import \
+    ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS, STATIC_DIR
 
 app = FastAPI(title='AlkohoLove-backend-service')
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,21 +26,16 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
-app.include_router(users_router)
+app.include_router(admin_router)
 app.include_router(alcohol_router)
 app.include_router(logged_in_user_router)
 app.include_router(reported_error_router)
-app.include_router(food_router)
-app.include_router(flavour_router)
-app.include_router(country_router)
-app.include_router(region_router)
-app.include_router(media_router)
 
 
 @app.exception_handler(AuthJWTException)
 def auth_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
-        status_code=exc.status_code,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         content={'detail': exc.message}
     )
 
