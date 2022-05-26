@@ -122,11 +122,11 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def get_user_wishlist(
-            user: UserAdminInfo,
+            user_id: str,
             collection: Collection[UserWishlist],
             limit: int,
             offset: int,
     ) -> list[UserWishlist] | None:
         return (
-            list(collection.find({'user_id': ObjectId(user.id)}).skip(offset).limit(limit))
+            list(collection.find({'user_id': ObjectId(user_id)}).skip(offset).limit(limit))
         )

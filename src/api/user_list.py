@@ -33,6 +33,6 @@ async def get_user_wishlist(
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=3
+            total=len(alcohols)
         )
     )
