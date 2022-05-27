@@ -1,6 +1,7 @@
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException
 
+from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
 from src.domain.user.lists import PaginatedUserWishlist
@@ -84,25 +85,26 @@ async def delete_self(
 
 @router.get(
     path='/wishlist',
-    response_model=PaginatedUserWishlist,
+    response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
-    summary='Read your wishlist with pagination',
+    summary='Read user wishlist with pagination',
     response_model_by_alias=False
 )
 async def get_wishlist(
         limit: int = 10,
         offset: int = 0,
-        user_id: str = None,
-        db: Database = Depends(get_db)
-) -> PaginatedUserWishlist:
+        db: Database = Depends(get_db),
+        current_user: UserDb = Depends(get_valid_user)
+) -> PaginatedAlcohol:
     """
     Show user wishlist with pagination
     """
-    alcohols = await DatabaseHandler.get_user_wishlist(
-        limit, offset, user_id, db.user_wishlist, db.alcohols
+    user_id = str(current_user['_id'])
+    alcohols = await UserListHandler.get_user_wishlist_by_user_id(
+        limit, offset, db.user_wishlist, db.alcohols, user_id
     )
-    total = await UserListHandler.count_alcohols_in_wishlist(db.alcohols, user_id)
-    return PaginatedUserWishlist(
+    total = await UserListHandler.count_alcohols_in_wishlist(db.user_wishlist, user_id)
+    return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,

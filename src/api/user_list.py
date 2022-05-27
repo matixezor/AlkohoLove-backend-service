@@ -4,7 +4,6 @@ from starlette import status
 
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common import PageInfo
-from src.domain.user.lists import PaginatedUserWishlist
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserListHandler
 
