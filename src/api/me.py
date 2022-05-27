@@ -81,28 +81,33 @@ async def delete_self(
     await DatabaseHandler.delete_user(db.users, current_user['_id'])
 
 
+
 @router.get(
-    '/wishlist',
-    summary='Read your wishlist',
+    path='/wishlist',
     response_model=PaginatedUserWishlist,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    summary='Read your wishlist with pagination',
+    response_model_by_alias=False
 )
-async def get_user_wishlist(
-        db: Database = Depends(get_db),
+async def get_wishlist(
         limit: int = 10,
-        offset: int = 0
+        offset: int = 0,
+        user_id: str = None,
+        db: Database = Depends(get_db)
 ) -> PaginatedUserWishlist:
     """
-    Read your wishlist with pagination
+    Show user wishlist with pagination
     """
-    current_user = Depends(get_valid_user)
-    alcohols = await DatabaseHandler.get_user_wishlist(user=current_user, collection=db.user_wishlist, limit=limit, offset=offset)
+    alcohols = await DatabaseHandler.get_user_wishlist(
+        limit, offset, user_id, db.user_wishlist, db.alcohols
+    )
+    total = await UserListHandler.count_alcohols_in_wishlist(db.alcohols, user_id)
     return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=total
         )
     )
 

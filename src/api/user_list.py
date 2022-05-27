@@ -14,25 +14,27 @@ router = APIRouter(prefix='/list', tags=['list'])
     path='/wishlist/{user_id}',
     response_model=PaginatedUserWishlist,
     status_code=status.HTTP_200_OK,
-    summary='Read user wishlist',
+    summary='Read user wishlist with pagination',
     response_model_by_alias=False
 )
-async def get_user_wishlist(
-        user_id: str = None,
+async def get_wishlist(
         limit: int = 10,
         offset: int = 0,
+        user_id: str = None,
         db: Database = Depends(get_db)
 ) -> PaginatedUserWishlist:
     """
-    Read your wishlist with pagination
+    Show user wishlist with pagination
     """
-    alcohols = await UserListHandler.get_user_wishlist_by_user_id(user_id=user_id, limit=limit, offset=offset,
-                                                       collection=db.user_wishlist)
+    alcohols = await UserListHandler.get_user_wishlist_by_user_id(
+        limit, offset, db.user_wishlist, db.alcohols, user_id
+    )
+    total = await UserListHandler.count_alcohols_in_wishlist(db.user_wishlist, user_id)
     return PaginatedUserWishlist(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=total
         )
     )

@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from fastapi import status, HTTPException
 from pymongo.collection import Collection, ReturnDocument
 
+from src.domain.alcohol import AlcoholBase
 from src.domain.user import UserUpdate, UserAdminInfo
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
@@ -122,11 +123,14 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def get_user_wishlist(
-            user_id: str,
-            collection: Collection[UserWishlist],
             limit: int,
             offset: int,
-    ) -> list[UserWishlist] | None:
+            wishlist_collection: Collection[UserWishlist],
+            alcohols_collection: Collection[AlcoholBase],
+            user_id: str = None,
+    ) -> list[UserWishlist]:
+        wishlist = wishlist_collection.find({'user_id': ObjectId(user_id)}, {'alcohol_id': 1, 'user_id': 0, '_id': 0})
         return (
-            list(collection.find({'user_id': ObjectId(user_id)}).skip(offset).limit(limit))
+            list(alcohols_collection.find({'alcohol_id': { '$in': wishlist}}).skip(offset).limit(limit))
         )
+

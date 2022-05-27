@@ -37,12 +37,12 @@ db.user_wishlist.insertMany(
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8c'),
-            user_id: ObjectId('6288e2fdd5ab6070dde8db8b'),
+            user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
             alcohols: [ ObjectId('6288e32dd5ab6070dde8db8a'),  ObjectId('6288e32dd5ab6070dde8db8b')]
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8d'),
-            user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
+            user_id: ObjectId('6288e2fdd5ab6070dde8db8d'),
             alcohols: [ ObjectId('6288e32dd5ab6070dde8db8c'),  ObjectId('6288e32dd5ab6070dde8db8e'),  ObjectId('6288e32dd5ab6070dde8db8f'),  ObjectId('6288e32dd5ab6070dde8db8c'),  ObjectId('6288e32dd5ab6070dde8db8b'),  ObjectId('6288e32dd5ab6070dde8db8a')]
         }
     ]
