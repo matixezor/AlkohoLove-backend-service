@@ -1,5 +1,3 @@
-from operator import itemgetter
-
 from bson import ObjectId
 from pymongo.collection import Collection
 
@@ -7,7 +5,7 @@ from src.domain.alcohol import AlcoholBase
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 
 
-class UserListHandler:
+class UserWishlistHandler:
     @staticmethod
     async def get_user_wishlist_by_user_id(
             limit: int,

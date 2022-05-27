@@ -1,7 +1,7 @@
 # from pydantic import BaseModel
 #
 # from src.domain.common import PageInfo
-# from src.domain.user.lists.user_search_history import UserSearchHistory
+# from src.domain.user.user_list.user_search_history import UserSearchHistory
 #
 #
 # class PaginatedUserSearchHistory(BaseModel):

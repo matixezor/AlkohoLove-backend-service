@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
-from src.domain.user.lists import PaginatedUserWishlist
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
-from src.infrastructure.database.models.user_list.wishlist_database_handler import UserListHandler
+from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
+from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -100,10 +100,40 @@ async def get_wishlist(
     Show user wishlist with pagination
     """
     user_id = str(current_user['_id'])
-    alcohols = await UserListHandler.get_user_wishlist_by_user_id(
+    alcohols = await UserWishlistHandler.get_user_wishlist_by_user_id(
         limit, offset, db.user_wishlist, db.alcohols, user_id
     )
-    total = await UserListHandler.count_alcohols_in_wishlist(db.user_wishlist, user_id)
+    total = await UserWishlistHandler.count_alcohols_in_wishlist(db.user_wishlist, user_id)
+    return PaginatedAlcohol(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+@router.get(
+    path='/favourites',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Read user favourite alcohol list with pagination',
+    response_model_by_alias=False
+)
+async def get_favourites(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db),
+        current_user: UserDb = Depends(get_valid_user)
+) -> PaginatedAlcohol:
+    """
+    Show user favourite alcohol list with pagination
+    """
+    user_id = str(current_user['_id'])
+    alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
+        limit, offset, db.user_favourites, db.alcohols, user_id
+    )
+    total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, user_id)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(

@@ -1,6 +1,6 @@
 # from datetime import datetime
 #
-# from src.domain.user.lists.user_list import UserList
+# from src.domain.user.user_list.user_list import UserList
 #
 #
 # class UserSearchHistory(UserList):
