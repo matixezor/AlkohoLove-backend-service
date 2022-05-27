@@ -1,9 +1,7 @@
-from pydantic import BaseModel
-
-from src.domain.alcohol import Alcohol
+from src.domain.alcohol import Alcohol, AlcoholBase
 from src.domain.common import PageInfo
 
 
-class PaginatedUserWishlist(BaseModel):
-    alcohols: list[Alcohol]
+class PaginatedUserWishlist(AlcoholBase):
+    alcohols: list[AlcoholBase]
     page_info: PageInfo
