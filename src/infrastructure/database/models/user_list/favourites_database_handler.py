@@ -10,8 +10,8 @@ class UserFavouritesHandler:
     async def get_user_favourites_by_user_id(
             limit: int,
             offset: int,
-            favourites_collection: Collection,
-            alcohols_collection: Collection,
+            favourites_collection: Collection[Favourites],
+            alcohols_collection: Collection[AlcoholBase],
             user_id: str = None,
     ) -> list[dict]:
         favourites = list(
@@ -21,3 +21,7 @@ class UserFavouritesHandler:
         return (
             list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
         )
+
+    @staticmethod
+    async def delete_alcohol_from_favourites(collection: Collection[Favourites], user_id: str, alcohol_id: str) -> None:
+        collection.update_one({'user_id': ObjectId(user_id)}, {'$pull': {'alcohols': ObjectId(alcohol_id)}})

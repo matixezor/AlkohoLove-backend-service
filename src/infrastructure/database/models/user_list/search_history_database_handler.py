@@ -1,7 +1,8 @@
-from datetime import datetime
-
 from bson import ObjectId
+from datetime import datetime
 from pymongo.collection import Collection
+
+from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 
 
 class SearchHistoryHandler:
@@ -27,3 +28,9 @@ class SearchHistoryHandler:
             alcohol[i] = (alcohol[i], dates[i])
 
         return alcohol
+
+    @staticmethod
+    async def delete_alcohol_from_search_history(collection: Collection[UserSearchHistory], user_id: str,
+                                                 alcohol_id: str, date: datetime) -> None:
+        collection.update_many({'user_id': ObjectId(user_id)},
+                               {'$pull': {'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': date}}})

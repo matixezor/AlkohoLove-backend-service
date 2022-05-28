@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException
 
@@ -188,5 +190,40 @@ async def delete_alcohol_form_wishlist(
     """
     user_id = str(current_user['_id'])
     await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
+
+
+@router.delete(
+    path='/favourites/{alcohol_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol from favourites'
+)
+async def delete_alcohol_form_favourites(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol from favourites by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
+
+
+@router.delete(
+    path='/search_history/{alcohol_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol from search history'
+)
+async def delete_alcohol_form_favourites(
+        alcohol_id: str,
+        date: datetime,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol from search history by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
 
 
