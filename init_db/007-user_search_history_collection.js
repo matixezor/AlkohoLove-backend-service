@@ -46,6 +46,14 @@ db.user_search_history.insertMany(
                 {
                     alcohol_id: ObjectId('6288e32dd5ab6070dde8db8a'),
                     search_date: new ISODate('2022-03-21T19:13:25Z')
+                },
+                {
+                    alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
+                    search_date: new ISODate('2022-07-25T19:13:25Z')
+                },
+                {
+                    alcohol_id: ObjectId('6288e32dd5ab6070dde8db8c'),
+                    search_date: new ISODate('2022-02-21T19:13:25Z')
                 }
             ]
         },
@@ -61,6 +69,11 @@ db.user_search_history.insertMany(
                     alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
                     search_date: new ISODate('2022-07-21T19:13:25Z')
                 }]
+        },
+        {
+            _id: ObjectId('6292546f3f0b79db361fdf1d'),
+            user_id: ObjectId('6288e2fdd5ab6070dde8db8d'),
+            alcohols: []
         }
     ]
 )

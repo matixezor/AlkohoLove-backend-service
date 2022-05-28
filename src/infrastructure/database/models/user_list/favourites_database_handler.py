@@ -10,8 +10,8 @@ class UserFavouritesHandler:
     async def get_user_favourites_by_user_id(
             limit: int,
             offset: int,
-            favourites_collection: Collection[Favourites],
-            alcohols_collection: Collection[AlcoholBase],
+            favourites_collection: Collection,
+            alcohols_collection: Collection,
             user_id: str = None,
     ) -> list[dict]:
         favourites = list(
@@ -20,13 +20,4 @@ class UserFavouritesHandler:
 
         return (
             list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
-        )
-
-    @staticmethod
-    async def count_alcohols_in_favourites(
-            collection: Collection[Favourites],
-            user_id: str = None
-    ) -> int:
-        return (
-            collection.count_documents(filter={'user_id': {'$eq': ObjectId(user_id)}})
         )
