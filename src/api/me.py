@@ -173,3 +173,20 @@ async def get_search_history(
     )
 
 
+@router.delete(
+    path='/wishlist/{alcohol_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol from wishlist'
+)
+async def delete_alcohol_form_wishlist(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol from wishlist by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
+
+
