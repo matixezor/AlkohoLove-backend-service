@@ -1,7 +1,9 @@
-# from datetime import datetime
-#
-# from src.domain.user.user_list.user_list import UserList
-#
-#
-# class UserSearchHistory(UserList):
-#     date: datetime
+from datetime import datetime
+
+from pydantic import BaseModel
+from src.domain.alcohol import Alcohol
+
+
+class UserSearchHistoryEntry(BaseModel):
+    alcohol: Alcohol
+    date: datetime

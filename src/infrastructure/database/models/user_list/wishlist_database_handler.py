@@ -21,6 +21,7 @@ class UserWishlistHandler:
         return (
             list(alcohols_collection.find({'_id': {'$in': wishlist}}).skip(offset).limit(limit))
         )
+
     @staticmethod
     async def count_alcohols_in_wishlist(
             collection: Collection[UserWishlist],

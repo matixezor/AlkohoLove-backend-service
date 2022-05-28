@@ -26,5 +26,6 @@ services:
       - ./init_db/003-errors_collection.js:/docker-entrypoint-initdb.d/003-errors_collection.js:ro
       - ./init_db/004-alcohol_collections.js:/docker-entrypoint-initdb.d/004-alcohol_collections.js:ro
       - ./init_db/005-user_wishlists_collection.js:/docker-entrypoint-initdb.d/005-user_wishlists_collection.js:ro
-      - ./init_db/006-user_favourites_collection.js:/docker-entrypoint-initdb.d/005-user_favourites_collection.js:ro
+      - ./init_db/006-user_favourites_collection.js:/docker-entrypoint-initdb.d/006-user_favourites_collection.js:ro
+      - ./init_db/007-user_search_history_collection.js:/docker-entrypoint-initdb.d/007-user_search_history_collection.js:ro
       - ./mongo-data/:/data/db
