@@ -25,4 +25,6 @@ services:
       - ./init_db/002-tokens_collection.js:/docker-entrypoint-initdb.d/002-tokens_collection.js:ro
       - ./init_db/003-errors_collection.js:/docker-entrypoint-initdb.d/003-errors_collection.js:ro
       - ./init_db/004-alcohol_collections.js:/docker-entrypoint-initdb.d/004-alcohol_collections.js:ro
+      - ./init_db/009-followed_by_collection.js:/docker-entrypoint-initdb.d/009-followed_by_collection.js:ro
+      - ./init_db/010-following_users_collection.js:/docker-entrypoint-initdb.d/010-following_users_collection.js:ro
       - ./mongo-data/:/data/db
