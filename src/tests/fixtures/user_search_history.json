@@ -1,0 +1,52 @@
+[
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "alcohols": [
+      {
+        "alcohol_id": {
+          "$oid": "6288e32dd5ab6070dde8db8a"
+        },
+        "search_date": "2022-03-21T19:13:25Z"
+      },
+      {
+        "alcohol_id": {
+          "$oid": "6288e32dd5ab6070dde8db8b"
+        },
+        "search_date": "2022-07-25T19:13:25Z"
+      },
+      {
+        "alcohol_id": {
+          "$oid": "6288e32dd5ab6070dde8db8c"
+        },
+        "search_date": "2022-02-21T19:13:25Z"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "alcohols": [
+      {
+        "alcohol_id": {
+          "$oid": "6288e32dd5ab6070dde8db8a"
+        },
+        "search_date": "2022-04-25T19:13:25Z"
+      },
+      {
+        "alcohol_id": {
+          "$oid": "6288e32dd5ab6070dde8db8b"
+        },
+        "search_date": "2022-07-21T19:13:25Z"
+      }
+    ]
+  }
+]
