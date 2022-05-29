@@ -73,7 +73,6 @@ class UserTagDatabaseHandler:
     async def add_alcohol(
             collection: Collection[UserTag],
             tag_id: str,
-            user_id: str,
             alcohol_id: str,
     ) -> None:
         collection.update_one({'_id': ObjectId(tag_id)}, {'$push': {'alcohols': ObjectId(alcohol_id)}})

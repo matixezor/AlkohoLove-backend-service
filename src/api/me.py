@@ -198,7 +198,6 @@ async def add_alcohol(
     await UserTagDatabaseHandler.add_alcohol(
         db.user_tags,
         tag_id,
-        str(current_user['_id']),
         alcohol_id)
 
 
