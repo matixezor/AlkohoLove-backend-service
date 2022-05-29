@@ -157,14 +157,3 @@ class UserTagDatabaseHandler:
             return True
         else:
             return False
-
-    # @staticmethod
-    # async def get_user_tag_by_tag_id_and_user_id(
-    #         collection: Collection[UserTag],
-    #         tag_id: str,
-    #         user_id: str
-    # ) -> UserTag | None:
-    #     return collection.find_one({'user_id': ObjectId(user_id), '_id': ObjectId(tag_id)})
-    #
-    # @staticmethod
-    # async def get_user_tag_alcohols
