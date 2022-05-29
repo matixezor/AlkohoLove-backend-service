@@ -5,7 +5,7 @@ let following_entry = {
         properties: {
             following: {
                 bsonType: 'array',
-                description: 'list of users following given user',
+                description: 'list of users followed by given user',
                 items: {
                     bsonType: 'objectId'
                 }
@@ -39,7 +39,7 @@ db.following.insertMany(
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8e'),
-            following: []
+            following: [ObjectId('6288e2fdd5ab6070dde8db8b')]
         }
     ]
 )

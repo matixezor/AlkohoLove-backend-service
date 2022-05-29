@@ -4,6 +4,6 @@ from typing import TypedDict
 from src.domain.user.user_basic_info import UserBasicInfo
 
 
-class Followed(TypedDict):
+class Following(TypedDict):
     _id: ObjectId
-    followed: list[UserBasicInfo]
+    following: list[UserBasicInfo]
