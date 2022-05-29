@@ -203,7 +203,7 @@ async def test_delete_alcohol_form_search_history(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.delete('/me/search_history/6288e32dd5ab6070dde8db8a/2022-07-25T19:13:25Z',
+    response = await async_client.delete('/me/search_history/6288e32dd5ab6070dde8db8a?date=2022-07-25T19:13:25Z',
                                          headers=user_token_headers)
     assert response.status_code == 204
 
