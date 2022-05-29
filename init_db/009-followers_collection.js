@@ -1,9 +1,9 @@
-let followed = {
+let followed_entry = {
     $jsonSchema: {
         bsonType: 'object',
-        required: ['followed_by'],
+        required: ['followers'],
         properties: {
-            followed_users: {
+            followers: {
                 bsonType: 'array',
                 description: 'list of users followed by given user',
                 items: {
@@ -16,30 +16,30 @@ let followed = {
 
 
 db.createCollection(
-    'followed_by',
+    'followers',
     {
-        validator: followed
+        validator: followed_entry
     }
 )
 
 
-db.followed_by.insertMany(
+db.followers.insertMany(
     [
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8b'),
-            followed_by: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')]
+            followers: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')]
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8c'),
-            followed_by: [ObjectId('6288e2fdd5ab6070dde8db8b'), ObjectId('6288e2fdd5ab6070dde8db8d')]
+            followers: [ObjectId('6288e2fdd5ab6070dde8db8b'), ObjectId('6288e2fdd5ab6070dde8db8d')]
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8d'),
-            followed_by: [ObjectId('6288e2fdd5ab6070dde8db8b'), ObjectId('6288e2fdd5ab6070dde8db8c')]
+            followers: [ObjectId('6288e2fdd5ab6070dde8db8b'), ObjectId('6288e2fdd5ab6070dde8db8c')]
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8e'),
-            followed_by: []
+            followers: []
         }
     ]
 )

@@ -1,7 +1,9 @@
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException
 
+from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
+from src.domain.user.paginated_user_info import PaginatedUserInfo
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
@@ -76,3 +78,33 @@ async def delete_self(
         db: Database = Depends(get_db)
 ) -> None:
     await DatabaseHandler.delete_user(db.users, current_user['_id'])
+
+
+@router.get(
+    path='/followers',
+    response_model=PaginatedUserInfo,
+    status_code=status.HTTP_200_OK,
+    summary='Read user followers with pagination',
+    response_model_by_alias=False
+)
+async def get_followers(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db),
+        current_user: UserDb = Depends(get_valid_user)
+) -> PaginatedUserInfo:
+    """
+    Get user followers with pagination
+    """
+    user_id = str(current_user['_id'])
+    users = await FollowersHandler.get_user_wishlist_by_user_id(
+        limit, offset, db.followers, db.users, user_id
+    )
+    return PaginatedUserInfo(
+        users=users,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(users)
+        )
+    )
