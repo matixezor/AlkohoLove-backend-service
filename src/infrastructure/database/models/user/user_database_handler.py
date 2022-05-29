@@ -9,6 +9,8 @@ from src.domain.alcohol import AlcoholBase
 from src.domain.user import UserUpdate, UserAdminInfo
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
+from src.infrastructure.database.models.user_list.favourites import Favourites
+from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
@@ -122,15 +124,17 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def get_user_wishlist(
-            limit: int,
-            offset: int,
+    async def create_user_lists(
+            user_collection: Collection[User],
+            username: str,
             wishlist_collection: Collection[UserWishlist],
-            alcohols_collection: Collection[AlcoholBase],
-            user_id: str = None,
-    ) -> list[UserWishlist]:
-        wishlist = wishlist_collection.find({'user_id': ObjectId(user_id)}, {'alcohol_id': 1, 'user_id': 0, '_id': 0})
-        return (
-            list(alcohols_collection.find({'alcohol_id': { '$in': wishlist}}).skip(offset).limit(limit))
-        )
-
+            favourites_collection: Collection[Favourites],
+            search_history_collection: Collection[UserSearchHistory],
+    ) -> None:
+        user = await UserDatabaseHandler.get_user_by_username(user_collection, username)
+        empty_wishlist = UserWishlist(user_id=user['_id'], alcohols=[], _id=ObjectId())
+        wishlist_collection.insert_one(empty_wishlist)
+        empty_favourites = Favourites(user_id=user['_id'], alcohols=[], _id=ObjectId())
+        favourites_collection.insert_one(empty_favourites)
+        empty_search_history = UserSearchHistory(user_id=user['_id'], alcohols=[], _id=ObjectId())
+        search_history_collection.insert_one(empty_search_history)
