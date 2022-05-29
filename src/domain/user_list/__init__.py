@@ -1,3 +1,2 @@
 from src.domain.user_list.search_history import SearchHistoryEntry
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
-
