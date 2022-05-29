@@ -22,6 +22,7 @@ let core = {
     ],
     properties: {
         barcode: {
+            title: 'kod kreskowy',
             bsonType: 'array',
             description: '123456789',
             items: {
@@ -29,42 +30,52 @@ let core = {
             }
         },
         kind: {
+            title: 'kategoria',
             bsonType: 'string',
             description: 'whisky'
         },
         name: {
+            title: 'nazwa',
             bsonType: 'string',
             description: 'Jameson'
         },
         type: {
+            title: 'typ',
             bsonType: 'string',
             description: 'blended'
         },
         description: {
+            title: 'opis',
             bsonType: 'string',
             description: 'Pyszna whisky'
         },
         alcohol_by_volume: {
+            title: 'zawartość alkoholu',
             bsonType: 'double',
             description: '40'
         },
         color: {
+            title: 'kolor',
             bsonType: 'string',
             description: 'karmelowy'
         },
         country: {
+            title: 'kraj',
             bsonType: 'string',
             description: 'Irlandia'
         },
         region: {
+            title: 'region',
             bsonType: ['string', 'null'],
             description: 'Cork'
         },
         manufacturer: {
+            title: 'producent',
             bsonType: 'string',
             description: 'Irish Distillers'
         },
         food: {
+            title: 'jedzenie',
             bsonType: 'array',
             description: 'orzeszki',
             items: {
@@ -72,6 +83,7 @@ let core = {
             }
         },
         taste: {
+            title: 'smak',
             bsonType: 'array',
             description: 'wanilia',
             items: {
@@ -79,6 +91,7 @@ let core = {
             }
         },
         aroma: {
+            title: 'aromat',
             bsonType: 'array',
             description: 'nuty korzenne',
             items: {
@@ -86,6 +99,7 @@ let core = {
             }
         },
         finish: {
+            title: 'finisz',
             bsonType: 'array',
             description: 'łagodny',
             items: {
@@ -93,18 +107,22 @@ let core = {
             }
         },
         rate_count: {
+            title: 'liczba ocen',
             bsonType: 'long',
             description: '10'
         },
         rate_value: {
+            title: 'suma ocen',
             bsonType: 'long',
             description: '50'
         },
         avg_rating: {
+            title: 'średnia ocen',
             bsonType: 'double',
             description: '5.0'
         },
         keywords: {
+            title: 'tagi',
             bsonType: 'array',
             description: 'irlandzka',
             items: {
@@ -129,26 +147,32 @@ let beer = {
             enum: ['piwo']
         },
         ibu: {
+            title: 'ibu',
             bsonType: ['int', 'null'],
             description: '4'
         },
         srm: {
+            title: 'srm',
             bsonType: ['double', 'null'],
             description: '4'
         },
         extract: {
+            title: 'ekstrakt',
             bsonType: ['double', 'null'],
             description: '11.6'
         },
         fermentation: {
+            title: 'fermentacja',
             bsonType: ['string'],
             description: 'górna'
         },
         is_filtered: {
+            title: 'filtrowane',
             bsonType: ['bool'],
             description: 'true'
         },
         is_pasteurized: {
+            title: 'pasteryzowane',
             bsonType: ['bool'],
             description: 'true'
         },
@@ -163,6 +187,7 @@ let whisky = {
             enum: ['whisky']
         },
         age: {
+            title: 'wiek',
             bsonType: 'int',
             description: '3'
         }
@@ -186,10 +211,12 @@ let wine = {
             enum: ['wino']
         },
         vine_strain: {
+            title: 'szczep',
             bsonType: ['string', 'null'],
             description: 'Chardonnay'
         },
         winery: {
+            title: 'winiarnia',
             bsonType: ['string', 'null'],
             description: 'Château de Cremat'
         }
@@ -204,6 +231,7 @@ let rum = {
             enum: ['rum']
         },
         age: {
+            tile: 'wiek',
             bsonType: ['int', 'null'],
             description: '3'
         }

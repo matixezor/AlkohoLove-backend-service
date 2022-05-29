@@ -340,10 +340,10 @@ async def test_get_schemas(
     assert response['categories'][1]['required'] == ALCOHOL_CATEGORY_FIXTURE['required']
     assert response['categories'][1]['properties'] == [
         {'name': 'kind', 'metadata': {'enum': ['piwo']}},
-        {'name': 'ibu', 'metadata': {'bsonType': ['int', 'null'], 'description': '4'}},
-        {'name': 'srm', 'metadata': {'bsonType': ['double', 'null'], 'description': '4'}},
-        {'name': 'extract', 'metadata': {'bsonType': ['double', 'null'], 'description': '11.6'}},
-        {'name': 'fermentation', 'metadata': {'bsonType': ['string'], 'description': 'górna'}},
-        {'name': 'is_filtered', 'metadata': {'bsonType': ['bool'], 'description': 'true'}},
-        {'name': 'is_pasteurized', 'metadata': {'bsonType': ['bool'], 'description': 'true'}}
+        {'name': 'ibu', 'metadata': {'title': 'ibu', 'bsonType': ['int', 'null'], 'description': '4'}},
+        {'name': 'srm', 'metadata': {'title': 'srm', 'bsonType': ['double', 'null'], 'description': '4'}},
+        {'name': 'extract', 'metadata': {'title': 'ekstrakt', 'bsonType': ['double', 'null'], 'description': '11.6'}},
+        {'name': 'fermentation', 'metadata': {'title': 'fermentacja', 'bsonType': ['string'], 'description': 'górna'}},
+        {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
+        {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
     ]
