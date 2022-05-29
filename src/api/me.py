@@ -212,7 +212,7 @@ async def delete_alcohol_form_favourites(
 
 
 @router.delete(
-    path='/search_history/{alcohol_id}',
+    path='/search_history/{alcohol_id}/{date}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete alcohol from search history'
 )

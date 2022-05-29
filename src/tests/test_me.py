@@ -178,3 +178,80 @@ async def test_get_search_history(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['alcohols'] == SEARCH_HISTORY_FIXTURE
+
+
+@mark.asyncio
+async def test_delete_alcohol_form_wishlist(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete('/me/wishlist/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_delete_alcohol_form_favourites(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete('/me/favourites/6288e32dd5ab6070dde8db8c', headers=user_token_headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_delete_alcohol_form_search_history(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete('/me/search_history/6288e32dd5ab6070dde8db8a/2022-07-25T19:13:25Z',
+                                         headers=user_token_headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_add_alcohol_to_wishlist(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/wishlist/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_add_alcohol_to_favourites(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_add_alcohol_to_search_history(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/wishlist/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_alcohol_already_in_wishlist(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/wishlist/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'Alcohol already in list'
+
+
+@mark.asyncio
+async def test_alcohol_already_in_favourites(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'Alcohol already in list'
