@@ -28,3 +28,10 @@ class UserWishlistHandler:
     @staticmethod
     async def add_alcohol_to_wishlist(collection: Collection[UserWishlist], user_id: str, alcohol_id: str) -> None:
         collection.update_one({'user_id': ObjectId(user_id)}, {'$push': {'alcohols': ObjectId(alcohol_id)}})
+
+    @staticmethod
+    async def check_if_alcohol_in_wishlist(collection: Collection[UserWishlist], user_id: str, alcohol_id: str) -> bool:
+        if collection.find_one({'user_id': ObjectId(user_id), 'alcohols': ObjectId(alcohol_id)}):
+            return True
+        else:
+            return False

@@ -13,6 +13,7 @@ from src.infrastructure.database.models.user import User as UserDb, UserDatabase
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
+from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -242,7 +243,10 @@ async def add_alcohol_to_wishlist(
     Add alcohol to your wishlist by alcohol id
     """
     user_id = str(current_user['_id'])
-    await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
+    if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id):
+        await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
+    else:
+        raise AlcoholAlreadyInListException()
 
 
 @router.post(
@@ -259,7 +263,11 @@ async def add_alcohol_to_favourites(
     Add alcohol to favourites by alcohol id
     """
     user_id = str(current_user['_id'])
-    await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, alcohol_id)
+    if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_wishlist, user_id, alcohol_id):
+        await UserFavouritesHandler.add_alcohol_to_favourites(db.user_wishlist, user_id, alcohol_id)
+    else:
+        raise AlcoholAlreadyInListException()
+
 
 @router.post(
     path='/search_history/{alcohol_id}',
