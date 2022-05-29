@@ -9,6 +9,7 @@ from src.domain.user.paginated_user_info import PaginatedUserInfo
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.infrastructure.database.models.followers.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
@@ -304,7 +305,36 @@ async def get_followers(
     Get user followers with pagination
     """
     user_id = str(current_user['_id'])
-    users = await FollowersHandler.get_user_wishlist_by_user_id(
+    users = await FollowersDatabaseHandler.get_followers_by_user_id(
+        limit, offset, db.followers, db.users, user_id
+    )
+    return PaginatedUserInfo(
+        users=users,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=len(users)
+        )
+    )
+
+@router.get(
+    path='/followed',
+    response_model=PaginatedUserInfo,
+    status_code=status.HTTP_200_OK,
+    summary='Read followed users with pagination',
+    response_model_by_alias=False
+)
+async def get_followed(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db),
+        current_user: UserDb = Depends(get_valid_user)
+) -> PaginatedUserInfo:
+    """
+    Get followed users with pagination
+    """
+    user_id = str(current_user['_id'])
+    users = await FollowedDatabaseHandler.get_followed_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
     return PaginatedUserInfo(
