@@ -14,13 +14,10 @@ class UserFavouritesHandler:
             alcohols_collection: Collection[AlcoholBase],
             user_id: str = None,
     ) -> list[dict]:
-        favourites = list(
-            favourites_collection.find({'user_id': ObjectId(user_id)}, {'alcohols': 1}))
+        favourites = list(favourites_collection.find({'user_id': ObjectId(user_id)}, {'alcohols': 1}))
         favourites = favourites[0]['alcohols']
 
-        return (
-            list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
-        )
+        return list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
 
     @staticmethod
     async def delete_alcohol_from_favourites(collection: Collection[Favourites], user_id: str, alcohol_id: str) -> None:
