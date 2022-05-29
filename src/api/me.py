@@ -1,19 +1,19 @@
 from datetime import datetime
-
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
-from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.domain.alcohol import PaginatedAlcohol
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
-from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
-from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
-from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
-from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
+from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
+from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
+from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
+from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
+from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
+
 
 router = APIRouter(prefix='/me', tags=['me'])
 

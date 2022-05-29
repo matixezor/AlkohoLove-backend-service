@@ -1,5 +1,5 @@
-from typing import TypedDict
 from bson import ObjectId
+from typing import TypedDict
 
 from src.domain.alcohol import AlcoholBase
 

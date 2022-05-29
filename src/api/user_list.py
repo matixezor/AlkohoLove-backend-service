@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends
-from pymongo.database import Database
 from starlette import status
+from pymongo.database import Database
+from fastapi import APIRouter, Depends
 
-from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common import PageInfo
+from src.domain.alcohol import PaginatedAlcohol
 from src.domain.user_list import PaginatedSearchHistory
 from src.infrastructure.database.database_config import get_db
+from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
-from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
+
 
 router = APIRouter(prefix='/list', tags=['list'])
 
