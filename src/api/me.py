@@ -86,7 +86,6 @@ async def delete_self(
     await DatabaseHandler.delete_user(db.users, current_user['_id'])
 
 
-
 @router.get(
     path='/wishlist',
     response_model=PaginatedAlcohol,
@@ -116,6 +115,7 @@ async def get_wishlist(
         )
     )
 
+
 @router.get(
     path='/favourites',
     response_model=PaginatedAlcohol,
@@ -144,6 +144,7 @@ async def get_favourites(
             total=len(alcohols)
         )
     )
+
 
 @router.get(
     path='/search_history',
@@ -227,3 +228,51 @@ async def delete_alcohol_form_favourites(
     await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
 
 
+@router.post(
+    path='/wishlist/{alcohol_id}',
+    status_code=status.HTTP_201_CREATED,
+    summary='Add alcohol to your wishlist'
+)
+async def add_alcohol_to_wishlist(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Add alcohol to your wishlist by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
+
+
+@router.post(
+    path='/favourites/{alcohol_id}',
+    status_code=status.HTTP_201_CREATED,
+    summary='Add alcohol to your favourites'
+)
+async def add_alcohol_to_favourites(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Add alcohol to favourites by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, alcohol_id)
+
+@router.post(
+    path='/search_history/{alcohol_id}',
+    status_code=status.HTTP_201_CREATED,
+    summary='Add alcohol to search_history'
+)
+async def add_alcohol_to_search_history(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Add alcohol to search history by alcohol id
+    """
+    user_id = str(current_user['_id'])
+    await SearchHistoryHandler.add_alcohol_to_search_history(db.user_search_history, user_id, alcohol_id)

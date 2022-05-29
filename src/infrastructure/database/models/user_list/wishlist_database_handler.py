@@ -24,3 +24,7 @@ class UserWishlistHandler:
     @staticmethod
     async def delete_alcohol_from_wishlist(collection: Collection[UserWishlist], user_id: str, alcohol_id: str) -> None:
         collection.update_one({'user_id': ObjectId(user_id)}, {'$pull': {'alcohols': ObjectId(alcohol_id)}})
+
+    @staticmethod
+    async def add_alcohol_to_wishlist(collection: Collection[UserWishlist], user_id: str, alcohol_id: str) -> None:
+        collection.update_one({'user_id': ObjectId(user_id)}, {'$push': {'alcohols': ObjectId(alcohol_id)}})
