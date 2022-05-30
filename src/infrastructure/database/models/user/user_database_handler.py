@@ -5,15 +5,14 @@ from passlib.context import CryptContext
 from fastapi import status, HTTPException
 from pymongo.collection import Collection, ReturnDocument
 
-from src.domain.alcohol import AlcoholBase
-from src.domain.user import UserUpdate, UserAdminInfo
+from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
 from src.infrastructure.database.models.user_list.favourites import Favourites
-from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
+from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
