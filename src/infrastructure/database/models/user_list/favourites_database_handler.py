@@ -15,7 +15,7 @@ class UserFavouritesHandler:
             alcohols_collection: Collection[AlcoholBase],
             user_id: str = None,
     ) -> list[dict]:
-        favourites = favourites_collection.find_one({'user_id': ObjectId(user_id)}, 'alcohols', {'alcohols': 1})
+        favourites = favourites_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
         favourites = favourites['alcohols']
 
         return list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
