@@ -9,7 +9,7 @@ let wishlist = {
             },
             alcohols: {
                 bsonType: 'array',
-                description: 'list of alcohols',
+                description: 'list of alcohols_and_dates',
                 items: {
                     bsonType: 'objectId'
                 }

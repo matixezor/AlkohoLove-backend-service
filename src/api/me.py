@@ -105,14 +105,14 @@ async def get_wishlist(
     """
     user_id = str(current_user['_id'])
     alcohols = await UserWishlistHandler.get_user_wishlist_by_user_id(
-        limit, offset, db.user_wishlist, db.alcohols, user_id
-    )
+        limit, offset, db.user_wishlist, db.alcohols, user_id)
+    total = await UserWishlistHandler.count_alcohols_in_wishlist(db.wishlist, db.alcohols, user_id)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=total
         )
     )
 
@@ -137,12 +137,13 @@ async def get_favourites(
     alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
         limit, offset, db.user_favourites, db.alcohols, user_id
     )
+    total = await UserFavouritesHandler.count_alcohols_in_favourites(db.favourites, db.alcohols, user_id)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=total
         )
     )
 
@@ -167,12 +168,13 @@ async def get_search_history(
     alcohols = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )
+    total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
         alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(alcohols)
+            total=total
         )
     )
 

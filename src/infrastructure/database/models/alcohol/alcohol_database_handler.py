@@ -38,7 +38,7 @@ class AlcoholDatabaseHandler:
                 {'$addFields': {'score': {'$meta': 'textScore'}}},
                 {'$match': {'score': {'$gt': 5.5}}},
                 {'$facet': {
-                    'alcohols': [{'$skip': offset}, {'$limit': limit}],
+                    'alcohols_and_dates': [{'$skip': offset}, {'$limit': limit}],
                     'totalCount': [{'$count': 'total'}]
                 }},
                 {'$unwind': '$totalCount'}
@@ -47,7 +47,7 @@ class AlcoholDatabaseHandler:
             if result:
                 result = result.pop()
                 total = result['totalCount']['total']
-                result = result['alcohols']
+                result = result['alcohols_and_dates']
 
             return result, total
         else:
@@ -85,7 +85,7 @@ class AlcoholDatabaseHandler:
         db_categories.remove(core)
         db.command(
             'collMod',
-            'alcohols',
+            'alcohols_and_dates',
             validator={
                 '$jsonSchema':
                     {
