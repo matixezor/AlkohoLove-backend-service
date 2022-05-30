@@ -192,9 +192,11 @@ async def update_alcohol(
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
     ):
-        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
+        if not str(alcohol['_id']) == alcohol_id:
+            raise AlcoholExistsException()
     if alcohol := await AlcoholDatabaseHandler.get_alcohol_by_name(db.alcohols, payload.name):
-        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
+        if not str(alcohol['_id']) == alcohol_id:
+            raise AlcoholExistsException()
     return await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
 
 
