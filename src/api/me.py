@@ -5,19 +5,20 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from src.domain.common import PageInfo
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
-from src.domain.user.paginated_user_info import PaginatedUserInfo
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
+from src.domain.user.paginated_user_info import PaginatedFollowUserInfo
+from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
+from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
 from src.infrastructure.database.models.followers.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.followers.followers_database_handler import FollowersDatabaseHandler
-from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowedException, \
-    UserAlreadyInFollowersException
-from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
-from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
+from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler, \
+    UserDatabaseHandler
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -292,7 +293,7 @@ async def add_alcohol_to_search_history(
 
 @router.get(
     path='/followers',
-    response_model=PaginatedUserInfo,
+    response_model=PaginatedFollowUserInfo,
     status_code=status.HTTP_200_OK,
     summary='Read user followers with pagination',
     response_model_by_alias=False
@@ -302,7 +303,7 @@ async def get_followers(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedUserInfo:
+) -> PaginatedFollowUserInfo:
     """
     Get user followers with pagination
     """
@@ -310,7 +311,7 @@ async def get_followers(
     users = await FollowersDatabaseHandler.get_followers_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
-    return PaginatedUserInfo(
+    return PaginatedFollowUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,
@@ -322,7 +323,7 @@ async def get_followers(
 
 @router.get(
     path='/following',
-    response_model=PaginatedUserInfo,
+    response_model=PaginatedFollowUserInfo,
     status_code=status.HTTP_200_OK,
     summary='Read following users with pagination',
     response_model_by_alias=False
@@ -332,13 +333,13 @@ async def get_following(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedUserInfo:
+) -> PaginatedFollowUserInfo:
     """
     Get following users with pagination
     """
     user_id = str(current_user['_id'])
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
-    return PaginatedUserInfo(
+    return PaginatedFollowUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,
@@ -354,16 +355,19 @@ async def get_following(
     summary='Delete user from following'
 )
 async def delete_user_from_following(
-        following_user_id: str,
+        user_id: str,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
     """
     Delete user from following by following user id
     """
-    user_id = str(current_user['_id'])
-    await FollowingDatabaseHandler.delete_user_from_following(db.following, user_id, following_user_id)
-    await FollowersDatabaseHandler.delete_user_from_followers(db.followers, following_user_id, user_id)
+    current_user_id = str(current_user['_id'])
+    if await UserDatabaseHandler.get_user_by_id(db.users, user_id):
+        await FollowingDatabaseHandler.delete_user_from_following(db.following, current_user_id, user_id)
+        await FollowersDatabaseHandler.delete_user_from_followers(db.followers, user_id, current_user_id)
+    else:
+        raise UserNotFoundException
 
 
 @router.post(
@@ -372,16 +376,16 @@ async def delete_user_from_following(
     summary='Add user to following'
 )
 async def add_user_to_following(
-        to_follow_user_id: str,
+        user_id: str,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
     """
     Add user to following by user id
     """
-    user_id = str(current_user['_id'])
-    if not await FollowingDatabaseHandler.check_if_user_in_following(db.following, user_id, to_follow_user_id):
-        await FollowingDatabaseHandler.add_user_to_following(db.following, user_id, to_follow_user_id)
-        await FollowersDatabaseHandler.add_user_to_followers(db.followers, to_follow_user_id, user_id)
+    current_user_id = str(current_user['_id'])
+    if not await FollowingDatabaseHandler.check_if_user_in_following(db.following, current_user_id, user_id):
+        await FollowingDatabaseHandler.add_user_to_following(db.following, current_user_id, user_id)
+        await FollowersDatabaseHandler.add_user_to_followers(db.followers, user_id, current_user_id)
     else:
-        raise UserAlreadyInFollowedException()
+        raise UserAlreadyInFollowingException()

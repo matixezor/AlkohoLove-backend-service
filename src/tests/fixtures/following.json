@@ -1,0 +1,51 @@
+[
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "following": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8d"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "following": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8d"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8d"
+    },
+    "following": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8e"
+    },
+    "following": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
+  }
+]

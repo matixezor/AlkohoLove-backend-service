@@ -1,8 +1,8 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from src.infrastructure.database.models.followers.following import Following
 from src.infrastructure.database.models.user import User
+from src.infrastructure.database.models.followers.following import Following
 
 
 class FollowingDatabaseHandler:
