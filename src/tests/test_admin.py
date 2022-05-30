@@ -223,7 +223,7 @@ async def test_delete_alcohol(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    response = await async_client.delete('/admin/alcohols_and_dates/6288e32dd5ab6070dde8db8f', headers=admin_token_headers)
+    response = await async_client.delete('/admin/alcohols/6288e32dd5ab6070dde8db8f', headers=admin_token_headers)
     assert response.status_code == 204
 
 
@@ -232,7 +232,7 @@ async def test_create_alcohol(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/admin/alcohols_and_dates', headers=admin_token_headers, json=ALCOHOL_FIXTURE)
+    response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=ALCOHOL_FIXTURE)
     assert response.status_code == 201
 
 
@@ -241,7 +241,7 @@ async def test_create_alcohol_without_data(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/admin/alcohols_and_dates', headers=admin_token_headers)
+    response = await async_client.post('/admin/alcohols', headers=admin_token_headers)
     assert response.status_code == 422
 
 
@@ -252,7 +252,7 @@ async def test_create_alcohol_without_barcode(
 ):
     data = ALCOHOL_FIXTURE.copy()
     data['barcode'] = []
-    response = await async_client.post('/admin/alcohols_and_dates', headers=admin_token_headers, json=data)
+    response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=data)
     assert response.status_code == 422
 
 
@@ -263,7 +263,7 @@ async def test_create_alcohol_with_existing_name(
 ):
     data = ALCOHOL_FIXTURE.copy()
     data['name'] = 'Jameson'
-    response = await async_client.post('/admin/alcohols_and_dates', headers=admin_token_headers, json=data)
+    response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol exists'
@@ -276,7 +276,7 @@ async def test_update_alcohol_with_existing_name(
 ):
     data = ALCOHOL_FIXTURE
     data['name'] = 'Jameson'
-    response = await async_client.put(f'/admin/alcohols_and_dates/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
+    response = await async_client.put(f'/admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol exists'
@@ -289,7 +289,7 @@ async def test_update_alcohol_with_existing_barcode(
 ):
     data = ALCOHOL_FIXTURE
     data['barcode'] = ['5011007003234']
-    response = await async_client.put(f'/admin/alcohols_and_dates/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
+    response = await async_client.put(f'/admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol exists'
@@ -300,7 +300,7 @@ async def test_update_alcohol_without_required_data(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    response = await async_client.put(f'admin/alcohols_and_dates/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers)
+    response = await async_client.put(f'admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers)
     assert response.status_code == 422
 
 
@@ -314,7 +314,7 @@ async def test_update_alcohol(
         'food': ['test_food'],
         'color': 'czarny'
     }
-    response = await async_client.put(f'admin/alcohols_and_dates/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
+    response = await async_client.put(f'admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
     assert response.status_code == 200
     response = response.json()
     assert response['id'] == '6288e32dd5ab6070dde8db8f'
@@ -329,7 +329,7 @@ async def test_get_schemas(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
-    response = await async_client.get('admin/alcohols_and_dates/metadata/categories', headers=admin_token_headers)
+    response = await async_client.get('admin/alcohols/metadata/categories', headers=admin_token_headers)
     assert response.status_code == 200
     response = response.json()
     assert response['page_info']['limit'] == 10

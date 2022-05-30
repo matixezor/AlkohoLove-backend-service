@@ -9,7 +9,7 @@ let favourite = {
             },
             alcohols: {
                 bsonType: 'array',
-                description: 'list of alcohols_and_dates',
+                description: 'list of alcohols',
                 items: {
                     bsonType: 'objectId'
                 }

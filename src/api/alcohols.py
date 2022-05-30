@@ -6,14 +6,14 @@ from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 
-router = APIRouter(prefix='/alcohols_and_dates', tags=['alcohol'])
+router = APIRouter(prefix='/alcohols', tags=['alcohol'])
 
 
 @router.get(
     path='',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
-    summary='Search for alcohols_and_dates by phrase',
+    summary='Search for alcohols by phrase',
     response_model_by_alias=False,
 )
 async def search_alcohols(
@@ -23,7 +23,7 @@ async def search_alcohols(
         db: Database = Depends(get_db)
 ):
     """
-    Search for alcohols_and_dates with pagination. Query params:
+    Search for alcohols with pagination. Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
     - **phrase**: str - default ''

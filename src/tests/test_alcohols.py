@@ -31,27 +31,27 @@ async def test_search_alcohols(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/alcohols_and_dates?limit=1&offset=0', headers=user_token_headers
+        '/alcohols?limit=1&offset=0', headers=user_token_headers
     )
     assert response.status_code == 200
     response = response.json()
-    assert len(response['alcohols_and_dates']) == 1
+    assert len(response['alcohols']) == 1
     assert response['page_info']['total'] == 5
     assert response['page_info']['limit'] == 1
     assert response['page_info']['offset'] == 0
-    assert response['alcohols_and_dates'][0] == ALCOHOL_FIXTURE
+    assert response['alcohols'][0] == ALCOHOL_FIXTURE
 
 
 @mark.asyncio
 async def test_get_alcohol_by_barcode(async_client: AsyncClient):
-    response = await async_client.get('/alcohols_and_dates/5011007003234')
+    response = await async_client.get('/alcohols/5011007003234')
     assert response.status_code == 200
     assert response.json() == ALCOHOL_FIXTURE
 
 
 @mark.asyncio
 async def test_get_alcohol_by_non_existing_barcode(async_client: AsyncClient):
-    response = await async_client.get('/alcohols_and_dates/5900699104827')
+    response = await async_client.get('/alcohols/5900699104827')
     assert response.status_code == 404
     assert response.json() == {
         'detail': 'Alcohol not found'

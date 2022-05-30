@@ -9,7 +9,7 @@ let search = {
             },
             alcohols: {
                 bsonType: 'array',
-                description: 'list of alcohols_and_dates with dates',
+                description: 'list of alcohols with dates',
                 items: {
                     properties: {
                         alcohol_id: {
