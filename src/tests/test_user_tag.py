@@ -103,7 +103,7 @@ async def test_get_alcohols_with_not_existing_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/me/tags/alcohols?tag_id=628f9071f32df3b39ced1a3d&limit=10&offset=0', headers=user_token_headers
+        '/me/tags/alcohols/628f9071f32df3b39ced1a3d?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 404
     response = response.json()
@@ -116,7 +116,7 @@ async def test_get_alcohols(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/me/tags/alcohols?tag_id=628f9071f32df3b39ced1a3b&limit=10&offset=0', headers=user_token_headers
+        '/me/tags/alcohols/628f9071f32df3b39ced1a3b?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 200
     response = response.json()
@@ -133,7 +133,7 @@ async def test_add_alcohol(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3a&alcohol_id=6288e32dd5ab6070dde8db8b',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3a/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 201
@@ -145,7 +145,7 @@ async def test_add_alcohol_with_existing_alcohol_in_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3a&alcohol_id=6288e32dd5ab6070dde8db8a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3a/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -159,7 +159,7 @@ async def test_add_alcohol_without_existing_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3d&alcohol_id=6288e32dd5ab6070dde8db8a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3d/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -173,7 +173,7 @@ async def test_add_alcohol_without_existing_alcohol(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3a&alcohol_id=6288e32dd5ab6070dde8db9a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3a/6288e32dd5ab6070dde8db9a',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -187,7 +187,7 @@ async def test_add_alcohol_to_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3c&alcohol_id=6288e32dd5ab6070dde8db8a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3c/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -201,7 +201,7 @@ async def test_delete_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3a',
+        '/me/tags/628f9071f32df3b39ced1a3a',
         headers=user_token_headers
     )
     assert response.status_code == 204
@@ -213,7 +213,7 @@ async def test_delete_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3c',
+        '/me/tags/628f9071f32df3b39ced1a3c',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -227,7 +227,7 @@ async def test_remove_alcohol_from_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3a&alcohol_id=6288e32dd5ab6070dde8db8a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3a/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 204
@@ -239,7 +239,7 @@ async def test_remove_alcohol_from_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags/alcohol?tag_id=628f9071f32df3b39ced1a3c&alcohol_id=6288e32dd5ab6070dde8db8a',
+        '/me/tags/alcohol/628f9071f32df3b39ced1a3c/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -253,7 +253,7 @@ async def test_update_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.put(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3a&tag_name=test',
+        '/me/tags/628f9071f32df3b39ced1a3a/test',
         headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
@@ -267,7 +267,7 @@ async def test_update_tag_that_not_exists(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.put(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3d&tag_name=test',
+        '/me/tags/628f9071f32df3b39ced1a3d/test',
         headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
@@ -280,7 +280,7 @@ async def test_update_tag_with_existing_name(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.put(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3a&tag_name=grill u huberta',
+        '/me/tags/628f9071f32df3b39ced1a3a/grill u huberta',
         headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
@@ -293,7 +293,7 @@ async def test_update_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.put(
-        '/me/tags?tag_id=628f9071f32df3b39ced1a3c&tag_name=test',
+        '/me/tags/628f9071f32df3b39ced1a3c/test',
         headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
