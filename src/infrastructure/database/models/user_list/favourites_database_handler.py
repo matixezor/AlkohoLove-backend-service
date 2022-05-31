@@ -1,5 +1,6 @@
 from bson import ObjectId
 from pymongo.collection import Collection
+from pymongo.cursor import Cursor
 
 from src.domain.alcohol import AlcoholBase
 from src.infrastructure.database.models.user_list.favourites import Favourites
@@ -14,13 +15,10 @@ class UserFavouritesHandler:
             alcohols_collection: Collection[AlcoholBase],
             user_id: str = None,
     ) -> list[dict]:
-        favourites = list(
-            favourites_collection.find({'user_id': ObjectId(user_id)}, {'alcohols': 1}))
-        favourites = favourites[0]['alcohols']
+        favourites = favourites_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        favourites = favourites['alcohols']
 
-        return (
-            list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
-        )
+        return list(alcohols_collection.find({'_id': {'$in': favourites}}).skip(offset).limit(limit))
 
     @staticmethod
     async def delete_alcohol_from_favourites(collection: Collection[Favourites], user_id: str, alcohol_id: str) -> None:
@@ -36,3 +34,14 @@ class UserFavouritesHandler:
             return True
         else:
             return False
+
+    @staticmethod
+    async def count_alcohols_in_favourites(
+            favourites_collection: Collection[Favourites],
+            alcohols_collection: Collection,
+            user_id: str
+    ) -> int:
+        alcohols = favourites_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        alcohols = alcohols['alcohols']
+
+        return len(list(alcohols_collection.find({'_id': {'$in': alcohols}})))

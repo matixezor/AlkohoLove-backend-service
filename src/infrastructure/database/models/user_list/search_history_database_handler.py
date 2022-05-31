@@ -2,6 +2,7 @@ from bson import ObjectId
 from datetime import datetime
 from pymongo.collection import Collection
 
+from src.domain.user_list import SearchHistoryEntry
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 
 
@@ -13,19 +14,19 @@ class SearchHistoryHandler:
             search_history_collection: Collection,
             alcohols_collection: Collection,
             user_id: str = None,
-    ) -> list[(dict, datetime)]:
-        search_history = list(search_history_collection.find({'user_id': ObjectId(user_id)}, {'alcohols': 1}))
-
-        search_history = search_history[0]['alcohols']
-        alcohol_ids = [a_dict['alcohol_id'] for a_dict in search_history]
-        dates = [a_dict['search_date'] for a_dict in search_history]
-
+    ) -> list[SearchHistoryEntry]:
+        search_history = search_history_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        search_history = search_history['alcohols']
+        alcohol_ids = []
+        dates = []
+        for a_dict in search_history:
+            alcohol_ids.append(a_dict['alcohol_id'])
+            dates.append(a_dict['search_date'])
         alcohol = list((alcohols_collection.find({'_id': {'$in': alcohol_ids}})).skip(offset).limit(limit))
-
+        alcohols = []
         for i in range(len(alcohol)):
-            alcohol[i] = (alcohol[i], dates[i])
-
-        return alcohol
+            alcohols.append(SearchHistoryEntry(alcohol=alcohol[i], date=dates[i]))
+        return alcohols
 
     @staticmethod
     async def delete_alcohol_from_search_history(collection: Collection[UserSearchHistory], user_id: str,
@@ -39,3 +40,16 @@ class SearchHistoryHandler:
         collection.update_one({'user_id': ObjectId(user_id)},
                               {'$push': {
                                   'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': datetime.now()}}})
+
+    @staticmethod
+    async def count_alcohols_in_search_history(
+            search_history_collection: Collection[UserSearchHistory],
+            alcohols_collection: Collection,
+            user_id: str
+    ) -> int:
+        alcohols = search_history_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        alcohols = alcohols['alcohols']
+        alcohol_ids = []
+        for a_dict in alcohols:
+            alcohol_ids.append(a_dict['alcohol_id'])
+        return len(list(alcohols_collection.find({'_id': {'$in': alcohol_ids}})))

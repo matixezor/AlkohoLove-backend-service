@@ -13,13 +13,9 @@ class UserWishlistHandler:
             alcohols_collection: Collection,
             user_id: str = None,
     ) -> list[dict]:
-        wishlist = list(
-            wishlist_collection.find({'user_id': ObjectId(user_id)}, {'alcohols': 1}))
-        wishlist = wishlist[0]['alcohols']
-
-        return (
-            list(alcohols_collection.find({'_id': {'$in': wishlist}}).skip(offset).limit(limit))
-        )
+        wishlist = wishlist_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        wishlist = wishlist['alcohols']
+        return list(alcohols_collection.find({'_id': {'$in': wishlist}}).skip(offset).limit(limit))
 
     @staticmethod
     async def delete_alcohol_from_wishlist(collection: Collection[UserWishlist], user_id: str, alcohol_id: str) -> None:
@@ -35,3 +31,14 @@ class UserWishlistHandler:
             return True
         else:
             return False
+
+    @staticmethod
+    async def count_alcohols_in_wishlist(
+            wishlist_collection: Collection[UserWishlist],
+            alcohols_collection: Collection,
+            user_id: str
+    ) -> int:
+        alcohols = wishlist_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        alcohols = alcohols['alcohols']
+
+        return len(list(alcohols_collection.find({'_id': {'$in': alcohols}})))

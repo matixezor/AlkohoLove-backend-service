@@ -1,0 +1,59 @@
+[
+  {
+    "_id": {
+      "$oid": "628f9071f32df3b39ced1a3a"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "tag_name": "grill u huberta",
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8a"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "628f9071f32df3b39ced1a3b"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "tag_name": "wakacje 2021",
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8a"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8c"
+      }
+    ]
+  },
+    {
+    "_id": {
+      "$oid": "628f9071f32df3b39ced1a3c"
+    },
+    "user_id": {
+      "$oid": "507f191e810c19729de860eb"
+    },
+    "tag_name": "wakacje 2022",
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8e"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8f"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8b"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8a"
+      }
+    ]
+  }
+]
