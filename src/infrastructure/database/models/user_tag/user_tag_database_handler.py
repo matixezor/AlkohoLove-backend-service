@@ -123,13 +123,10 @@ class UserTagDatabaseHandler:
             tag_collection: Collection[UserTag],
             alcohols_collection: Collection,
     ) -> list[dict]:
-        tag = list(
-            tag_collection.find({'_id': ObjectId(tag_id)}, {'alcohols': 1})
-        )
-        tag = tag[0]['alcohols']
+        tag = tag_collection.find_one({'_id': ObjectId(tag_id)}, {'alcohols': 1})
 
         return (
-            list(alcohols_collection.find({'_id': {'$in': tag}}).skip(offset).limit(limit))
+            list(alcohols_collection.find({'_id': {'$in': tag['alcohols']}}).skip(offset).limit(limit))
         )
 
     @staticmethod
