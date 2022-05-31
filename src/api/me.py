@@ -161,7 +161,7 @@ async def create_tag(
 
 
 @router.post(
-    '/tags/alcohol/{tag_id}/{alcohol_id}',
+    '/tags/{tag_id}/alcohol/{alcohol_id}',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol to tag'
@@ -202,7 +202,7 @@ async def add_alcohol(
 
 
 @router.delete(
-    path='/tags/alcohol/{tag_id}/{alcohol_id}',
+    path='/tags/{tag_id}/alcohol/{alcohol_id}',
     response_class=Response,
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Remove alcohol from tag'
@@ -226,7 +226,7 @@ async def remove_alcohol(
 
 
 @router.put(
-    path='/tags/{tag_id}/{tag_name}',
+    path='/tags/{tag_id}',
     response_model=UserTag,
     status_code=status.HTTP_200_OK,
     summary='Change your tag name'
@@ -264,7 +264,7 @@ async def update_tag(
 
 
 @router.get(
-    path='/tags/alcohols/{tag_id}',
+    path='/tags/{tag_id}/alcohols',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
     summary='Read your tag alcohols',

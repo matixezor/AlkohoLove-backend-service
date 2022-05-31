@@ -13,7 +13,7 @@ let tag = {
             },
             alcohols: {
                 bsonType: 'array',
-                description: 'list of alcohols',
+                description: 'list of alcohol ids',
                 items: {
                     bsonType: 'objectId'
                 }
