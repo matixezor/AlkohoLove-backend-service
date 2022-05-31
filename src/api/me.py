@@ -456,7 +456,7 @@ async def delete_alcohol_form_favourites(
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete alcohol from search history'
 )
-async def delete_alcohol_form_favourites(
+async def delete_alcohol_form_search_history(
         alcohol_id: str,
         date: datetime,
         current_user: UserDb = Depends(get_valid_user),
