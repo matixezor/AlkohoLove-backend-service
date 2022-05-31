@@ -165,12 +165,12 @@ async def get_search_history(
     Show user search history alcohol list with pagination
     """
     user_id = str(current_user['_id'])
-    alcohols = await SearchHistoryHandler.get_user_search_history_user_id(
+    alcohols_and_dates = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )
     total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
-        alcohols=alcohols,
+        alcohols_and_dates=alcohols_and_dates,
         page_info=PageInfo(
             limit=limit,
             offset=offset,

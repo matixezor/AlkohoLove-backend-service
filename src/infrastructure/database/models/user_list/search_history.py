@@ -1,7 +1,7 @@
 from bson import ObjectId
 from typing import TypedDict
 
-from src.domain.user_list.search_history import SearchHistoryEntry
+from src.domain.user_list.search_history_entry import SearchHistoryEntry
 
 
 class UserSearchHistory(TypedDict):

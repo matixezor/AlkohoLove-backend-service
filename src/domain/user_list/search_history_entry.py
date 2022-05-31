@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import NamedTuple
+from pydantic import BaseModel
 
 from src.domain.alcohol import Alcohol
 
 
-class SearchHistoryEntry(NamedTuple):
+class SearchHistoryEntry(BaseModel):
     alcohol: Alcohol
     date: datetime
