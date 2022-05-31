@@ -80,6 +80,8 @@ async def register(
         user_create_payload.username
     )
     await UserDatabaseHandler.create_user(db.users, user_create_payload)
+    await UserDatabaseHandler.create_user_lists(db.users, user_create_payload.username, db.user_wishlist,
+                                                db.user_favourites, db.user_search_history)
 
 
 @router.post(
