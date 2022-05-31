@@ -5,9 +5,8 @@ from fastapi import APIRouter, Depends
 from src.domain.common import PageInfo
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedFollowUserInfo
-from src.infrastructure.database.models.followers.following_database_handler import FollowingDatabaseHandler
-from src.infrastructure.database.models.followers.followers_database_handler import FollowersDatabaseHandler
-
+from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
+from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 
 router = APIRouter(prefix='/socials', tags=['socials'])
 
@@ -31,12 +30,13 @@ async def get_followers(
     users = await FollowersDatabaseHandler.get_followers_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
+    total = await FollowersDatabaseHandler.count_followers(db.followers, db.users, user_id)
     return PaginatedFollowUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(users)
+            total=total
         )
     )
 
@@ -58,11 +58,13 @@ async def get_following(
     Get following users with pagination
     """
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
+    total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
+
     return PaginatedFollowUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
-            total=len(users)
+            total=total
         )
     )

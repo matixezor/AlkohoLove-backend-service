@@ -1,8 +1,8 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from src.infrastructure.database.models.followers.followers import Followers
-from src.infrastructure.database.models.followers.following import Following
+from src.infrastructure.database.models.socials.followers import Followers
+from src.infrastructure.database.models.socials.following import Following
 from src.infrastructure.database.models.user import User, UserDatabaseHandler
 
 
@@ -16,8 +16,8 @@ class FollowersDatabaseHandler:
             users_collection: Collection[User],
             user_id: str = None,
     ) -> list[dict]:
-        followers = list(followers_collection.find({'_id': ObjectId(user_id)}, {'followers': 1}))
-        followers = followers[0]['followers']
+        followers = followers_collection.find_one({'_id': ObjectId(user_id)}, {'followers': 1})
+        followers = followers['followers']
 
         return list(users_collection.find({'_id': {'$in': followers}}).skip(offset).limit(limit))
 
@@ -50,3 +50,14 @@ class FollowersDatabaseHandler:
         followers_collection.insert_one(empty_followers)
         empty_following = Following(_id=user['_id'], following=[])
         following_collection.insert_one(empty_following)
+
+    @staticmethod
+    async def count_followers(
+            followers_collection: Collection[Followers],
+            users_collection: Collection,
+            user_id: str
+    ) -> int:
+        followers = followers_collection.find_one({'_id': ObjectId(user_id)}, {'followers': 1})
+        followers = followers['followers']
+
+        return len(list(users_collection.find({'_id': {'$in': followers}})))

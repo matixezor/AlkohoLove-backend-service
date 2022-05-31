@@ -1,7 +1,7 @@
 from pytest import mark
 from httpx import AsyncClient
 
-from src.utils.followers_fixtures import FOLLOWERS_FIXTURE, FOLLOWING_FIXTURE
+from src.tests.response_fixtures.followers_fixtures import FOLLOWERS_FIXTURE, FOLLOWING_FIXTURE
 
 
 @mark.asyncio

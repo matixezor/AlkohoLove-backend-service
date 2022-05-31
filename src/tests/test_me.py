@@ -1,6 +1,7 @@
 from pytest import mark
 from httpx import AsyncClient
 
+from src.tests.response_fixtures.followers_fixtures import FOLLOWERS_FIXTURE, FOLLOWING_FIXTURE
 from src.tests.response_fixtures.list_fixtures import WISHLIST_FIXTURE, FAVOURITES_FIXTURE, SEARCH_HISTORY_FIXTURE
 
 
@@ -255,6 +256,7 @@ async def test_alcohol_already_in_favourites(
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol already in list'
+
 
 # ----------------------------------------followers---------------------------------------------------------------------
 @mark.asyncio

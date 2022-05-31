@@ -11,7 +11,7 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
-from src.infrastructure.database.models.followers.followers_database_handler import FollowersDatabaseHandler
+from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException
 
