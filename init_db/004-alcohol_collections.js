@@ -231,7 +231,7 @@ let rum = {
             enum: ['rum']
         },
         age: {
-            tile: 'wiek',
+            title: 'wiek',
             bsonType: ['int', 'null'],
             description: '3'
         }

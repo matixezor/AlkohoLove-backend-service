@@ -1,12 +1,18 @@
-from pydantic import validator, BaseModel
+from pydantic import validator, BaseModel, root_validator
 
 from src.domain.alcohol_category.alcohol_category_property import CreateProperty, CreatePropertyKind
 
 
 class AlcoholCategoryCreate(BaseModel):
     properties: dict[str, CreateProperty | CreatePropertyKind]
-    required: list[str] | None
+    required: list[str] | None = None
     title: str
+
+    @root_validator(pre=True)
+    def validate_root(cls, values: dict):
+        required = [key for key in values['properties'].keys() if key != 'kind']
+        values['required'] = required if required else None
+        return values
 
     @validator('properties')
     def validate_properties(cls, value: dict[str, CreateProperty]) -> dict[str, CreateProperty]:
