@@ -139,7 +139,7 @@ class UserDatabaseHandler:
         search_history_collection.insert_one(empty_search_history)
 
     @staticmethod
-    async def search_users(
+    async def search_users_by_phrase(
             collection: Collection,
             limit: int, offset: int,
             phrase: str

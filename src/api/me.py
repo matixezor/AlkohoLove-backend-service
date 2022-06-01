@@ -3,6 +3,7 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
+from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
@@ -10,7 +11,6 @@ from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
-from src.domain.user.paginated_user_info import PaginatedUserInfo
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
@@ -472,7 +472,8 @@ async def delete_alcohol_form_search_history(
 @router.post(
     path='/wishlist/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol to your wishlist'
+    summary='Add alcohol to your wishlist',
+    response_class=Response
 )
 async def add_alcohol_to_wishlist(
         alcohol_id: str,
@@ -492,7 +493,8 @@ async def add_alcohol_to_wishlist(
 @router.post(
     path='/favourites/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol to your favourites'
+    summary='Add alcohol to your favourites',
+    response_class=Response,
 )
 async def add_alcohol_to_favourites(
         alcohol_id: str,
@@ -512,7 +514,8 @@ async def add_alcohol_to_favourites(
 @router.post(
     path='/search_history/{alcohol_id}',
     status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol to search_history'
+    summary='Add alcohol to search_history',
+    response_class=Response,
 )
 async def add_alcohol_to_search_history(
         alcohol_id: str,
@@ -528,7 +531,7 @@ async def add_alcohol_to_search_history(
 
 @router.get(
     path='/followers',
-    response_model=PaginatedUserInfo,
+    response_model=PaginatedUserSocial,
     status_code=status.HTTP_200_OK,
     summary='Read user followers with pagination',
     response_model_by_alias=False
@@ -538,7 +541,7 @@ async def get_followers(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedUserInfo:
+) -> PaginatedUserSocial:
     """
     Get user followers with pagination
     """
@@ -547,7 +550,7 @@ async def get_followers(
         limit, offset, db.followers, db.users, user_id
     )
     total = await FollowersDatabaseHandler.count_followers(db.followers, db.users, user_id)
-    return PaginatedUserInfo(
+    return PaginatedUserSocial(
         users=users,
         page_info=PageInfo(
             limit=limit,
@@ -559,7 +562,7 @@ async def get_followers(
 
 @router.get(
     path='/following',
-    response_model=PaginatedUserInfo,
+    response_model=PaginatedUserSocial,
     status_code=status.HTTP_200_OK,
     summary='Read following users with pagination',
     response_model_by_alias=False
@@ -569,7 +572,7 @@ async def get_following(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedUserInfo:
+) -> PaginatedUserSocial:
     """
     Read following users with pagination
     """
@@ -577,7 +580,7 @@ async def get_following(
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
     total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
 
-    return PaginatedUserInfo(
+    return PaginatedUserSocial(
         users=users,
         page_info=PageInfo(
             limit=limit,
@@ -611,7 +614,8 @@ async def delete_user_from_following(
 @router.post(
     path='/following/{user_id}',
     status_code=status.HTTP_201_CREATED,
-    summary='Add user to following'
+    summary='Add user to following',
+    response_class=Response
 )
 async def add_user_to_following(
         user_id: str,

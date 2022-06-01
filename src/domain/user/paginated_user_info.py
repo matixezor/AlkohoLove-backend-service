@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
 from src.domain.common import PageInfo
-from src.domain.user.user_basic_info import UserBasicInfo
+from src.domain.user.user_social import UserSocial
 
 
-class PaginatedUserInfo(BaseModel):
-    users: list[UserBasicInfo]
+class PaginatedUserSocial(BaseModel):
+    users: list[UserSocial]
     page_info: PageInfo
