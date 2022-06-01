@@ -84,7 +84,7 @@ async def get_following(
 async def search_users(
         limit: int = 10,
         offset: int = 0,
-        phrase: str = Query(default=None, min_length=3),
+        phrase: str = Query(default=..., min_length=3),
         db: Database = Depends(get_db)
 ):
     """

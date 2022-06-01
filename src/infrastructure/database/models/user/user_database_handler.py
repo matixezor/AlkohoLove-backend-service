@@ -142,7 +142,7 @@ class UserDatabaseHandler:
     async def search_users(
             collection: Collection,
             limit: int, offset: int,
-            phrase: str = None
+            phrase: str
     ) -> list[dict]:
-        result = list(collection.find({'username': {'$regex': phrase}, }).skip(offset).limit(limit))
+        result = list(collection.find({'username': {'$regex': phrase}}).skip(offset).limit(limit))
         return result

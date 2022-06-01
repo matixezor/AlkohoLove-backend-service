@@ -64,7 +64,7 @@ async def get_favourites(
     """
     user_id = ObjectId(user_id)
     alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
-        limit, offset, db.user_favourites, db.alcohols, ObjectId(user_id)
+        limit, offset, db.user_favourites, db.alcohols, user_id
     )
     total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, db.alcohols, user_id)
     return PaginatedAlcohol(
