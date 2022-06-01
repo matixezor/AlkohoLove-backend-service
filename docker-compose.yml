@@ -26,4 +26,5 @@ services:
       - ./init_db/003-errors_collection.js:/docker-entrypoint-initdb.d/003-errors_collection.js:ro
       - ./init_db/004-alcohol_collections.js:/docker-entrypoint-initdb.d/004-alcohol_collections.js:ro
       - ./init_db/008-user_tags_collection.js:/docker-entrypoint-initdb.d/008-user_tags_collection.js:ro
+      - ./init_db/009-reviews_collection.js:/docker-entrypoint-initdb.d/009-reviews_collection.js:ro
       - ./mongo-data/:/data/db

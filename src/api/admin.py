@@ -11,6 +11,7 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
@@ -383,3 +384,24 @@ async def delete_image(image_name: str):
         remove(image_path)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+
+
+@router.delete(
+    path='/reviews/{review_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='[For admin] Delete review',
+    dependencies=[Depends(admin_permission)],
+)
+async def delete_review(
+        review_id: str,
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete review by id
+    """
+
+    alcohol_id = await ReviewDatabaseHandler.get_alcohol_id(db.reviews, review_id)
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)

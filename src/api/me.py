@@ -2,17 +2,22 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
+from src.domain.review.review_update import ReviewUpdate
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
+from src.domain.review import ReviewCreate, Review
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, AlcoholIsInTag,\
+from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, AlcoholIsInTag, \
     AlcoholDoesNotExist, TagNotFound
+from src.infrastructure.exceptions.review_exceptions import AlcoholDoesNotExist, WrongRatingFormat, ReviewAlreadyExists, \
+    ReviewDoesNotBelongToUser, ReviewNotFound
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -311,3 +316,139 @@ async def get_alcohols(
             total=total
         )
     )
+
+
+@router.post(
+    '/reviews/{alcohol_id}',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create a review'
+)
+async def create_review(
+        alcohol_id: str,
+        review_create_payload: ReviewCreate,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    if not await ReviewDatabaseHandler.validate_rating(review_create_payload.rating):
+        raise WrongRatingFormat()
+
+    if await ReviewDatabaseHandler.check_if_review_exists(
+            db.reviews,
+            alcohol_id,
+            str(current_user['_id'])):
+        raise ReviewAlreadyExists()
+
+    if await ReviewDatabaseHandler.create_review(
+            db.reviews,
+            str(current_user['_id']),
+            alcohol_id,
+            str(current_user['username']),
+            review_create_payload
+    ):
+        await ReviewDatabaseHandler.add_rating_to_alcohol(
+            db.alcohols,
+            alcohol_id,
+            review_create_payload.rating
+        )
+
+
+# @router.post(
+#     '/reviews/{alcohol_id}',
+#     response_class=Response,
+#     status_code=status.HTTP_201_CREATED,
+#     summary='Create your review'
+# )
+# async def create_review(
+#         alcohol_id: str,
+#         review_create_payload: ReviewCreate,
+#         current_user: UserDb = Depends(get_valid_user),
+#         db: Database = Depends(get_db)
+# ):
+#     if not await ReviewDatabaseHandler.validate_rating(review_create_payload.rating):
+#         raise WrongRatingFormat()
+#
+#     if await ReviewDatabaseHandler.check_if_review_exists(
+#             db.reviews,
+#             alcohol_id,
+#             str(current_user['_id'])):
+#         raise ReviewAlreadyExists()
+#
+#     if await ReviewDatabaseHandler.create_review(
+#             db.reviews,
+#             str(current_user['_id']),
+#             alcohol_id,
+#             str(current_user['username']),
+#             review_create_payload
+#     ):
+#         await ReviewDatabaseHandler.add_rating_to_alcohol(
+#             db.alcohols,
+#             alcohol_id,
+#             review_create_payload.rating
+#         )
+
+
+@router.delete(
+    path='/reviews/{review_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete your review'
+)
+async def delete_review(
+        review_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete your review by id
+    """
+    if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
+            db.reviews,
+            review_id,
+            str(current_user['_id'])):
+        raise ReviewDoesNotBelongToUser()
+
+    alcohol_id = await ReviewDatabaseHandler.get_alcohol_id(db.reviews, review_id)
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+
+
+@router.put(
+    path='/reviews/{review_id}',
+    response_model=Review,
+    status_code=status.HTTP_200_OK,
+    summary='Update your review'
+)
+async def update_review(
+        review_id: str,
+        review_update_payload: ReviewUpdate,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    if not await ReviewDatabaseHandler.check_if_review_exists_by_id(
+            db.reviews,
+            review_id,
+    ):
+        raise ReviewNotFound()
+
+    if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
+            db.reviews,
+            review_id,
+            str(current_user['_id'])):
+        raise ReviewDoesNotBelongToUser()
+
+    alcohol_id = await ReviewDatabaseHandler.get_alcohol_id(db.reviews, review_id)
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    review_update = await ReviewDatabaseHandler.update_review(
+        db.reviews,
+        review_id,
+        review_update_payload,
+    )
+
+    if review_update:
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+        await ReviewDatabaseHandler.add_rating_to_alcohol(db.alcohols, alcohol_id, review_update_payload.rating)
+
+    return review_update
