@@ -1,0 +1,53 @@
+[
+  {
+    "_id": {
+      "$oid": "6291334d308b89e057643c6d"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8b"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "62913353613d3b9a79f89008"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "62913358cce583b10e5a8d31"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8d"
+    },
+    "alcohols": [
+      {
+        "$oid": "6288e32dd5ab6070dde8db8a"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8e"
+      },
+      {
+        "$oid": "6288e32dd5ab6070dde8db8f"
+      }
+    ]
+  }
+]
