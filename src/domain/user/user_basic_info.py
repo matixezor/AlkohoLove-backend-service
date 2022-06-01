@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class FollowUserBasicInfo(BaseModel):
+class UserBasicInfo(BaseModel):
     username: str

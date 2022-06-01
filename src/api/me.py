@@ -10,7 +10,7 @@ from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
-from src.domain.user.paginated_user_info import PaginatedFollowUserInfo
+from src.domain.user.paginated_user_info import PaginatedUserInfo
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
@@ -528,7 +528,7 @@ async def add_alcohol_to_search_history(
 
 @router.get(
     path='/followers',
-    response_model=PaginatedFollowUserInfo,
+    response_model=PaginatedUserInfo,
     status_code=status.HTTP_200_OK,
     summary='Read user followers with pagination',
     response_model_by_alias=False
@@ -538,7 +538,7 @@ async def get_followers(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedFollowUserInfo:
+) -> PaginatedUserInfo:
     """
     Get user followers with pagination
     """
@@ -547,7 +547,7 @@ async def get_followers(
         limit, offset, db.followers, db.users, user_id
     )
     total = await FollowersDatabaseHandler.count_followers(db.followers, db.users, user_id)
-    return PaginatedFollowUserInfo(
+    return PaginatedUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,
@@ -559,7 +559,7 @@ async def get_followers(
 
 @router.get(
     path='/following',
-    response_model=PaginatedFollowUserInfo,
+    response_model=PaginatedUserInfo,
     status_code=status.HTTP_200_OK,
     summary='Read following users with pagination',
     response_model_by_alias=False
@@ -569,7 +569,7 @@ async def get_following(
         offset: int = 0,
         db: Database = Depends(get_db),
         current_user: UserDb = Depends(get_valid_user)
-) -> PaginatedFollowUserInfo:
+) -> PaginatedUserInfo:
     """
     Read following users with pagination
     """
@@ -577,7 +577,7 @@ async def get_following(
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
     total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
 
-    return PaginatedFollowUserInfo(
+    return PaginatedUserInfo(
         users=users,
         page_info=PageInfo(
             limit=limit,

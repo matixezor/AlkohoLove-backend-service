@@ -15,3 +15,8 @@ FOLLOWING_FIXTURE = [
         "username": "DariuszGołąbski"
     }
 ]
+USERS_FIXTURE = [
+    {
+        "username": "Adam_Skorupa"
+    }
+]
