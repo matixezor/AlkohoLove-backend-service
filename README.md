@@ -24,7 +24,6 @@ Backend on docker will be under `http://localhost:8008/docs`
 
 ## Tests
 
-**Docker container with the database must be running!**
 To run tests use `$ pytest` command in tests directory
 
 ## Linters
