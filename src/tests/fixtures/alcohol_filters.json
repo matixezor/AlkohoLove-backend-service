@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "wódka",
+    "color": ["bezbarwny"],
+    "country": ["Szwecja"],
+    "type": ["czysta"]
+  },
+  {
+    "_id": "rum",
+    "color": ["biały"],
+    "country": ["Kuba"],
+    "type": ["biały"]
+  },
+  {
+    "_id": "whisky",
+    "color": ["karmel", "bursztyn"],
+    "country": ["Irlandia"],
+    "type": ["blended"]
+  },
+  {
+    "_id": "likier",
+    "color": ["pomarańczowy"],
+    "country": ["Polska"],
+    "type": ["owocowy"]
+  }
+]
