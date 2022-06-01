@@ -1,5 +1,5 @@
 db.createCollection(
-    'alcohol_filter'
+    'alcohol_filters'
 )
 
 db.alcohols.aggregate([
@@ -13,7 +13,7 @@ db.alcohols.aggregate([
     },
     {
         $merge: {
-            into: "alcohol_filter"
+            into: "alcohol_filters"
         }
     }
 ])
