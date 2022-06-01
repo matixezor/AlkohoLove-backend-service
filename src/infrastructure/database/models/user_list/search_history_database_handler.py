@@ -13,9 +13,9 @@ class SearchHistoryHandler:
             offset: int,
             search_history_collection: Collection,
             alcohols_collection: Collection,
-            user_id: str = None,
+            user_id: ObjectId = None,
     ) -> list[SearchHistoryEntry]:
-        search_history = search_history_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        search_history = search_history_collection.find_one({'user_id': user_id}, {'alcohols': 1})
         search_history = search_history['alcohols']
         alcohol_ids = []
         dates = []
@@ -29,15 +29,15 @@ class SearchHistoryHandler:
         return alcohols
 
     @staticmethod
-    async def delete_alcohol_from_search_history(collection: Collection[UserSearchHistory], user_id: str,
+    async def delete_alcohol_from_search_history(collection: Collection[UserSearchHistory], user_id: ObjectId,
                                                  alcohol_id: str, date: datetime) -> None:
-        collection.update_many({'user_id': ObjectId(user_id)},
+        collection.update_many({'user_id': user_id},
                                {'$pull': {'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': date}}})
 
     @staticmethod
-    async def add_alcohol_to_search_history(collection: Collection[UserSearchHistory], user_id: str,
+    async def add_alcohol_to_search_history(collection: Collection[UserSearchHistory], user_id: ObjectId,
                                             alcohol_id: str) -> None:
-        collection.update_one({'user_id': ObjectId(user_id)},
+        collection.update_one({'user_id': user_id},
                               {'$push': {
                                   'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': datetime.now()}}})
 
@@ -45,9 +45,9 @@ class SearchHistoryHandler:
     async def count_alcohols_in_search_history(
             search_history_collection: Collection[UserSearchHistory],
             alcohols_collection: Collection,
-            user_id: str
+            user_id: ObjectId
     ) -> int:
-        alcohols = search_history_collection.find_one({'user_id': ObjectId(user_id)}, {'alcohols': 1})
+        alcohols = search_history_collection.find_one({'user_id': user_id}, {'alcohols': 1})
         alcohols = alcohols['alcohols']
         alcohol_ids = []
         for a_dict in alcohols:

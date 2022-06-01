@@ -8,9 +8,9 @@ from pymongo.collection import Collection, ReturnDocument
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
+from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
-from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 
@@ -135,5 +135,14 @@ class UserDatabaseHandler:
         wishlist_collection.insert_one(empty_wishlist)
         empty_favourites = Favourites(user_id=user['_id'], alcohols=[], _id=ObjectId())
         favourites_collection.insert_one(empty_favourites)
-        empty_search_history = UserSearchHistory(user_id=user['_id'], alcohols=[], _id=ObjectId())
+        empty_search_history = UserSearchHistory(user_id=user['_id'], alcohols_and_dates=[], _id=ObjectId())
         search_history_collection.insert_one(empty_search_history)
+
+    @staticmethod
+    async def search_users_by_phrase(
+            collection: Collection,
+            limit: int, offset: int,
+            phrase: str
+    ) -> list[dict]:
+        result = list(collection.find({'username': {'$regex': phrase}}).skip(offset).limit(limit))
+        return result
