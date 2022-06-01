@@ -11,8 +11,7 @@ class AlcoholCategoryCreate(BaseModel):
     @root_validator(pre=True)
     def validate_root(cls, values: dict):
         required = [key for key in values['properties'].keys() if key != 'kind']
-        if required:
-            values['required'] = required
+        values['required'] = required if required else None
         return values
 
     @validator('properties')
