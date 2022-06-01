@@ -9,6 +9,7 @@ class PropertyOut(BaseModel):
 class Property(BaseModel):
     bsonType: list[str]
     description: str
+    title: str
 
 
 class UpdateProperty(Property):

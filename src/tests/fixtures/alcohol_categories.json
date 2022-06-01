@@ -158,8 +158,7 @@
         ]
       },
       "ibu": {
-                "title": "ibu",
-
+        "title": "ibu",
         "bsonType": [
           "int",
           "null"
@@ -167,8 +166,7 @@
         "description": "4"
       },
       "srm": {
-                        "title": "srm",
-
+        "title": "srm",
         "bsonType": [
           "double",
           "null"
@@ -176,8 +174,7 @@
         "description": "4"
       },
       "extract": {
-                                "title": "ekstrakt",
-
+        "title": "ekstrakt",
         "bsonType": [
           "double",
           "null"
@@ -185,24 +182,21 @@
         "description": "11.6"
       },
       "fermentation": {
-                                        "title": "fermentacja",
-
+        "title": "fermentacja",
         "bsonType": [
           "string"
         ],
         "description": "górna"
       },
       "is_filtered": {
-                                                "title": "filtrowane",
-
+        "title": "filtrowane",
         "bsonType": [
           "bool"
         ],
         "description": "true"
       },
       "is_pasteurized": {
-                                                        "title": "pasteryzowane",
-
+        "title": "pasteryzowane",
         "bsonType": [
           "bool"
         ],
@@ -225,8 +219,7 @@
         ]
       },
       "age": {
-                                                                "title": "wiek",
-
+        "title": "wiek",
         "bsonType": "int",
         "description": "3"
       }
@@ -258,8 +251,7 @@
         ]
       },
       "vine_strain": {
-                                                                        "title": "szczep",
-
+        "title": "szczep",
         "bsonType": [
           "string",
           "null"
@@ -267,8 +259,7 @@
         "description": "Chardonnay"
       },
       "winery": {
-                                                                        "title": "winiarnia",
-
+        "title": "winiarnia",
         "bsonType": [
           "string",
           "null"
@@ -292,8 +283,7 @@
         ]
       },
       "age": {
-                                                                        "title": "wiek",
-
+        "title": "wiek",
         "bsonType": [
           "int",
           "null"

@@ -19,9 +19,12 @@ class AlcoholUpdate(BaseModel):
     keywords: list[str] | None
 
     @root_validator(pre=True)
-    def any_of(cls, values: dict):
+    def validate_root(cls, values: dict):
         if not any(values.values()):
             raise ValueError('At least one value needs to be provided')
+        excluded = ('avg_count', 'rate_count', 'rate_value')
+        if any(key in list(values.keys()) for key in excluded):
+            raise ValueError(f'Invalid payload. Attempted to update excluded fields: {excluded}')
         return values
 
     class Config:
