@@ -11,6 +11,7 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
+from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException
 
@@ -82,6 +83,8 @@ async def register(
     await UserDatabaseHandler.create_user(db.users, user_create_payload)
     await UserDatabaseHandler.create_user_lists(db.users, user_create_payload.username, db.user_wishlist,
                                                 db.user_favourites, db.user_search_history)
+    await FollowersDatabaseHandler.create_followers_and_following_lists(db.users, user_create_payload.username,
+                                                                        db.followers, db.following)
 
 
 @router.post(

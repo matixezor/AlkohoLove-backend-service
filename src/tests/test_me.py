@@ -1,6 +1,7 @@
 from pytest import mark
 from httpx import AsyncClient
 
+from src.tests.response_fixtures.followers_fixtures import FOLLOWERS_FIXTURE, FOLLOWING_FIXTURE
 from src.tests.response_fixtures.list_fixtures import WISHLIST_FIXTURE, FAVOURITES_FIXTURE, SEARCH_HISTORY_FIXTURE
 
 
@@ -255,3 +256,74 @@ async def test_alcohol_already_in_favourites(
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol already in list'
+
+
+# ----------------------------------------followers---------------------------------------------------------------------
+@mark.asyncio
+async def test_get_followers(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/followers', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['users']) == 2
+    assert response['page_info']['total'] == 2
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['users'] == FOLLOWERS_FIXTURE
+
+
+@mark.asyncio
+async def test_get_following(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/following', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['users']) == 2
+    assert response['page_info']['total'] == 2
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['users'] == FOLLOWING_FIXTURE
+
+
+@mark.asyncio
+async def test_add_user_to_following(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/following/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_delete_user_from_following(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete('/me/following/6288e2fdd5ab6070dde8db8d', headers=user_token_headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_user_already_in_following(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/me/following/6288e2fdd5ab6070dde8db8b', headers=user_token_headers)
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'This user is already in following'
+
+
+@mark.asyncio
+async def test_delete_non_existing_user_from_following(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete('/me/following/6288e2fdd5ab6070dde8db8a', headers=user_token_headers)
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'User not found'

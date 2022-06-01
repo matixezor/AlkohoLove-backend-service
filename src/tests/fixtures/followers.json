@@ -1,0 +1,47 @@
+[
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "followers": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8e"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "followers": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8d"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8d"
+    },
+    "followers": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8e"
+    },
+    "followers": []
+  }
+]
