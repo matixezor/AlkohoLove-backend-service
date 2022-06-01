@@ -1,6 +1,8 @@
 from pytest import mark
 from httpx import AsyncClient
 
+from src.tests.response_fixtures.alcohol_filters_fixtures import ALCOHOL_FILTER_FIXTURE
+
 ALCOHOL_FIXTURE = {
     'name': 'Jameson',
     'kind': 'whisky',
@@ -56,3 +58,12 @@ async def test_get_alcohol_by_non_existing_barcode(async_client: AsyncClient):
     assert response.json() == {
         'detail': 'Alcohol not found'
     }
+
+
+@mark.asyncio
+async def test_get_alcohol_filters(async_client: AsyncClient):
+    response = await async_client.get('/alcohols/filters')
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['filters']) == 4
+    assert response['filters'][0] == ALCOHOL_FILTER_FIXTURE
