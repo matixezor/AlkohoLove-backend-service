@@ -1,3 +1,4 @@
+from bson import ObjectId
 from starlette import status
 from pymongo.database import Database
 from fastapi import APIRouter, Depends
@@ -30,6 +31,7 @@ async def get_wishlist(
     """
     Show user wishlist with pagination
     """
+    user_id = ObjectId(user_id)
     alcohols = await UserWishlistHandler.get_user_wishlist_by_user_id(
         limit, offset, db.user_wishlist, db.alcohols, user_id
     )
@@ -60,8 +62,9 @@ async def get_favourites(
     """
     Show user favourite alcohol list with pagination
     """
+    user_id = ObjectId(user_id)
     alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
-        limit, offset, db.user_favourites, db.alcohols, user_id
+        limit, offset, db.user_favourites, db.alcohols, ObjectId(user_id)
     )
     total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, db.alcohols, user_id)
     return PaginatedAlcohol(
@@ -90,6 +93,7 @@ async def get_search_history(
     """
     Show user search history alcohol list with pagination
     """
+    user_id = ObjectId(user_id)
     alcohols_and_dates = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )

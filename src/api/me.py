@@ -341,7 +341,7 @@ async def get_wishlist(
     """
     Show user wishlist with pagination
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     alcohols = await UserWishlistHandler.get_user_wishlist_by_user_id(
         limit, offset, db.user_wishlist, db.alcohols, user_id)
     total = await UserWishlistHandler.count_alcohols_in_wishlist(db.user_wishlist, db.alcohols, user_id)
@@ -371,7 +371,7 @@ async def get_favourites(
     """
     Show user favourite alcohol list with pagination
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
         limit, offset, db.user_favourites, db.alcohols, user_id
     )
@@ -402,7 +402,7 @@ async def get_search_history(
     """
     Show user search history alcohol list with pagination
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     alcohols_and_dates = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )
@@ -430,7 +430,7 @@ async def delete_alcohol_form_wishlist(
     """
     Delete alcohol from wishlist by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
 
 
@@ -447,7 +447,7 @@ async def delete_alcohol_form_favourites(
     """
     Delete alcohol from favourites by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
 
 
@@ -465,7 +465,7 @@ async def delete_alcohol_form_search_history(
     """
     Delete alcohol from search history by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
 
 
@@ -482,7 +482,7 @@ async def add_alcohol_to_wishlist(
     """
     Add alcohol to your wishlist by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id):
         await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
     else:
@@ -502,7 +502,7 @@ async def add_alcohol_to_favourites(
     """
     Add alcohol to favourites by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_wishlist, user_id, alcohol_id):
         await UserFavouritesHandler.add_alcohol_to_favourites(db.user_wishlist, user_id, alcohol_id)
     else:
@@ -522,7 +522,7 @@ async def add_alcohol_to_search_history(
     """
     Add alcohol to search history by alcohol id
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     await SearchHistoryHandler.add_alcohol_to_search_history(db.user_search_history, user_id, alcohol_id)
 
 
@@ -542,7 +542,7 @@ async def get_followers(
     """
     Get user followers with pagination
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     users = await FollowersDatabaseHandler.get_followers_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
@@ -573,7 +573,7 @@ async def get_following(
     """
     Read following users with pagination
     """
-    user_id = str(current_user['_id'])
+    user_id = current_user['_id']
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
     total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
 
@@ -600,7 +600,7 @@ async def delete_user_from_following(
     """
     Delete user from following by following user id
     """
-    current_user_id = str(current_user['_id'])
+    current_user_id = current_user['_id']
     if await UserDatabaseHandler.get_user_by_id(db.users, user_id):
         await FollowingDatabaseHandler.delete_user_from_following(db.following, current_user_id, user_id)
         await FollowersDatabaseHandler.delete_user_from_followers(db.followers, user_id, current_user_id)
@@ -621,9 +621,12 @@ async def add_user_to_following(
     """
     Add user to following by user id
     """
-    current_user_id = str(current_user['_id'])
+    current_user_id = current_user['_id']
     if not await FollowingDatabaseHandler.check_if_user_in_following(db.following, current_user_id, user_id):
         await FollowingDatabaseHandler.add_user_to_following(db.following, current_user_id, user_id)
-        await FollowersDatabaseHandler.add_user_to_followers(db.followers, user_id, current_user_id)
+        if not await FollowersDatabaseHandler.check_if_user_in_followers(db.followers, user_id, current_user_id):
+            await FollowersDatabaseHandler.add_user_to_followers(db.followers, user_id, current_user_id)
+        else:
+            UserAlreadyInFollowingException()
     else:
         raise UserAlreadyInFollowingException()

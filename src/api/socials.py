@@ -1,3 +1,4 @@
+from bson import ObjectId
 from starlette import status
 from pymongo.database import Database
 from fastapi import APIRouter, Depends
@@ -27,6 +28,7 @@ async def get_followers(
     """
     Get user followers with pagination
     """
+    user_id = ObjectId(user_id)
     users = await FollowersDatabaseHandler.get_followers_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
@@ -57,6 +59,7 @@ async def get_following(
     """
     Get following users with pagination
     """
+    user_id = ObjectId(user_id)
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
     total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
 
