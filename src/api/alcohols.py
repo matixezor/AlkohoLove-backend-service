@@ -2,11 +2,20 @@ from pymongo.database import Database
 from fastapi import APIRouter, status, HTTPException, Depends
 
 from src.domain.common import PageInfo
+from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 
 router = APIRouter(prefix='/alcohols', tags=['alcohol'])
+
+translate = {
+    'color': 'kolor',
+    'kind': 'kategoria',
+    'country': 'kraj',
+    'type': 'typ',
+}
 
 
 @router.get(
@@ -36,6 +45,35 @@ async def search_alcohols(
             offset=offset,
             total=total
         )
+    )
+
+
+@router.get(
+    path='/filters',
+    response_model=AlcoholFilters,
+    response_model_by_alias=False,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohol filters'
+)
+async def get_alcohol_filters(db: Database = Depends(get_db)):
+    db_filters = await AlcoholFilterDatabaseHandler.get_all_filters(db.alcohol_filters)
+    filters = []
+    for db_filter in db_filters:
+        filter_dict = {
+            'name': 'kind',
+            'display_name': translate['kind'],
+            'value': db_filter.pop('_id'),
+            'filters': []
+        }
+        for key, values in db_filter.items():
+            filter_dict['filters'].append({
+                'name': key,
+                'display_name': translate[key],
+                'values': values
+            })
+        filters.append(filter_dict)
+    return AlcoholFilters(
+        filters=filters
     )
 
 

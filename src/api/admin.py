@@ -20,6 +20,7 @@ from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsExcept
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
+from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
@@ -193,10 +194,16 @@ async def update_alcohol(
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
     ):
-        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
+        if not str(alcohol['_id']) == alcohol_id:
+            raise AlcoholExistsException()
     if alcohol := await AlcoholDatabaseHandler.get_alcohol_by_name(db.alcohols, payload.name):
-        raise AlcoholExistsException() if not str(alcohol['_id']) == alcohol_id else None
-    return await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
+        if not str(alcohol['_id']) == alcohol_id:
+            raise AlcoholExistsException()
+    db_alcohol = await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
+    await AlcoholFilterDatabaseHandler.update_filters(
+        db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
+    )
+    return db_alcohol
 
 
 @router.post(
@@ -224,6 +231,9 @@ async def create_alcohol(
         )
 
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
+    await AlcoholFilterDatabaseHandler.update_filters(
+        db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
+    )
 
 
 @router.get(
