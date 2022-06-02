@@ -135,7 +135,7 @@ class UserDatabaseHandler:
         wishlist_collection.insert_one(empty_wishlist)
         empty_favourites = Favourites(user_id=user['_id'], alcohols=[], _id=ObjectId())
         favourites_collection.insert_one(empty_favourites)
-        empty_search_history = UserSearchHistory(user_id=user['_id'], alcohols_and_dates=[], _id=ObjectId())
+        empty_search_history = UserSearchHistory(user_id=user['_id'], alcohols=[], _id=ObjectId())
         search_history_collection.insert_one(empty_search_history)
 
     @staticmethod
