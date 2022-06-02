@@ -3,7 +3,6 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
-from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
@@ -12,6 +11,7 @@ from src.domain.review.review_update import ReviewUpdate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.database.database_config import get_db
+from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
@@ -26,9 +26,6 @@ from src.infrastructure.database.models.socials.followers_database_handler impor
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler, \
     UserDatabaseHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, \
-    AlcoholIsInTag, AlcoholDoesNotExist, TagNotFound
-from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, AlcoholIsInTag,\
     AlcoholDoesNotExist, TagNotFound
 from src.infrastructure.exceptions.review_exceptions import AlcoholDoesNotExist, WrongRatingFormat, \
