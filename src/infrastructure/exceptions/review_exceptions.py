@@ -13,7 +13,7 @@ class WrongRatingFormat(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'Rating should be number from 1 to 10'
+            'Rating should be number from 1 to 5'
         )
 
 
@@ -36,7 +36,7 @@ class ReviewDoesNotBelongToUser(HTTPException):
 class ReviewNotFound(HTTPException):
     def __init__(self):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,
             'Review not found'
         )
 
@@ -44,6 +44,6 @@ class ReviewNotFound(HTTPException):
 class UserDoesNotExist(HTTPException):
     def __init__(self):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,
             'User not found'
         )

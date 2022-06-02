@@ -59,7 +59,7 @@ db.reviews.insertMany(
             user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
             alcohol_id: ObjectId('6288e32dd5ab6070dde8db8a'),
             review: 'Pyszniutkie polecam',
-            rating: NumberInt(10),
+            rating: NumberInt(5),
             date: new ISODate('2022-04-14T11:11:23Z'),
             report_count: NumberInt(0),
             reporters: []
@@ -69,7 +69,7 @@ db.reviews.insertMany(
             user_name: 'Adam_Skorupa',
             user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
             alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
-            review: 'całkiem ok',
+            review: 'ok',
             rating: NumberInt(5),
             date: new ISODate('2022-05-13T15:22:32Z'),
             report_count: NumberInt(0),

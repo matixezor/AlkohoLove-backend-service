@@ -1,0 +1,60 @@
+[
+  {
+    "_id": {
+      "$oid": "62964f8f12ce37ef94d3cbaa"
+    },
+    "user_name": "Adam_Skorupa",
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "alcohol_id": {
+      "$oid": "6288e32dd5ab6070dde8db8a"
+    },
+    "review": "Pyszniutkie polecam",
+    "rating": 5,
+    "date": "2022-04-14T11:11:23Z",
+    "report_count": 0,
+    "reporters": []
+  },
+    {
+    "_id": {
+      "$oid": "62964f8f12ce37ef94d3cbab"
+    },
+    "user_name": "Adam_Skorupa",
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8c"
+    },
+    "alcohol_id": {
+      "$oid": "6288e32dd5ab6070dde8db8b"
+    },
+    "review": "ok",
+    "rating": 5,
+    "date": "2022-05-13T15:22:32Z",
+    "report_count": 0,
+    "reporters": []
+  },
+  {
+    "_id": {
+      "$oid": "6296768d872c15947e569b97"
+    },
+    "user_name": "DariuszGołąbski",
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8d"
+    },
+    "alcohol_id": {
+      "$oid": "6288e32dd5ab6070dde8db8b"
+    },
+    "review": "DO DU**Y",
+    "rating": 1,
+    "date": "2022-05-15T12:42:32Z",
+    "report_count": 2,
+    "reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
+  }
+]

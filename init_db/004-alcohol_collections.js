@@ -329,8 +329,8 @@ db.alcohols.insertMany(
             aroma: ['kwiaty', 'owoce', 'nuty korzenne', 'drewno'],
             finish: ['gładki', 'słodki', 'pikantny'],
             rate_count: NumberLong(1),
-            rate_value: NumberLong(0),
-            avg_rating: 10.0,
+            rate_value: NumberLong(5),
+            avg_rating: 5.0,
             age: NumberInt(4),
             keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend']
         },
@@ -351,7 +351,7 @@ db.alcohols.insertMany(
             aroma: ['owoce', 'jabłko', 'gruszka', 'nuty korzenne', 'orzechy', 'skórka limonki'],
             finish: ['długi', 'słodki', 'mleczna czekolada', 'karmel'],
             rate_count: NumberLong(2),
-            rate_value: NumberLong(0),
+            rate_value: NumberLong(6),
             avg_rating: 3.0,
             age: NumberInt(4),
             keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend', 'piwo']

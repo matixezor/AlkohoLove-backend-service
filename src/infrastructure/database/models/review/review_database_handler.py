@@ -1,13 +1,13 @@
 from bson import ObjectId
-from pymongo.collection import Collection, ReturnDocument
 from datetime import datetime
+from pymongo.collection import Collection, ReturnDocument
 
 
+from src.domain.user import UserBase
+from src.domain.review import ReviewCreate
 from src.domain.alcohol import AlcoholBase
 from src.domain.review.review_update import ReviewUpdate
-from src.domain.user import UserBase
 from src.infrastructure.database.models.review import Review
-from src.domain.review import ReviewCreate
 
 
 class ReviewDatabaseHandler:
@@ -44,7 +44,7 @@ class ReviewDatabaseHandler:
 
     @staticmethod
     async def validate_rating(rating: int) -> bool:
-        if (rating > 10) or (rating < 1):
+        if (rating > 5) or (rating < 1):
             return False
         else:
             return True
@@ -67,15 +67,15 @@ class ReviewDatabaseHandler:
             rating: int,
     ):
         alcohol = collection.find_one({'_id': ObjectId(alcohol_id)})
+
         rate_count = alcohol['rate_count'] + 1
-        avg_rating = (alcohol['avg_rating'] * (rate_count - 1) + rating)/rate_count
+        rate_value = alcohol['rate_value'] + rating
+        avg_rating = rate_value/rate_count
 
-        print(avg_rating)
-
-        collection.update_many(
-            {"_id": {"$eq": ObjectId(alcohol_id)}},
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                "$set": {"rate_count": rate_count, "avg_rating": avg_rating}
+                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
             }
         )
 
@@ -86,18 +86,37 @@ class ReviewDatabaseHandler:
             rating: int,
     ):
         alcohol = collection.find_one({'_id': ObjectId(alcohol_id)})
+
         rate_count = alcohol['rate_count'] - 1
+        rate_value = alcohol['rate_value'] - rating
         if rate_count < 1:
             avg_rating = 0
         else:
-            avg_rating = (alcohol['avg_rating'] * (rate_count + 1) - rating)/rate_count
+            avg_rating = rate_value/rate_count
 
-            print(avg_rating)
-
-        collection.update_many(
-            {"_id": {"$eq": ObjectId(alcohol_id)}},
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                "$set": {"rate_count": rate_count, "avg_rating": avg_rating}
+                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
+            }
+        )
+
+    @staticmethod
+    async def update_alcohol_rating(
+            collection: Collection[AlcoholBase],
+            alcohol_id: str,
+            rating_old: int,
+            rating_new: int
+    ):
+        alcohol = collection.find_one({'_id': ObjectId(alcohol_id)})
+        rate_count = alcohol['rate_count']
+        rate_value = alcohol['rate_value'] - rating_old + rating_new
+        avg_rating = rate_value / rate_count
+
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(alcohol_id)}},
+            {
+                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
             }
         )
 

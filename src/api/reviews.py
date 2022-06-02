@@ -1,8 +1,7 @@
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status
 
 from src.domain.common import PageInfo
-from src.domain.review import Review
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
@@ -12,7 +11,7 @@ router = APIRouter(prefix='/reviews', tags=['reviews'])
 
 
 @router.get(
-    path='',
+    path='/{alcohol_id}',
     response_model=PaginatedReview,
     status_code=status.HTTP_200_OK,
     summary='Read alcohol reviews',
@@ -75,5 +74,3 @@ async def get_user_reviews(
             total=total
         )
     )
-
-
