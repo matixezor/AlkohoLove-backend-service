@@ -32,4 +32,5 @@ services:
       - ./init_db/009-followers_collection.js:/docker-entrypoint-initdb.d/009-followers_collection.js:ro
       - ./init_db/010-following_collection.js:/docker-entrypoint-initdb.d/010-following_collection.js:ro
       - ./init_db/011-alcohol_filters_collection.js:/docker-entrypoint-initdb.d/011-alcohol_filters_collection.js:ro
+      - ./init_db/012-alcohol_suggestions_collection.js:/docker-entrypoint-initdb.d/011-alcohol_suggestions_collection.js:ro
       - ./mongo-data/:/data/db
