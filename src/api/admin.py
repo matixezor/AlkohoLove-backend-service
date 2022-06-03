@@ -5,6 +5,7 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
+from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.domain.common.page_info import PageInfo
 from src.infrastructure.config.app_config import STATIC_DIR
@@ -403,7 +404,7 @@ async def delete_image(image_name: str):
     response_model=PaginatedAlcoholSuggestion,
     status_code=status.HTTP_200_OK,
     summary='Read alcohol suggestions with pagination',
-    response_model_by_alias=True
+    response_model_by_alias=False
 )
 async def get_suggestions(
         limit: int = 10,
@@ -431,5 +432,39 @@ async def get_suggestions(
 )
 async def get_suggestions(
         db: Database = Depends(get_db)
-):
-    return await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+) -> int:
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return total
+
+
+@router.get(
+    path='/suggestions/{suggestion_id}',
+    response_model=AlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohol suggestion by id',
+    response_model_by_alias=False
+)
+async def get_suggestion_by_id(
+        alcohol_suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> AlcoholSuggestion:
+    db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
+                                                                                 alcohol_suggestion_id)
+    if not db_suggestions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Suggestion not found')
+    return db_suggestions
+
+
+@router.delete(
+    path='/suggestions/{suggestion_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol suggestion'
+)
+async def delete_suggestion(
+        suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol suggestion by suggestion id
+    """
+    await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
