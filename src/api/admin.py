@@ -5,7 +5,9 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
+from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
+from src.domain.alcohol_filter import AlcoholFilters
 from src.infrastructure.config.app_config import STATIC_DIR
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -393,3 +395,34 @@ async def delete_image(image_name: str):
         remove(image_path)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+
+
+@router.get(
+    path='',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Search for alcohols by phrase',
+    response_model_by_alias=False,
+)
+async def search_alcohols(
+        limit: int = 10,
+        offset: int = 0,
+        filters: AlcoholFilters | None = None,
+        phrase: str | None = '',
+        db: Database = Depends(get_db)
+):
+    """
+    Search for alcohols with pagination. Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    - **phrase**: str - default ''
+    """
+    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    return PaginatedAlcohol(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )

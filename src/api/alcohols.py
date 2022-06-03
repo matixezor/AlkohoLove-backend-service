@@ -1,9 +1,10 @@
 from pymongo.database import Database
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import APIRouter, status, HTTPException, Depends, Query
 
+from domain.alcohol_filter import AlcoholFilters
 from src.domain.common import PageInfo
-from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
+from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
@@ -18,7 +19,7 @@ translate = {
 }
 
 
-@router.get(
+@router.post(
     path='',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
@@ -28,16 +29,17 @@ translate = {
 async def search_alcohols(
         limit: int = 10,
         offset: int = 0,
-        phrase: str = None,
+        filters: AlcoholFilters | None = None,
+        phrase: str | None = Query(default=None, min_length=3),
         db: Database = Depends(get_db)
 ):
     """
     Search for alcohols with pagination. Query params:
     - **limit**: int - default 10
     - **offset**: int - default 0
-    - **phrase**: str - default ''
+    - **phrase**: str - default None, if given then phrase needs to have min 3 characters
     """
-    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase)
+    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -50,7 +52,7 @@ async def search_alcohols(
 
 @router.get(
     path='/filters',
-    response_model=AlcoholFilters,
+    response_model=AlcoholFiltersMetadata,
     response_model_by_alias=False,
     status_code=status.HTTP_200_OK,
     summary='Read alcohol filters'
@@ -72,7 +74,7 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
                 'values': values
             })
         filters.append(filter_dict)
-    return AlcoholFilters(
+    return AlcoholFiltersMetadata(
         filters=filters
     )
 

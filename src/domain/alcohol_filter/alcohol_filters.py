@@ -2,4 +2,7 @@ from pydantic import BaseModel
 
 
 class AlcoholFilters(BaseModel):
-    filters: list[dict]
+    kind: str
+    type: list[str] | None
+    color: list[str] | None
+    country: list[str] | None

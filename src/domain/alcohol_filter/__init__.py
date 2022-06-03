@@ -1,1 +1,2 @@
 from src.domain.alcohol_filter.alcohol_filters import AlcoholFilters
+from src.domain.alcohol_filter.alcohol_filters_metadata import AlcoholFiltersMetadata

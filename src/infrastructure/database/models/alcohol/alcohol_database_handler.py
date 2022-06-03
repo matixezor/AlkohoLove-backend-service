@@ -4,12 +4,59 @@ from pymongo.database import Database
 from pymongo.errors import WriteError, OperationFailure
 from pymongo.collection import Collection, ReturnDocument
 
+from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import AlcoholCreate, AlcoholUpdate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 
 
 class AlcoholDatabaseHandler:
+    @staticmethod
+    def prepare_filters(filters: AlcoholFilters | None) -> list[dict]:
+        if not filters:
+            return []
+
+        filters = filters.dict(exclude_none=True)
+        _filters = []
+
+        if filters.get('kind', None):
+            _filters.append({'kind': filters.pop('kind')})
+        for key, values in filters.items():
+            _filters.append({key: {'$in': values}})
+
+        return _filters
+
+    @staticmethod
+    def prepare_find_filters(filters: AlcoholFilters | None) -> dict:
+        filters = AlcoholDatabaseHandler.prepare_filters(filters)
+        return {
+            key: value for dictionary in filters
+            for key, value in dictionary.items()
+        } if filters else {}
+
+    @staticmethod
+    def prepare_aggregate_filters(phrase: str, filters: AlcoholFilters | None) -> list[dict]:
+        aggregated_filters = []
+        filters = AlcoholDatabaseHandler.prepare_filters(filters)
+
+        if filters:
+            aggregated_filters.extend(filters)
+
+        aggregated_filters.append(
+            {
+                '$or': [
+                    {
+                        '$text': {'$search': phrase}
+                    },
+                    {
+                        'name': {'$regex': phrase, '$options': 'i'}
+                    }
+                ]
+            }
+        )
+
+        return aggregated_filters
+
     @staticmethod
     async def get_alcohol_by_barcode(collection: Collection, barcode: list[str]) -> dict | None:
         return collection.find_one({'barcode': {'$in': barcode}})
@@ -29,35 +76,85 @@ class AlcoholDatabaseHandler:
     @staticmethod
     async def search_alcohols(
             collection: Collection,
-            limit: int, offset: int,
-            phrase: str = None
+            limit: int,
+            offset: int,
+            phrase: str | None,
+            filters: AlcoholFilters | None
     ) -> tuple[list[dict], int]:
         if phrase:
-            result = list(collection.aggregate([
-                {'$match': {'$text': {'$search': phrase}}},
-                {'$addFields': {'score': {'$meta': 'textScore'}}},
-                {'$match': {'score': {'$gt': 5.5}}},
-                {'$facet': {
-                    'alcohols': [{'$skip': offset}, {'$limit': limit}],
-                    'totalCount': [{'$count': 'total'}]
-                }},
-                {'$unwind': '$totalCount'}
-            ]))
-            total = 0
-            if result:
-                result = result.pop()
-                total = result['totalCount']['total']
-                result = result['alcohols']
-
-            return result, total
+            aggregate_filters = AlcoholDatabaseHandler.prepare_aggregate_filters(phrase, filters)
+            return await AlcoholDatabaseHandler.get_alcohols_by_phrase(collection, limit, offset, aggregate_filters)
         else:
-            cursor = collection.find({}).skip(offset).limit(limit)
-            total = await AlcoholDatabaseHandler.count_alcohols(collection)
-            return list(cursor), total
+            find_filters = AlcoholDatabaseHandler.prepare_find_filters(filters)
+            db_alcohols = await AlcoholDatabaseHandler.get_alcohols(collection, limit, offset, find_filters)
+            total = await AlcoholDatabaseHandler.count_alcohols(collection, find_filters)
+            return db_alcohols, total
 
     @staticmethod
-    async def count_alcohols(collection: Collection) -> int:
-        return collection.estimated_document_count()
+    async def get_alcohols_by_phrase(
+            collection: Collection,
+            limit: int,
+            offset: int,
+            filters: list[dict]
+    ) -> tuple[list[dict], int]:
+        """
+        The aggregation firstly matches records by filters if any are provided
+        Then it performs an `or` operation where the operations are as follows:
+        * full text search on text indexed fields i.e. `kind`, `type`, `color` and `keywords`
+        * case-insensitive regex on indexed field name
+        If the result comes from the full text search, then the score field is added.
+        Therefore, we filter the results by score:
+         * greater than 5.5 - results that are matched by one keyword or just the color are not reliable
+         * null - results from regex do not have this field
+         Then we paginate the results and aggregate total count
+        """
+        result = list(collection.aggregate([
+            {
+                '$match': {
+                    '$and': filters
+                }
+            },
+            {
+                '$addFields': {'score': {'$meta': 'textScore'}}
+            },
+            {
+                '$match': {
+                    '$or': [
+                        {'score': {'$gt': 5.5}},
+                        {'score': None}
+                    ]
+                }
+            },
+            {
+                '$facet': {
+                    'alcohols': [{'$skip': offset}, {'$limit': limit}],
+                    'totalCount': [{'$count': 'total'}]
+                }
+            },
+            {'$unwind': '$totalCount'}
+        ]))
+
+        total = 0
+        # unwrap the results and get the total count
+        if result:
+            result = result.pop()
+            total = result['totalCount']['total']
+            result = result['alcohols']
+
+        return result, total
+
+    @staticmethod
+    async def get_alcohols(
+            collection: Collection,
+            limit: int,
+            offset: int,
+            filters: dict
+    ) -> list[dict]:
+        return list(collection.find(filters).skip(offset).limit(limit))
+
+    @staticmethod
+    async def count_alcohols(collection: Collection, filters: dict) -> int:
+        return collection.count_documents(filters) if filters else collection.estimated_document_count()
 
     @staticmethod
     async def delete_alcohol(collection: Collection, alcohol_id: str) -> None:
