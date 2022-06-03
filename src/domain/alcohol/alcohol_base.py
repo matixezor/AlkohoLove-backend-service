@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, Extra
 
 
 class AlcoholBase(BaseModel):

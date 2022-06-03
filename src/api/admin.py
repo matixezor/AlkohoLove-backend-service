@@ -5,12 +5,15 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
+from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.domain.common.page_info import PageInfo
 from src.infrastructure.config.app_config import STATIC_DIR
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
+from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
+    AlcoholSuggestionDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
@@ -393,3 +396,40 @@ async def delete_image(image_name: str):
         remove(image_path)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+
+
+@router.get(
+    path='/suggestions',
+    response_model=PaginatedAlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohol suggestions with pagination',
+    response_model_by_alias=True
+)
+async def get_suggestions(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+):
+    suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestions(db.alcohol_suggestion, limit, offset)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return PaginatedAlcoholSuggestion(
+        suggestions=suggestions,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/suggestions/total',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get total number of suggestions',
+    response_model_by_alias=False
+)
+async def get_suggestions(
+        db: Database = Depends(get_db)
+):
+    return await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)

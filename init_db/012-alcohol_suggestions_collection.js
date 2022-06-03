@@ -3,9 +3,9 @@ let suggestion = {
         bsonType: 'object',
         required: ['user_id', 'barcode', 'kind', 'name'],
         properties: {
-            user_id: {
+            user_ids: {
                 bsonType: 'array',
-                description: 'must be an objectId',
+                descriptions: 'must be an objectId',
                 items: {
                     bsonType: 'objectId'
                 }
@@ -18,17 +18,17 @@ let suggestion = {
             kind: {
                 title: 'kategoria',
                 bsonType: 'string',
-                description: 'whisky'
+                descriptions: 'whisky'
             },
             name: {
                 title: 'nazwa',
                 bsonType: 'string',
-                description: 'Jameson'
+                descriptions: 'Jameson'
             },
-            description: {
-                title: 'opis',
+            descriptions: {
+                title: 'opisy',
                 bsonType: 'array',
-                description: 'Pyszna whisky',
+                descriptions: 'Pyszna whisky',
                 items: {
                     bsonType: 'string'
                 }
@@ -50,27 +50,27 @@ db.alcohol_suggestion.insertMany(
     [
         {
             _id: ObjectId('6299e8c94105e843197376fd'),
-            user_id: [ObjectId('6288e2fdd5ab6070dde8db8c')],
+            user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c')],
             barcode: '5900699104827',
             kind: 'piwo',
             name: 'Żywiec białe',
-            description: ['Białe piwo pszeniczne żywiec.', 'Dobre piwo o aromacie kolendry.']
+            descriptions: ['Białe piwo pszeniczne żywiec.', 'Dobre piwo o aromacie kolendry.']
         },
         {
             _id: ObjectId('6299eb5a894d907992ecbd7e'),
-            user_id: [ObjectId('6288e2fdd5ab6070dde8db8d')],
+            user_ids: [ObjectId('6288e2fdd5ab6070dde8db8d')],
             barcode: '3800006901502',
             kind: 'wino',
             name: 'Witosha premium sweet red',
-            description: ['Czerwone wino deserowe słodkie.']
+            descriptions: ['Czerwone wino deserowe słodkie.']
         },
         {
             _id: ObjectId('6299eb5f31a05c42142ea55c'),
-            user_id: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')],
+            user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')],
             barcode: '1111111111111',
             kind: 'likier',
             name: 'Jagermaister',
-            description: ['Dobry likier ziołowy.']
+            descriptions: ['Dobry likier ziołowy.']
         }
     ]
 )
