@@ -1,8 +1,8 @@
 from pymongo.database import Database
 from fastapi import APIRouter, status, HTTPException, Depends, Query
 
-from domain.alcohol_filter import AlcoholFilters
 from src.domain.common import PageInfo
+from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
