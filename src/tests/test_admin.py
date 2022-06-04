@@ -1,7 +1,8 @@
 from pytest import mark
 from httpx import AsyncClient
 
-from src.tests.response_fixtures.alcohol_suggestions import SUGGESTION_ID_FIXTURE, SUGGESTIONS_RESPONSE_FIXTURE
+from src.tests.response_fixtures.alcohol_suggestions import SUGGESTION_ID_FIXTURE, SUGGESTIONS_RESPONSE_FIXTURE, \
+    NON_EXISTING_ID_FIXTURE
 
 REPORTED_ERROR_ID_FIXTURE = '507f191e810c19729de860ea'
 REPORTED_DESCRIPTION_FIXTURE = 'This app sucks'
@@ -418,3 +419,14 @@ async def test_get_total_suggestions_no(
     assert response.status_code == 200
     response = response.json()
     assert response == 3
+
+
+@mark.asyncio
+async def test_get_suggestion_by_id_that_doesnt_exist(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/{NON_EXISTING_ID_FIXTURE}', headers=admin_token_headers)
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == "Suggestion not found"
