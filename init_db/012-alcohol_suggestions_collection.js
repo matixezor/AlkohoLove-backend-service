@@ -45,12 +45,15 @@ db.createCollection(
     }
 )
 
+db.alcohol_suggestion.createIndex(
+    {barcode: 1}
+)
 
 db.alcohol_suggestion.insertMany(
     [
         {
             _id: ObjectId('6299e8c94105e843197376fd'),
-            user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c')],
+            user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8b')],
             barcode: '5900699104827',
             kind: 'piwo',
             name: 'Żywiec białe',
@@ -69,8 +72,8 @@ db.alcohol_suggestion.insertMany(
             user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')],
             barcode: '1111111111111',
             kind: 'likier',
-            name: 'Jagermaister',
-            descriptions: ['Dobry likier ziołowy.']
+            name: 'Jagermeister',
+            descriptions: ['Dobry likier ziołowy.', 'Bardzo dobry']
         }
     ]
 )

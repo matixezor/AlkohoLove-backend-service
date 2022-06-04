@@ -5,16 +5,13 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
-from src.domain.alcohol_suggestion import AlcoholSuggestion
-from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.domain.common.page_info import PageInfo
+from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.config.app_config import STATIC_DIR
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
-from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
-    AlcoholSuggestionDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
@@ -26,8 +23,12 @@ from src.infrastructure.database.models.reported_error import ReportedErrorDatab
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
+from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
 from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
+from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
+    AlcoholSuggestionDatabaseHandler
+
 
 router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_permission)])
 
@@ -445,11 +446,11 @@ async def get_suggestions(
     response_model_by_alias=False
 )
 async def get_suggestion_by_id(
-        alcohol_suggestion_id: str,
+        suggestion_id: str,
         db: Database = Depends(get_db)
 ) -> AlcoholSuggestion:
     db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
-                                                                                 alcohol_suggestion_id)
+                                                                                 suggestion_id)
     if not db_suggestions:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Suggestion not found')
     return db_suggestions

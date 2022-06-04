@@ -3,9 +3,6 @@ from pymongo.collection import Collection
 
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
-from src.infrastructure.database.models.socials.followers import Followers
-from src.infrastructure.database.models.socials.following import Following
-from src.infrastructure.database.models.user import User, UserDatabaseHandler
 
 
 class AlcoholSuggestionDatabaseHandler:

@@ -1,7 +1,7 @@
 from pydantic import Field, validator
 
-from src.domain.alcohol_suggestion.alcohol_suggestion_base import AlcoholSuggestionBase
 from src.domain.common import MongoBaseModel, PyObjectId
+from src.domain.alcohol_suggestion.alcohol_suggestion_base import AlcoholSuggestionBase
 
 
 class AlcoholSuggestion(MongoBaseModel, AlcoholSuggestionBase):

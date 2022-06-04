@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from src.domain.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
 from src.domain.common import PageInfo
+from src.domain.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
 
 
 class PaginatedAlcoholSuggestion(BaseModel):
