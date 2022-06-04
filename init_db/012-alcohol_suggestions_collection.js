@@ -1,11 +1,11 @@
 let suggestion = {
     $jsonSchema: {
         bsonType: 'object',
-        required: ['user_id', 'barcode', 'kind', 'name'],
+        required: ['user_ids', 'barcode', 'kind', 'name'],
         properties: {
             user_ids: {
                 bsonType: 'array',
-                descriptions: 'must be an objectId',
+                description: 'must be an objectId',
                 items: {
                     bsonType: 'objectId'
                 }
@@ -18,17 +18,17 @@ let suggestion = {
             kind: {
                 title: 'kategoria',
                 bsonType: 'string',
-                descriptions: 'whisky'
+                description: 'whisky'
             },
             name: {
                 title: 'nazwa',
                 bsonType: 'string',
-                descriptions: 'Jameson'
+                description: 'Jameson'
             },
             descriptions: {
                 title: 'opisy',
                 bsonType: 'array',
-                descriptions: 'Pyszna whisky',
+                description: 'Pyszna whisky',
                 items: {
                     bsonType: 'string'
                 }

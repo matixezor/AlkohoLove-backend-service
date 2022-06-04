@@ -1,13 +1,11 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+
+from src.domain.alcohol_suggestion.alcohol_suggestion_base import AlcoholSuggestionBase
 from src.domain.common import MongoBaseModel, PyObjectId
 
 
-class AlcoholSuggestion(MongoBaseModel, BaseModel):
+class AlcoholSuggestion(MongoBaseModel, AlcoholSuggestionBase):
     user_ids: list[PyObjectId] = Field(default_factory=PyObjectId, alias="user_ids")
-    barcode: str
-    kind: str
-    name: str
-    descriptions: list[str]
 
     @validator('user_ids', always=True)
     def set_id(cls, v):

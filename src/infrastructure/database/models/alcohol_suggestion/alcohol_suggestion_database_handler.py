@@ -1,6 +1,7 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
+from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.models.socials.followers import Followers
 from src.infrastructure.database.models.socials.following import Following
@@ -31,5 +32,33 @@ class AlcoholSuggestionDatabaseHandler:
     async def get_suggestion_by_id(
             collection: Collection[AlcoholSuggestion],
             suggestion_id: str
-    ) -> list[dict] | None:
+    ) -> dict | None:
         return collection.find_one({'_id': ObjectId(suggestion_id)})
+
+    @staticmethod
+    async def get_suggestion_by_barcode(
+            collection: Collection[AlcoholSuggestion],
+            barcode: str
+    ) -> dict | None:
+        return collection.find_one({'barcode': barcode})
+
+    @staticmethod
+    async def append_to_suggestion(
+            collection: Collection[AlcoholSuggestion],
+            user_id: ObjectId,
+            description: str,
+            suggestion: AlcoholSuggestion
+    ) -> None:
+        collection.update_one({'_id': suggestion['_id']}, {'$push': {'user_ids': user_id, 'descriptions': description}})
+
+    @staticmethod
+    async def create_suggestion(
+            collection: Collection[AlcoholSuggestion],
+            user_id: ObjectId,
+            payload: AlcoholSuggestionCreate
+    ) -> None:
+        db_suggestions = AlcoholSuggestion(
+            **payload.dict(),
+            user_ids=[user_id]
+        )
+        collection.insert_one(db_suggestions)
