@@ -6,15 +6,17 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'review': 'ok',
         'rating': 5,
         'id': '62964f8f12ce37ef94d3cbab',
-        'user_name': 'Adam_Skorupa',
+        'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
+        'alcohol_id': '6288e32dd5ab6070dde8db8b'
     },
     {
         'review': 'DO DU**Y',
         'rating': 1,
         'id': '6296768d872c15947e569b97',
-        'user_name': 'DariuszGołąbski',
+        'username': 'DariuszGołąbski',
         'date': '2022-05-15T12:42:32+00:00',
+        'alcohol_id': '6288e32dd5ab6070dde8db8b'
     }
 ]
 
@@ -23,15 +25,17 @@ USER_REVIEWS_FIXTURE = [
         'review': 'Pyszniutkie polecam',
         'rating': 5,
         'id': '62964f8f12ce37ef94d3cbaa',
-        'user_name': 'Adam_Skorupa',
+        'username': 'Adam_Skorupa',
         'date': '2022-04-14T11:11:23+00:00',
+        'alcohol_id': '6288e32dd5ab6070dde8db8a'
     },
     {
         'review': 'ok',
         'rating': 5,
         'id': '62964f8f12ce37ef94d3cbab',
-        'user_name': 'Adam_Skorupa',
+        'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
+        'alcohol_id': '6288e32dd5ab6070dde8db8b'
     }
 ]
 
@@ -63,7 +67,7 @@ async def test_get_alcohol_reviews_without_existing_alcohol(async_client: AsyncC
 @mark.asyncio
 async def test_get_user_reviews(async_client: AsyncClient):
     response = await async_client.get(
-        '/reviews/user/Adam_Skorupa?limit=10&offset=0'
+        '/reviews/user/6288e2fdd5ab6070dde8db8c?limit=10&offset=0'
     )
     assert response.status_code == 200
     response = response.json()
@@ -77,7 +81,7 @@ async def test_get_user_reviews(async_client: AsyncClient):
 @mark.asyncio
 async def test_get_user_reviews_without_existing_user(async_client: AsyncClient):
     response = await async_client.get(
-        '/reviews/user/not_user?limit=10&offset=0'
+        '/reviews/user/6288e2fdd5ab6070dde8db7c?limit=10&offset=0'
     )
     assert response.status_code == 404
     response = response.json()
@@ -140,9 +144,19 @@ async def test_create_review_with_wrong_rating(
         json=data,
         headers=user_token_headers
     )
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Rating should be number from 1 to 5'
+    assert response.status_code == 422
+    assert response.json() == {
+            "detail": [
+                {
+                    "loc": [
+                        "body",
+                        "rating"
+                    ],
+                    "msg": "Rating should be number from 1 to 5",
+                    "type": "value_error"
+                }
+            ]
+    }
 
 
 @mark.asyncio
@@ -151,11 +165,11 @@ async def test_update_review(
         user_token_headers: dict[str, str]
 ):
     data = {
-        "review": "test_review",
-        "rating": 1
+        'review': 'test_review',
+        'rating': 1
     }
     response = await async_client.put(
-        '/me/reviews/62964f8f12ce37ef94d3cbaa',
+        '/me/reviews/62964f8f12ce37ef94d3cbaa/alcohol/6288e32dd5ab6070dde8db8a',
         json=data,
         headers=user_token_headers)
     assert response.status_code == 200
@@ -163,7 +177,7 @@ async def test_update_review(
     assert response['review'] == 'test_review'
     assert response['rating'] == 1
     assert response['_id'] == '62964f8f12ce37ef94d3cbaa'
-    assert response['user_name'] == 'Adam_Skorupa'
+    assert response['username'] == 'Adam_Skorupa'
     assert response['date'] == '2022-04-14T11:11:23+00:00'
 
 
@@ -177,7 +191,7 @@ async def test_update_review_without_existing_review(
         "rating": 1
     }
     response = await async_client.put(
-        '/me/reviews/62964f8f12ce37ef94d3cbba',
+        '/me/reviews/62964f8f12ce37ef94d3cb1a/alcohol/6288e32dd5ab6070dde8db8a',
         json=data,
         headers=user_token_headers)
     assert response.status_code == 404
@@ -195,7 +209,7 @@ async def test_update_review_that_does_not_belong_to_user(
         "rating": 1
     }
     response = await async_client.put(
-        '/me/reviews/6296768d872c15947e569b97',
+        '/me/reviews/6296768d872c15947e569b97/alcohol/6288e32dd5ab6070dde8db8b',
         json=data,
         headers=user_token_headers)
     assert response.status_code == 400
@@ -209,7 +223,7 @@ async def test_delete_review(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/reviews/62964f8f12ce37ef94d3cbaa',
+        '/me/reviews/62964f8f12ce37ef94d3cbaa/alcohol/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 204
@@ -221,7 +235,7 @@ async def test_delete_review_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/reviews/6296768d872c15947e569b97',
+        '/me/reviews/6296768d872c15947e569b97/alcohol/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -235,7 +249,7 @@ async def test_admin_delete_review(
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbab',
+        '/admin/reviews/62964f8f12ce37ef94d3cbab/alcohol/6288e32dd5ab6070dde8db8b',
         headers=admin_token_headers
     )
     assert response.status_code == 204
@@ -247,7 +261,7 @@ async def test_admin_delete_review_without_permissions(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbab',
+        '/admin/reviews/62964f8f12ce37ef94d3cbab/alcohol/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 403

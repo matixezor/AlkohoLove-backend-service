@@ -3,7 +3,7 @@
     "_id": {
       "$oid": "62964f8f12ce37ef94d3cbaa"
     },
-    "user_name": "Adam_Skorupa",
+    "username": "Adam_Skorupa",
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8c"
     },
@@ -20,7 +20,7 @@
     "_id": {
       "$oid": "62964f8f12ce37ef94d3cbab"
     },
-    "user_name": "Adam_Skorupa",
+    "username": "Adam_Skorupa",
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8c"
     },
@@ -37,7 +37,7 @@
     "_id": {
       "$oid": "6296768d872c15947e569b97"
     },
-    "user_name": "DariuszGołąbski",
+    "username": "DariuszGołąbski",
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8d"
     },

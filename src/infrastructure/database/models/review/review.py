@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Review(TypedDict):
     _id: ObjectId
-    user_name: str
+    username: str
     user_id: ObjectId
     alcohol_id: ObjectId
     review: str

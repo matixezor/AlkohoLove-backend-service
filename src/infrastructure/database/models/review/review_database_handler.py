@@ -1,11 +1,9 @@
-from bson import ObjectId
+from bson import ObjectId, Int64
 from datetime import datetime
 from pymongo.collection import Collection, ReturnDocument
 
 
-from src.domain.user import UserBase
 from src.domain.review import ReviewCreate
-from src.domain.alcohol import AlcoholBase
 from src.domain.review.review_update import ReviewUpdate
 from src.infrastructure.database.models.review import Review
 
@@ -18,7 +16,6 @@ class ReviewDatabaseHandler:
             offset: int,
             alcohol_id: str
     ) -> list[Review]:
-        print(list(collection.find({'alcohol_id': ObjectId(alcohol_id)}).skip(offset).limit(limit)))
         return (
             list(collection.find({'alcohol_id': ObjectId(alcohol_id)}).skip(offset).limit(limit))
         )
@@ -33,36 +30,19 @@ class ReviewDatabaseHandler:
         )
 
     @staticmethod
-    async def check_if_alcohol_exists(
-            collection: Collection[AlcoholBase],
-            alcohol_id: str
-    ) -> bool:
-        if collection.find_one({'_id': ObjectId(alcohol_id)}):
-            return True
-        else:
-            return False
-
-    @staticmethod
-    async def validate_rating(rating: int) -> bool:
-        if (rating > 5) or (rating < 1):
-            return False
-        else:
-            return True
-
-    @staticmethod
     async def check_if_review_exists(
             collection: Collection[Review],
             alcohol_id: str,
-            user_id: str,
+            user_id: ObjectId,
     ) -> bool:
-        if collection.find_one({'user_id': ObjectId(user_id), 'alcohol_id': ObjectId(alcohol_id)}):
+        if collection.find_one({'user_id': user_id, 'alcohol_id': ObjectId(alcohol_id)}):
             return True
         else:
             return False
 
     @staticmethod
     async def add_rating_to_alcohol(
-            collection: Collection[AlcoholBase],
+            collection: Collection,
             alcohol_id: str,
             rating: int,
     ):
@@ -75,13 +55,13 @@ class ReviewDatabaseHandler:
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
+                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
             }
         )
 
     @staticmethod
     async def remove_rating_from_alcohol(
-            collection: Collection[AlcoholBase],
+            collection: Collection,
             alcohol_id: str,
             rating: int,
     ):
@@ -97,13 +77,13 @@ class ReviewDatabaseHandler:
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
+                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
             }
         )
 
     @staticmethod
     async def update_alcohol_rating(
-            collection: Collection[AlcoholBase],
+            collection: Collection,
             alcohol_id: str,
             rating_old: int,
             rating_new: int
@@ -116,23 +96,23 @@ class ReviewDatabaseHandler:
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                '$set': {'rate_count': rate_count, 'avg_rating': avg_rating, 'rate_value': rate_value}
+                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
             }
         )
 
     @staticmethod
     async def create_review(
             collection: Collection[Review],
-            user_id: str,
+            user_id: ObjectId,
             alcohol_id: str,
-            user_name: str,
+            username: str,
             payload: ReviewCreate
     ):
         db_review = Review(
             **payload.dict(),
             user_id=ObjectId(user_id),
             alcohol_id=ObjectId(alcohol_id),
-            user_name=user_name,
+            username=username,
             date=datetime.now(),
             report_count=0,
             reporters=[]
@@ -143,9 +123,9 @@ class ReviewDatabaseHandler:
     async def check_if_review_belongs_to_user(
             collection: Collection[Review],
             review_id: str,
-            user_id: str
+            user_id: ObjectId
     ) -> bool:
-        if collection.find_one({'user_id': ObjectId(user_id), '_id': ObjectId(review_id)}):
+        if collection.find_one({'user_id': user_id, '_id': ObjectId(review_id)}):
             return True
         else:
             return False
@@ -156,14 +136,6 @@ class ReviewDatabaseHandler:
             review_id: str
     ):
         return collection.delete_one({'_id': ObjectId(review_id)})
-
-    @staticmethod
-    async def get_alcohol_id(
-            collection: Collection[Review],
-            review_id: str,
-    ) -> str:
-        review = collection.find_one({'_id': ObjectId(review_id)})
-        return review['alcohol_id']
 
     @staticmethod
     async def get_rating(
@@ -203,32 +175,21 @@ class ReviewDatabaseHandler:
         return collection.delete_one({'_id': ObjectId(review_id)})
 
     @staticmethod
-    async def check_if_user_exists(
-            collection: Collection[UserBase],
-            user_name: str
-    ) -> bool:
-        if collection.find_one({'username': user_name}):
-            return True
-        else:
-            return False
-
-    @staticmethod
     async def get_user_reviews(
-            collection: Collection[UserBase],
+            collection: Collection[Review],
             limit: int,
             offset: int,
-            user_name: str
+            user_id: str
     ) -> list[Review]:
-        print(list(collection.find({'user_name': user_name}).skip(offset).limit(limit)))
         return (
-            list(collection.find({'user_name': user_name}).skip(offset).limit(limit))
+            list(collection.find({'user_id': ObjectId(user_id)}).skip(offset).limit(limit))
         )
 
     @staticmethod
     async def count_user_reviews(
-            collection: Collection[UserBase],
-            user_name: str
+            collection: Collection[Review],
+            user_id: str
     ) -> int:
         return (
-            collection.count_documents(filter={'user_name': {'$eq': user_name}})
+            collection.count_documents(filter={'user_id': {'$eq': ObjectId(user_id)}})
         )

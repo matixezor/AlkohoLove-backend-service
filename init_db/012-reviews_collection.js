@@ -1,13 +1,13 @@
 let alcohol_review = {
     $jsonSchema: {
         bsonType: 'object',
-        required: ['user_id', 'user_name','alcohol_id','review','rating','date','report_count','reporters'],
+        required: ['user_id', 'username','alcohol_id','review','rating','date','report_count','reporters'],
         properties: {
             user_id: {
                 bsonType: 'objectId',
                 description: 'must be an objectId'
             },
-            user_name: {
+            username: {
                 bsonType: 'string',
                 description: 'must be a string'
             },
@@ -55,7 +55,7 @@ db.reviews.insertMany(
     [
         {
             _id: ObjectId('62964f8f12ce37ef94d3cbaa'),
-            user_name: 'Adam_Skorupa',
+            username: 'Adam_Skorupa',
             user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
             alcohol_id: ObjectId('6288e32dd5ab6070dde8db8a'),
             review: 'Pyszniutkie polecam',
@@ -66,7 +66,7 @@ db.reviews.insertMany(
         },
         {
             _id: ObjectId('62964f8f12ce37ef94d3cbab'),
-            user_name: 'Adam_Skorupa',
+            username: 'Adam_Skorupa',
             user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
             alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
             review: 'ok',
@@ -77,7 +77,7 @@ db.reviews.insertMany(
         },
         {
             _id: ObjectId('6296768d872c15947e569b97'),
-            user_name: 'DariuszGołąbski',
+            username: 'DariuszGołąbski',
             user_id: ObjectId('6288e2fdd5ab6070dde8db8d'),
             alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
             review: 'DO DU**Y',

@@ -397,20 +397,20 @@ async def delete_image(image_name: str):
 
 
 @router.delete(
-    path='/reviews/{review_id}',
+    path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='[For admin] Delete review',
     dependencies=[Depends(admin_permission)],
 )
 async def delete_review(
         review_id: str,
+        alcohol_id: str,
         db: Database = Depends(get_db)
 ) -> None:
     """
     Delete review by id
     """
 
-    alcohol_id = await ReviewDatabaseHandler.get_alcohol_id(db.reviews, review_id)
     rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
