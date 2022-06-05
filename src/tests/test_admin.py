@@ -147,7 +147,7 @@ async def test_get_user_invalid_object_id(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'It is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
+    assert response['detail'] == '1 is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
 
 
 @mark.asyncio

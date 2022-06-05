@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 
 from src.domain.common.page_info import PageInfo
 from src.infrastructure.config.app_config import STATIC_DIR
-from src.utils.validate_object_id import validate_object_ids
+from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
@@ -72,7 +72,7 @@ async def get_user(
     """
     Read user information
     """
-    user_id = validate_object_ids(user_id)[0]
+    user_id = validate_object_id(user_id)
     db_user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
     if not db_user:
         raise UserNotFoundException()
@@ -93,7 +93,7 @@ async def ban_user(
     Ban user by id.
     *to_ban: bool = True* - query param that specifies if the user should be banned or unbanned
     """
-    user_id = validate_object_ids(user_id)[0]
+    user_id = validate_object_id(user_id)
     if to_ban:
         await UserDatabaseHandler.ban_user(db.users, user_id)
     else:
@@ -111,7 +111,7 @@ async def get_error(error_id: str, db: Database = Depends(get_db)):
     """
     Read reported error by id
     """
-    error_id = validate_object_ids(error_id)[0]
+    error_id = validate_object_id(error_id)
     db_reported_error = await ReportedErrorDatabaseHandler.get_reported_error_by_id(db.reported_errors, error_id)
     if not db_reported_error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Reported error not found')
@@ -136,7 +136,7 @@ async def get_errors(
     You can specify user_id to fetch errors reported by given user
     """
     if user_id is not None:
-        user_id = validate_object_ids(user_id)[0]
+        user_id = validate_object_id(user_id)
     reported_errors = await ReportedErrorDatabaseHandler.get_reported_errors(
         db.reported_errors, limit, offset, user_id
     )
@@ -163,7 +163,7 @@ async def delete_error(
     """
     Delete reported error by reported error id
     """
-    error_id = validate_object_ids(error_id)[0]
+    error_id = validate_object_id(error_id)
     await ReportedErrorDatabaseHandler.delete_reported_error(db.reported_errors, error_id)
 
 
@@ -179,7 +179,7 @@ async def delete_alcohol(
     """
     Delete alcohol by id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
 
 
@@ -198,7 +198,7 @@ async def update_alcohol(
     """
     Update alcohol by id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -284,7 +284,7 @@ async def add_category_traits(
         payload: AlcoholCategoryUpdate,
         db: Database = Depends(get_db)
 ):
-    category_id = validate_object_ids(category_id)[0]
+    category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(
@@ -319,7 +319,7 @@ async def remove_category_traits(
         payload: AlcoholCategoryDelete,
         db: Database = Depends(get_db)
 ):
-    category_id = validate_object_ids(category_id)[0]
+    category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(

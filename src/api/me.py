@@ -6,7 +6,7 @@ from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
-from src.utils.validate_object_id import validate_object_ids
+from src.utils.validate_object_id import validate_object_id
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
@@ -142,7 +142,7 @@ async def delete_tag(
     """
     Delete your tag by tag id
     """
-    tag_id = validate_object_ids(tag_id)[0]
+    tag_id = validate_object_id(tag_id)
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
@@ -186,7 +186,8 @@ async def add_alcohol(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
-    tag_id, alcohol_id = validate_object_ids(tag_id, alcohol_id)
+    tag_id = validate_object_id(tag_id)
+    alcohol_id = validate_object_id(alcohol_id)
     if not await UserTagDatabaseHandler.check_if_tag_exists_by_id(
             db.user_tags,
             tag_id,
@@ -228,7 +229,8 @@ async def remove_alcohol(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
-    tag_id, alcohol_id = validate_object_ids(tag_id, alcohol_id)
+    tag_id = validate_object_id(tag_id)
+    alcohol_id = validate_object_id(alcohol_id)
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
@@ -253,7 +255,7 @@ async def update_tag(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
-    tag_id = validate_object_ids(tag_id)[0]
+    tag_id = validate_object_id(tag_id)
     if not await UserTagDatabaseHandler.check_if_tag_exists_by_id(
             db.user_tags,
             tag_id,
@@ -294,7 +296,7 @@ async def get_alcohols(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> PaginatedAlcohol:
-    tag_id = validate_object_ids(tag_id)[0]
+    tag_id = validate_object_id(tag_id)
     if not await UserTagDatabaseHandler.check_if_tag_exists_by_id(
             db.user_tags,
             tag_id,
@@ -433,7 +435,7 @@ async def delete_alcohol_form_wishlist(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     """
     Delete alcohol from wishlist by alcohol id
     """
@@ -454,7 +456,7 @@ async def delete_alcohol_form_favourites(
     """
     Delete alcohol from favourites by alcohol id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
 
@@ -473,7 +475,7 @@ async def delete_alcohol_form_search_history(
     """
     Delete alcohol from search history by alcohol id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
 
@@ -492,7 +494,7 @@ async def add_alcohol_to_wishlist(
     """
     Add alcohol to your wishlist by alcohol id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id):
         await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
@@ -514,7 +516,7 @@ async def add_alcohol_to_favourites(
     """
     Add alcohol to favourites by alcohol id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_wishlist, user_id, alcohol_id):
         await UserFavouritesHandler.add_alcohol_to_favourites(db.user_wishlist, user_id, alcohol_id)
@@ -536,7 +538,7 @@ async def add_alcohol_to_search_history(
     """
     Add alcohol to search history by alcohol id
     """
-    alcohol_id = validate_object_ids(alcohol_id)[0]
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     await SearchHistoryHandler.add_alcohol_to_search_history(db.user_search_history, user_id, alcohol_id)
 
@@ -615,7 +617,7 @@ async def delete_user_from_following(
     """
     Delete user from following by following user id
     """
-    user_id = validate_object_ids(user_id)[0]
+    user_id = validate_object_id(user_id)
     current_user_id = current_user['_id']
     if await UserDatabaseHandler.get_user_by_id(db.users, user_id):
         await FollowingDatabaseHandler.delete_user_from_following(db.following, current_user_id, user_id)
@@ -638,7 +640,7 @@ async def add_user_to_following(
     """
     Add user to following by user id
     """
-    user_id = validate_object_ids(user_id)[0]
+    user_id = validate_object_id(user_id)
     current_user_id = current_user['_id']
     if not await FollowingDatabaseHandler.check_if_user_in_following(db.following, current_user_id, user_id):
         await FollowingDatabaseHandler.add_user_to_following(db.following, current_user_id, user_id)
