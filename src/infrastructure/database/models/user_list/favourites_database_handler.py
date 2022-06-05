@@ -25,7 +25,8 @@ class UserFavouritesHandler:
         collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': alcohol_id}})
 
     @staticmethod
-    async def add_alcohol_to_favourites(collection: Collection[Favourites], user_id: ObjectId, alcohol_id: ObjectId) -> None:
+    async def add_alcohol_to_favourites(collection: Collection[Favourites], user_id: ObjectId,
+                                        alcohol_id: ObjectId) -> None:
         collection.update_one({'user_id': user_id}, {'$push': {'alcohols': alcohol_id}})
 
     @staticmethod
