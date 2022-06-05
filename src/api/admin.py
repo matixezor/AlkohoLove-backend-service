@@ -1,7 +1,6 @@
 from PIL import Image
 from os import remove
 from os.path import exists
-
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
