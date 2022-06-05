@@ -1,9 +1,11 @@
 from PIL import Image
 from os import remove
 from os.path import exists
+
+from bson import ObjectId
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
-from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Path
 
 from src.domain.common.page_info import PageInfo
 from src.infrastructure.config.app_config import STATIC_DIR
@@ -15,6 +17,7 @@ from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.dependencies.validate_object_id import validate_object_id
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
@@ -64,7 +67,7 @@ async def search_users(
     response_model_by_alias=False,
 )
 async def get_user(
-        user_id: str,
+        id: str = Depends(validate_object_id),
         db: Database = Depends(get_db)
 ):
     """
