@@ -9,46 +9,46 @@ class ReportedErrorDatabaseHandler:
     @staticmethod
     async def get_reported_error_by_id(
             collection: Collection[ReportedError],
-            error_id: str
+            error_id: ObjectId
     ) -> ReportedError | None:
-        return collection.find_one({'_id': ObjectId(error_id)})
+        return collection.find_one({'_id': error_id})
 
     @staticmethod
     async def get_reported_errors(
             collection: Collection[ReportedError],
             limit: int,
             offset: int,
-            user_id: str = None
+            user_id: ObjectId = None
     ) -> list[ReportedError]:
         return (
             list(collection.find({}).skip(offset).limit(limit))
             if not user_id
-            else list(collection.find({'user_id': ObjectId(user_id)}).skip(offset).limit(limit))
+            else list(collection.find({'user_id': user_id}).skip(offset).limit(limit))
         )
 
     @staticmethod
     async def count_reported_errors(
             collection: Collection[ReportedError],
-            user_id: str = None
+            user_id: ObjectId = None
     ) -> int:
         return (
             collection.estimated_document_count()
             if not user_id
-            else collection.count_documents(filter={'user_id': {'$eq': ObjectId(user_id)}})
+            else collection.count_documents(filter={'user_id': {'$eq': user_id}})
         )
 
     @staticmethod
-    async def delete_reported_error(collection: Collection[ReportedError], error_id: str) -> None:
-        collection.delete_one({'_id': ObjectId(error_id)})
+    async def delete_reported_error(collection: Collection[ReportedError], error_id: ObjectId) -> None:
+        collection.delete_one({'_id': error_id})
 
     @staticmethod
     async def create_reported_error(
             collection: Collection[ReportedError],
-            user_id: str,
+            user_id: ObjectId,
             payload: ReportedErrorCreate
     ) -> None:
         db_reported_error = ReportedError(
             **payload.dict(),
-            user_id=ObjectId(user_id)
+            user_id=user_id
         )
         collection.insert_one(db_reported_error)

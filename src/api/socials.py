@@ -1,14 +1,14 @@
-from bson import ObjectId
 from starlette import status
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, Query
 
 from src.domain.common import PageInfo
-from src.domain.user.paginated_user_info import PaginatedUserSocial
+from src.utils.validate_object_id import validate_object_ids
 from src.infrastructure.database.database_config import get_db
+from src.domain.user.paginated_user_info import PaginatedUserSocial
+from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
-from src.infrastructure.database.models.user import UserDatabaseHandler
 
 router = APIRouter(prefix='/socials', tags=['socials'])
 
@@ -29,7 +29,7 @@ async def get_followers(
     """
     Get user followers with pagination
     """
-    user_id = ObjectId(user_id)
+    user_id = validate_object_ids(user_id)[0]
     users = await FollowersDatabaseHandler.get_followers_by_user_id(
         limit, offset, db.followers, db.users, user_id
     )
@@ -60,7 +60,7 @@ async def get_following(
     """
     Get following users with pagination
     """
-    user_id = ObjectId(user_id)
+    user_id = validate_object_ids(user_id)[0]
     users = await FollowingDatabaseHandler.get_following_by_user_id(limit, offset, db.following, db.users, user_id)
     total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id)
 

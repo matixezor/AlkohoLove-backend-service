@@ -22,5 +22,5 @@ async def create_error(
         db: Database = Depends(get_db)
 ):
     await DatabaseHandler.create_reported_error(
-        db.reported_errors, str(current_user['_id']), reported_error_create_payload
+        db.reported_errors, current_user['_id'], reported_error_create_payload
     )

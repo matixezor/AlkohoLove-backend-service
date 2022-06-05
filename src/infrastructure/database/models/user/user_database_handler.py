@@ -27,16 +27,16 @@ class UserDatabaseHandler:
         return pwd_context.verify(password_raw, hashed_password)
 
     @staticmethod
-    async def ban_user(collection: Collection[User], user_id: str) -> None:
-        collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': True}})
+    async def ban_user(collection: Collection[User], user_id: ObjectId) -> None:
+        collection.find_one_and_update({'_id': user_id}, {"$set": {'is_banned': True}})
 
     @staticmethod
-    async def unban_user(collection: Collection[User], user_id: str) -> None:
-        collection.find_one_and_update({'_id': ObjectId(user_id)}, {"$set": {'is_banned': False}})
+    async def unban_user(collection: Collection[User], user_id: ObjectId) -> None:
+        collection.find_one_and_update({'_id': user_id}, {"$set": {'is_banned': False}})
 
     @staticmethod
-    async def get_user_by_id(collection: Collection[User], user_id: str) -> User | None:
-        return collection.find_one({'_id': ObjectId(user_id)})
+    async def get_user_by_id(collection: Collection[User], user_id: ObjectId) -> User | None:
+        return collection.find_one({'_id': user_id})
 
     @staticmethod
     async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:

@@ -30,16 +30,16 @@ class SearchHistoryHandler:
 
     @staticmethod
     async def delete_alcohol_from_search_history(collection: Collection[UserSearchHistory], user_id: ObjectId,
-                                                 alcohol_id: str, date: datetime) -> None:
+                                                 alcohol_id: ObjectId, date: datetime) -> None:
         collection.update_many({'user_id': user_id},
-                               {'$pull': {'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': date}}})
+                               {'$pull': {'alcohols': {'alcohol_id': alcohol_id, 'search_date': date}}})
 
     @staticmethod
     async def add_alcohol_to_search_history(collection: Collection[UserSearchHistory], user_id: ObjectId,
-                                            alcohol_id: str) -> None:
+                                            alcohol_id: ObjectId) -> None:
         collection.update_one({'user_id': user_id},
                               {'$push': {
-                                  'alcohols': {'alcohol_id': ObjectId(alcohol_id), 'search_date': datetime.now()}}})
+                                  'alcohols': {'alcohol_id': alcohol_id, 'search_date': datetime.now()}}})
 
     @staticmethod
     async def count_alcohols_in_search_history(

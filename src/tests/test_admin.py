@@ -25,33 +25,33 @@ ALCOHOL_FIXTURE = {
 ALCOHOL_CATEGORY_FIXTURE = {
     'id': '628d20d87bde3e0dcb2ed69b',
     'properties': {
-      'kind': {
-        'enum': ['piwo']
-      },
-      'ibu': {
-        'bsonType': ['int', 'null'],
-        'description': '4'
-      },
-      'srm': {
-        'bsonType': ['double', 'null'],
-        'description': '4'
-      },
-      'extract': {
-        'bsonType': ['double', 'null'],
-        'description': '11.6'
-      },
-      'fermentation': {
-        'bsonType': ['string'],
-        'description': 'górna'
-      },
-      'is_filtered': {
-        'bsonType': ['bool'],
-        'description': 'true'
-      },
-      'is_pasteurized': {
-        'bsonType': ['bool'],
-        'description': 'true'
-      }
+        'kind': {
+            'enum': ['piwo']
+        },
+        'ibu': {
+            'bsonType': ['int', 'null'],
+            'description': '4'
+        },
+        'srm': {
+            'bsonType': ['double', 'null'],
+            'description': '4'
+        },
+        'extract': {
+            'bsonType': ['double', 'null'],
+            'description': '11.6'
+        },
+        'fermentation': {
+            'bsonType': ['string'],
+            'description': 'górna'
+        },
+        'is_filtered': {
+            'bsonType': ['bool'],
+            'description': 'true'
+        },
+        'is_pasteurized': {
+            'bsonType': ['bool'],
+            'description': 'true'
+        }
     },
     'required': ['ibu', 'srm', 'extract', 'fermentation', 'is_filtered', 'is_pasteurized'],
     'title': 'piwo'
@@ -122,6 +122,32 @@ async def test_get_user(
     assert response['is_admin'] is not True
     assert response['created_on'] == '2022-01-08T08:16:42+00:00'
     assert response['last_login'] == '2022-04-21T12:32:43+00:00'
+
+
+@mark.asyncio
+async def test_get_non_existing_user(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        f'/admin/users/629d086dcaf272ea1d806ab4', headers=admin_token_headers
+    )
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'User not found'
+
+
+@mark.asyncio
+async def test_get_user_invalid_object_id(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        f'/admin/users/1', headers=admin_token_headers
+    )
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'It is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
 
 
 @mark.asyncio
