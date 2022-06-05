@@ -28,8 +28,8 @@ from src.infrastructure.database.models.socials.followers_database_handler impor
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler, \
     UserDatabaseHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, AlcoholIsInTag,\
-    TagNotFound
+from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
+    TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException,\
     ReviewDoesNotBelongToUserException, ReviewNotFoundException
 
@@ -154,7 +154,7 @@ async def delete_tag(
             db.user_tags,
             tag_id,
             current_user['_id']):
-        raise TagDoesNotBelongToUser()
+        raise TagDoesNotBelongToUserException()
 
     await UserTagDatabaseHandler.delete_user_tag(db.user_tags, tag_id)
 
@@ -174,7 +174,7 @@ async def create_tag(
             db.user_tags,
             user_tag_create_payload.tag_name,
             current_user['_id']):
-        raise TagAlreadyExists()
+        raise TagAlreadyExistsException()
 
     await UserTagDatabaseHandler.create_user_tag(
         db.user_tags, current_user['_id'], user_tag_create_payload
@@ -197,13 +197,13 @@ async def add_alcohol(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
             current_user['_id']):
-        raise TagDoesNotBelongToUser()
+        raise TagDoesNotBelongToUserException()
 
     if not await AlcoholDatabaseHandler.check_if_alcohol_exists(
             db.alcohols,
@@ -214,7 +214,7 @@ async def add_alcohol(
             db.user_tags,
             tag_id,
             alcohol_id):
-        raise AlcoholIsInTag()
+        raise AlcoholIsInTagException()
 
     await UserTagDatabaseHandler.add_alcohol(
         db.user_tags,
@@ -238,7 +238,7 @@ async def remove_alcohol(
             db.user_tags,
             tag_id,
             current_user['_id']):
-        raise TagDoesNotBelongToUser()
+        raise TagDoesNotBelongToUserException()
 
     await UserTagDatabaseHandler.remove_alcohol(
         db.user_tags,
@@ -262,20 +262,20 @@ async def update_tag(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
             current_user['_id']):
-        raise TagDoesNotBelongToUser()
+        raise TagDoesNotBelongToUserException()
 
     if await UserTagDatabaseHandler.check_if_user_tag_exists(
             db.user_tags,
             tag_name,
             current_user['_id']
     ):
-        raise TagAlreadyExists()
+        raise TagAlreadyExistsException()
 
     return await UserTagDatabaseHandler.update_tag(
         db.user_tags,
@@ -302,13 +302,13 @@ async def get_alcohols(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
             current_user['_id']):
-        raise TagDoesNotBelongToUser()
+        raise TagDoesNotBelongToUserException()
 
     total = await UserTagDatabaseHandler.count_alcohols(
         tag_id,
