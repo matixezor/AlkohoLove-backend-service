@@ -514,8 +514,8 @@ async def add_alcohol_to_favourites(
     Add alcohol to favourites by alcohol id
     """
     user_id = current_user['_id']
-    if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_wishlist, user_id, alcohol_id):
-        await UserFavouritesHandler.add_alcohol_to_favourites(db.user_wishlist, user_id, alcohol_id)
+    if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites, user_id, alcohol_id):
+        await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, alcohol_id)
     else:
         raise AlcoholAlreadyInListException()
 
