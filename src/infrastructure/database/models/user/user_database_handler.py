@@ -2,17 +2,16 @@ from bson import ObjectId
 from bcrypt import gensalt
 from datetime import datetime
 from passlib.context import CryptContext
-from fastapi import status, HTTPException
 from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
-from src.infrastructure.exceptions.auth_exceptions import UserBannedException
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
+from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -98,14 +97,13 @@ class UserDatabaseHandler:
             update_last_login: bool = False
     ) -> User:
         user = await UserDatabaseHandler.get_user_by_username(collection, username)
+        if not user:
+            raise InvalidCredentialsException()
+        raw_password = user['password_salt'] + password
+        if not UserDatabaseHandler.verify_password(raw_password, user['password']):
+            raise InvalidCredentialsException()
         if user['is_banned']:
             raise UserBannedException()
-        raw_password = user['password_salt'] + password
-        if not user or not UserDatabaseHandler.verify_password(raw_password, user['password']):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f'Invalid username or password'
-            )
         if update_last_login:
             collection.update_one({'_id': user['_id']}, {'$set': {'last_login': datetime.now()}})
         return user
