@@ -6,8 +6,10 @@ Use `$ pip install -r requirements.txt`
 
 ## Local development
 
-When running with IDE, set Run/Debug configurations with env variable  
+When running with IDE, set Run/Debug configurations with env variables:
 `DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority`  
+`SECRET_KEY` - get from heroku
+`ALGORITHM` - get from heroku
 When using docs to test the API use `ModHeader` extension and add header `Authorization: Bearer <token>`
 
 ## Docs
