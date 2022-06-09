@@ -1,15 +1,14 @@
-from PIL import Image
-from os import remove
-from os.path import exists
+import cloudinary
+import cloudinary.uploader
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
 from src.domain.common.page_info import PageInfo
-from src.infrastructure.config.app_config import STATIC_DIR
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
+from src.infrastructure.config.app_config import ALCOHOL_IMAGES_DIR
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -355,7 +354,7 @@ async def add_category(
 
 
 @router.post(
-    '/static',
+    '/image',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(admin_permission)],
@@ -374,12 +373,31 @@ async def upload_image(
     if file.content_type != 'image/png':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    image = Image.open(file.file)
-    image.save(f'{STATIC_DIR}/{image_name}.png')
+    cloudinary.uploader.upload(
+        file.file,
+        folder="alcohols",
+        public_id=image_name,
+        overwrite=True)
+
+
+@router.get(
+    '/image',
+    status_code=status.HTTP_200_OK,
+    summary='[For admin] Get image',
+    dependencies=[Depends(admin_permission)],
+)
+async def get_image(image_name: str):
+    """
+    Get image by name. It should contain `_sm` or `_md` if there are multiple variants
+    """
+    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}.png'
+    image_url = cloudinary.utils.cloudinary_url(image_path)[0]
+
+    return {image_url}
 
 
 @router.delete(
-    '/static',
+    '/image',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='[For admin] Delete image',
     dependencies=[Depends(admin_permission)],
@@ -388,8 +406,5 @@ async def delete_image(image_name: str):
     """
     Delete image by name. It should contain `_sm` or `_md` if there are multiple variants
     """
-    image_path = f'{STATIC_DIR}/{image_name}.png'
-    if exists(image_path):
-        remove(image_path)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}'
+    cloudinary.uploader.destroy(image_path)

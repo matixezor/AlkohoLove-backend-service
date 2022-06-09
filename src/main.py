@@ -14,11 +14,9 @@ from src.api.socials import router as followers_router
 from src.api.reported_errors import router as reported_error_router
 from src.api.user_list import router as list_router
 from src.infrastructure.config.app_config import \
-    ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS, STATIC_DIR
+    ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
 
 app = FastAPI(title='AlkohoLove-backend-service')
-
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.add_middleware(
     CORSMiddleware,
