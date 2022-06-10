@@ -61,7 +61,7 @@ class UserDatabaseHandler:
             collection: Collection[User],
             email: str = None,
             username: str = None,
-            user_id: str = None
+            user_id: ObjectId = None
     ) -> bool:
         if email and await UserDatabaseHandler.get_user_by_email(collection, email):
             return True

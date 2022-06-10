@@ -421,7 +421,8 @@ async def delete_review(
     """
     Delete review by id
     """
-
+    review_id = validate_object_id(review_id)
+    alcohol_id = validate_object_id(alcohol_id)
     rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):

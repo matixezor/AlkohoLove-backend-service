@@ -3,10 +3,12 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
-from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
+from src.domain.review import ReviewCreate, Review
+from src.domain.review.review_update import ReviewUpdate
+from src.utils.validate_object_id import validate_object_id
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
@@ -15,7 +17,6 @@ from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
-from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
@@ -672,6 +673,7 @@ async def create_review(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
+    alcohol_id = validate_object_id(alcohol_id)
     if await ReviewDatabaseHandler.check_if_review_exists(
             db.reviews,
             alcohol_id,
@@ -706,6 +708,8 @@ async def delete_review(
     """
     Delete your review by id
     """
+    review_id = validate_object_id(review_id)
+    alcohol_id = validate_object_id(alcohol_id)
     if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
             db.reviews,
             review_id,
@@ -731,6 +735,8 @@ async def update_review(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
+    review_id = validate_object_id(review_id)
+    alcohol_id = validate_object_id(alcohol_id)
     if not await ReviewDatabaseHandler.check_if_review_exists_by_id(
             db.reviews,
             review_id,
