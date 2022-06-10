@@ -38,9 +38,9 @@
       "słodki",
       "pikantny"
     ],
-    "rate_count": 0,
-    "rate_value": 0,
-    "avg_rating": 0.0,
+    "rate_count": 1,
+    "rate_value": 5,
+    "avg_rating": 5.0,
     "age": 4,
     "keywords": [
       "czteroletnia",
@@ -88,9 +88,9 @@
       "mleczna czekolada",
       "karmel"
     ],
-    "rate_count": 0,
-    "rate_value": 0,
-    "avg_rating": 0.0,
+    "rate_count": 2,
+    "rate_value": 6,
+    "avg_rating": 3.0,
     "age": 4,
     "keywords": [
       "czteroletnia",

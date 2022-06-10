@@ -12,6 +12,7 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
@@ -469,3 +470,24 @@ async def delete_suggestion(
     Delete alcohol suggestion by suggestion id
     """
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
+
+
+@router.delete(
+    path='/reviews/{review_id}/alcohol/{alcohol_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='[For admin] Delete review',
+    dependencies=[Depends(admin_permission)],
+)
+async def delete_review(
+        review_id: str,
+        alcohol_id: str,
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete review by id
+    """
+
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)

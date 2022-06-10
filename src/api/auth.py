@@ -9,11 +9,13 @@ from src.domain.token import Token
 from src.domain.user import UserCreate
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException
+
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -75,11 +77,13 @@ async def register(
     - **password**: required
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
-    await UserDatabaseHandler.check_if_user_exists(
+    if await UserDatabaseHandler.check_if_user_exists(
         db.users,
         user_create_payload.email,
         user_create_payload.username
-    )
+    ):
+        raise UserExistsException()
+
     await UserDatabaseHandler.create_user(db.users, user_create_payload)
     await UserDatabaseHandler.create_user_lists(db.users, user_create_payload.username, db.user_wishlist,
                                                 db.user_favourites, db.user_search_history)
