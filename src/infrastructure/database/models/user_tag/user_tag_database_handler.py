@@ -1,7 +1,6 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from src.domain.alcohol.alcohol_base import AlcoholBase
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.database.models.user_tag import UserTag
 
@@ -12,19 +11,19 @@ class UserTagDatabaseHandler:
             collection: Collection[UserTag],
             limit: int,
             offset: int,
-            user_id: str
+            user_id: ObjectId
     ) -> list[UserTag]:
         return (
-            list(collection.find({'user_id': ObjectId(user_id)}).skip(offset).limit(limit))
+            list(collection.find({'user_id': user_id}).skip(offset).limit(limit))
         )
 
     @staticmethod
     async def count_user_tags(
             collection: Collection[UserTag],
-            user_id: str
+            user_id: ObjectId
     ) -> int:
         return (
-            collection.count_documents(filter={'user_id': {'$eq': ObjectId(user_id)}})
+            collection.count_documents(filter={'user_id': {'$eq': user_id}})
         )
 
     @staticmethod
@@ -38,9 +37,9 @@ class UserTagDatabaseHandler:
     async def check_if_user_tag_belongs_to_user(
             collection: Collection[UserTag],
             tag_id: str,
-            user_id: str
+            user_id: ObjectId
     ) -> bool:
-        if collection.find_one({'user_id': ObjectId(user_id), '_id': ObjectId(tag_id)}):
+        if collection.find_one({'user_id': user_id, '_id': ObjectId(tag_id)}):
             return True
         else:
             return False
@@ -49,9 +48,9 @@ class UserTagDatabaseHandler:
     async def check_if_user_tag_exists(
             collection: Collection[UserTag],
             tag_name: str,
-            user_id: str
+            user_id: ObjectId
     ) -> bool:
-        if collection.find_one({'user_id': ObjectId(user_id), 'tag_name': tag_name}):
+        if collection.find_one({'user_id': user_id, 'tag_name': tag_name}):
             return True
         else:
             return False
@@ -59,12 +58,12 @@ class UserTagDatabaseHandler:
     @staticmethod
     async def create_user_tag(
             collection: Collection[UserTag],
-            user_id: str,
+            user_id: ObjectId,
             payload: UserTagCreate
     ) -> None:
         db_user_tag = UserTag(
             **payload.dict(),
-            user_id=ObjectId(user_id),
+            user_id=user_id,
             alcohols=[]
         )
         collection.insert_one(db_user_tag)
@@ -92,16 +91,6 @@ class UserTagDatabaseHandler:
             alcohol_id: str
     ) -> bool:
         if collection.find_one({'alcohols': ObjectId(alcohol_id), '_id': ObjectId(tag_id)}):
-            return True
-        else:
-            return False
-
-    @staticmethod
-    async def check_if_alcohol_exists(
-            collection: Collection[AlcoholBase],
-            alcohol_id: str
-    ) -> bool:
-        if collection.find_one({'_id': ObjectId(alcohol_id)}):
             return True
         else:
             return False

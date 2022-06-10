@@ -3,19 +3,24 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
-from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
-from src.domain.user_tag.user_tag_create import UserTagCreate
+from src.domain.review import ReviewCreate, Review
+from src.domain.review.review_update import ReviewUpdate
 from src.infrastructure.auth.auth_utils import get_valid_user
+from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.database.database_config import get_db
+from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
+from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
-from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
+from src.infrastructure.exceptions.users_exceptions import UserNotFoundException, UserExistsException
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
@@ -23,8 +28,11 @@ from src.infrastructure.database.models.socials.followers_database_handler impor
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler, \
     UserDatabaseHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUser, TagAlreadyExists, \
-    AlcoholIsInTag, AlcoholDoesNotExist, TagNotFound
+from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
+    TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
+from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException,\
+    ReviewDoesNotBelongToUserException, ReviewNotFoundException
+
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -51,7 +59,8 @@ async def update_self(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
-    await DatabaseHandler.check_if_user_exists(db.users, email=update_payload.email)
+    if await DatabaseHandler.check_if_user_exists(db.users, email=update_payload.email):
+        raise UserExistsException()
 
     if (
             (update_payload.password and not update_payload.new_password)
@@ -115,9 +124,9 @@ async def get_tags(
     Search your tags with pagination.
     """
     user_tags = await UserTagDatabaseHandler.get_user_tags(
-        db.user_tags, limit, offset, str(current_user['_id'])
+        db.user_tags, limit, offset, current_user['_id']
     )
-    total = await UserTagDatabaseHandler.count_user_tags(db.user_tags, str(current_user['_id']))
+    total = await UserTagDatabaseHandler.count_user_tags(db.user_tags, current_user['_id'])
     return PaginatedUserTags(
         user_tags=user_tags,
         page_info=PageInfo(
@@ -144,8 +153,8 @@ async def delete_tag(
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
-            str(current_user['_id'])):
-        raise TagDoesNotBelongToUser()
+            current_user['_id']):
+        raise TagDoesNotBelongToUserException()
 
     await UserTagDatabaseHandler.delete_user_tag(db.user_tags, tag_id)
 
@@ -164,11 +173,11 @@ async def create_tag(
     if await UserTagDatabaseHandler.check_if_user_tag_exists(
             db.user_tags,
             user_tag_create_payload.tag_name,
-            str(current_user['_id'])):
-        raise TagAlreadyExists()
+            current_user['_id']):
+        raise TagAlreadyExistsException()
 
     await UserTagDatabaseHandler.create_user_tag(
-        db.user_tags, str(current_user['_id']), user_tag_create_payload
+        db.user_tags, current_user['_id'], user_tag_create_payload
     )
 
 
@@ -188,24 +197,24 @@ async def add_alcohol(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
-            str(current_user['_id'])):
-        raise TagDoesNotBelongToUser()
+            current_user['_id']):
+        raise TagDoesNotBelongToUserException()
 
-    if not await UserTagDatabaseHandler.check_if_alcohol_exists(
+    if not await AlcoholDatabaseHandler.check_if_alcohol_exists(
             db.alcohols,
             alcohol_id):
-        raise AlcoholDoesNotExist()
+        raise AlcoholNotFoundException()
 
     if await UserTagDatabaseHandler.check_if_alcohol_is_in_user_tag(
             db.user_tags,
             tag_id,
             alcohol_id):
-        raise AlcoholIsInTag()
+        raise AlcoholIsInTagException()
 
     await UserTagDatabaseHandler.add_alcohol(
         db.user_tags,
@@ -228,8 +237,8 @@ async def remove_alcohol(
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
-            str(current_user['_id'])):
-        raise TagDoesNotBelongToUser()
+            current_user['_id']):
+        raise TagDoesNotBelongToUserException()
 
     await UserTagDatabaseHandler.remove_alcohol(
         db.user_tags,
@@ -253,20 +262,20 @@ async def update_tag(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
-            str(current_user['_id'])):
-        raise TagDoesNotBelongToUser()
+            current_user['_id']):
+        raise TagDoesNotBelongToUserException()
 
     if await UserTagDatabaseHandler.check_if_user_tag_exists(
             db.user_tags,
             tag_name,
-            str(current_user['_id'])
+            current_user['_id']
     ):
-        raise TagAlreadyExists()
+        raise TagAlreadyExistsException()
 
     return await UserTagDatabaseHandler.update_tag(
         db.user_tags,
@@ -293,13 +302,13 @@ async def get_alcohols(
             db.user_tags,
             tag_id,
     ):
-        raise TagNotFound()
+        raise TagNotFoundException()
 
     if not await UserTagDatabaseHandler.check_if_user_tag_belongs_to_user(
             db.user_tags,
             tag_id,
-            str(current_user['_id'])):
-        raise TagDoesNotBelongToUser()
+            current_user['_id']):
+        raise TagDoesNotBelongToUserException()
 
     total = await UserTagDatabaseHandler.count_alcohols(
         tag_id,
@@ -634,3 +643,99 @@ async def add_user_to_following(
             UserAlreadyInFollowingException()
     else:
         raise UserAlreadyInFollowingException()
+
+
+@router.post(
+    '/reviews/{alcohol_id}',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Create a review'
+)
+async def create_review(
+        alcohol_id: str,
+        review_create_payload: ReviewCreate,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    if await ReviewDatabaseHandler.check_if_review_exists(
+            db.reviews,
+            alcohol_id,
+            current_user['_id']):
+        raise ReviewAlreadyExistsException()
+
+    if await ReviewDatabaseHandler.create_review(
+            db.reviews,
+            current_user['_id'],
+            alcohol_id,
+            current_user['username'],
+            review_create_payload
+    ):
+        await ReviewDatabaseHandler.add_rating_to_alcohol(
+            db.alcohols,
+            alcohol_id,
+            review_create_payload.rating
+        )
+
+
+@router.delete(
+    path='/reviews/{review_id}/alcohol/{alcohol_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete your review'
+)
+async def delete_review(
+        review_id: str,
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete your review by id
+    """
+    if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
+            db.reviews,
+            review_id,
+            current_user['_id']):
+        raise ReviewDoesNotBelongToUserException()
+
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+
+
+@router.put(
+    path='/reviews/{review_id}/alcohol/{alcohol_id}',
+    response_model=Review,
+    status_code=status.HTTP_200_OK,
+    summary='Update your review'
+)
+async def update_review(
+        review_id: str,
+        alcohol_id: str,
+        review_update_payload: ReviewUpdate,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    if not await ReviewDatabaseHandler.check_if_review_exists_by_id(
+            db.reviews,
+            review_id,
+    ):
+        raise ReviewNotFoundException()
+
+    if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
+            db.reviews,
+            review_id,
+            current_user['_id']):
+        raise ReviewDoesNotBelongToUserException()
+
+    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+
+    review_update = await ReviewDatabaseHandler.update_review(
+        db.reviews,
+        review_id,
+        review_update_payload,
+    )
+
+    await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
+
+    return review_update
