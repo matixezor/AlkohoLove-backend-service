@@ -12,8 +12,8 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
-from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
