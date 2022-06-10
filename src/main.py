@@ -13,6 +13,7 @@ from src.api.me import router as logged_in_user_router
 from src.api.socials import router as followers_router
 from src.api.reported_errors import router as reported_error_router
 from src.api.user_list import router as list_router
+from src.api.reviews import router as review_router
 from src.infrastructure.config.app_config import \
     ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
 
@@ -31,6 +32,7 @@ app.include_router(admin_router)
 app.include_router(alcohol_router)
 app.include_router(logged_in_user_router)
 app.include_router(reported_error_router)
+app.include_router(review_router)
 app.include_router(list_router)
 app.include_router(followers_router)
 

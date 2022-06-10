@@ -252,7 +252,7 @@ async def test_alcohol_already_in_favourites(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
+    response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8c', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'Alcohol already in list'
