@@ -19,9 +19,9 @@ TAG_ALCOHOLS_FIXTURE = [
         'barcode': ['5011007003234', '5011007015534', '5011007003005'],
         'keywords': ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend'],
         'id': '6288e32dd5ab6070dde8db8a',
-        'avg_rating': 0.0,
-        'rate_count': 0,
-        'rate_value': 0,
+        'avg_rating': 5.0,
+        'rate_count': 1,
+        'rate_value': 5,
         'age': 4
     },
     {

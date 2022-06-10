@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 
 
-class TagDoesNotBelongToUser(HTTPException):
+class TagDoesNotBelongToUserException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
@@ -9,7 +9,7 @@ class TagDoesNotBelongToUser(HTTPException):
         )
 
 
-class TagNotFound(HTTPException):
+class TagNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_404_NOT_FOUND,
@@ -17,7 +17,7 @@ class TagNotFound(HTTPException):
         )
 
 
-class TagAlreadyExists(HTTPException):
+class TagAlreadyExistsException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
@@ -25,7 +25,7 @@ class TagAlreadyExists(HTTPException):
         )
 
 
-class AlcoholIsInTag(HTTPException):
+class AlcoholIsInTagException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
@@ -33,7 +33,7 @@ class AlcoholIsInTag(HTTPException):
         )
 
 
-class AlcoholDoesNotExist(HTTPException):
+class AlcoholDoesNotExistException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_404_NOT_FOUND,

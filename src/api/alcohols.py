@@ -6,6 +6,7 @@ from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 
 router = APIRouter(prefix='/alcohols', tags=['alcohol'])
@@ -90,8 +91,5 @@ async def get_alcohol_by_barcode(barcode: str, db: Database = Depends(get_db)):
     """
     db_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, [barcode])
     if not db_alcohol:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Alcohol not found'
-        )
+        raise AlcoholNotFoundException()
     return db_alcohol

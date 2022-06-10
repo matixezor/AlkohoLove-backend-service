@@ -97,16 +97,6 @@ class UserTagDatabaseHandler:
             return False
 
     @staticmethod
-    async def check_if_alcohol_exists(
-            collection: Collection[AlcoholBase],
-            alcohol_id: ObjectId
-    ) -> bool:
-        if collection.find_one({'_id': alcohol_id}):
-            return True
-        else:
-            return False
-
-    @staticmethod
     async def update_tag(
             collection: Collection[UserTag],
             tag_id: ObjectId,

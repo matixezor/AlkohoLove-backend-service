@@ -57,11 +57,20 @@ class UserDatabaseHandler:
         collection.delete_one({'_id': user_id})
 
     @staticmethod
-    async def check_if_user_exists(collection: Collection[User], email: str = None, username: str = None) -> None:
+    async def check_if_user_exists(
+            collection: Collection[User],
+            email: str = None,
+            username: str = None,
+            user_id: str = None
+    ) -> bool:
         if email and await UserDatabaseHandler.get_user_by_email(collection, email):
-            raise UserExistsException()
+            return True
         if username and await UserDatabaseHandler.get_user_by_username(collection, username):
-            raise UserExistsException()
+            return True
+        if user_id and await UserDatabaseHandler.get_user_by_id(collection, user_id):
+            return True
+        else:
+            return False
 
     @staticmethod
     async def get_user_by_email(collection: Collection[User], email: str) -> User | None:

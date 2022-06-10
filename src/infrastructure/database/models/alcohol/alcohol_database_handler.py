@@ -101,3 +101,13 @@ class AlcoholDatabaseHandler:
     async def remove_fields_for_kind(collection: Collection, kind: str, fields: list[str]) -> None:
         fields = {field: '' for field in fields}
         collection.update_many({'kind': kind}, {'$unset': fields})
+
+    @staticmethod
+    async def check_if_alcohol_exists(
+            collection: Collection,
+            alcohol_id: str
+    ) -> bool:
+        if collection.find_one({'_id': ObjectId(alcohol_id)}):
+            return True
+        else:
+            return False
