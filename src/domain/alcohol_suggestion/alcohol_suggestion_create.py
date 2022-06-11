@@ -2,4 +2,4 @@ from src.domain.alcohol_suggestion.alcohol_suggestion_base import AlcoholSuggest
 
 
 class AlcoholSuggestionCreate(AlcoholSuggestionBase):
-    pass
+    description: str | None

@@ -46,7 +46,11 @@ class AlcoholSuggestionDatabaseHandler:
             description: str,
             suggestion: AlcoholSuggestion
     ) -> None:
-        collection.update_one({'_id': suggestion['_id']}, {'$push': {'user_ids': user_id, 'descriptions': description}})
+        if description is not None:
+            collection.update_one({'_id': suggestion['_id']},
+                                  {'$push': {'user_ids': user_id, 'descriptions': description}})
+        else:
+            collection.update_one({'_id': suggestion['_id']}, {'$push': {'user_ids': user_id}})
 
     @staticmethod
     async def create_suggestion(
