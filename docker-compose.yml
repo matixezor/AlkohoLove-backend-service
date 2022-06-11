@@ -8,7 +8,7 @@ services:
       - 8008:8000
     environment:
       - DATABASE_URL=mongodb://alkoholove_admin:Test1234@mongodb/alkoholove?retryWrites=true&w=majority
-      - STATIC_DIR=./static
+      - ALCOHOL_IMAGES_DIR=test
     depends_on:
       - mongodb
   mongodb:

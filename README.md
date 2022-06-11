@@ -24,7 +24,8 @@ To run just the db `$ docker-compose run -d --service-ports mongodb`
 Db is persisted between launches, to get a brand-new db delete `mongo-data` directory  
 Backend on docker will be under `http://localhost:8008/docs`  
 To run with image handling add env variable to `Dockerfile` `ENV CLOUDINARY_URL <get from heroku>`  
-To upload image to production storage add env variable to `Dockerfile` `ENV ALCOHOL_IMAGES_DIR alcohols`  
+To upload image to production storage change env variable in `Dockerfile` `ENV ALCOHOL_IMAGES_DIR alcohols`  
+To upload image to production storage change env variable in `docker-compose` `ALCOHOL_IMAGES_DIR=alcohols`  
 
 ## Tests
 
