@@ -171,7 +171,12 @@ async def delete_alcohol(
     """
     Delete alcohol by id
     """
+    alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
+    image_name = alcohol['name'].lower().replace(' ', '_')
+    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}'
+    cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
+    cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
 
 
 @router.put(
@@ -376,39 +381,11 @@ async def upload_image(
 
     cloudinary.uploader.upload(
         file.file,
-        folder="alcohols",
+        folder=ALCOHOL_IMAGES_DIR,
         public_id=image_name,
-        overwrite=True)
-
-
-@router.get(
-    '/image',
-    status_code=status.HTTP_200_OK,
-    summary='[For admin] Get image',
-    dependencies=[Depends(admin_permission)],
-)
-async def get_image(image_name: str):
-    """
-    Get image by name. It should contain `_sm` or `_md` if there are multiple variants
-    """
-    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}.png'
-    image_url = cloudinary.utils.cloudinary_url(image_path)[0]
-
-    return {image_url}
-
-
-@router.delete(
-    '/image',
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary='[For admin] Delete image',
-    dependencies=[Depends(admin_permission)],
-)
-async def delete_image(image_name: str):
-    """
-    Delete image by name. It should contain `_sm` or `_md` if there are multiple variants
-    """
-    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}'
-    cloudinary.uploader.destroy(image_path)
+        resource_type='image',
+        overwrite=True,
+        invalidate=True)
 
 
 @router.delete(

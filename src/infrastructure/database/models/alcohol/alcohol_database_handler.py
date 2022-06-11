@@ -19,6 +19,10 @@ class AlcoholDatabaseHandler:
         return collection.find_one({'name': name})
 
     @staticmethod
+    async def get_alcohol_by_id(collection: Collection, alcohol_id: str) -> dict | None:
+        return collection.find_one({'_id': ObjectId(alcohol_id)})
+
+    @staticmethod
     async def add_alcohol(collection: Collection, payload: AlcoholCreate) -> None:
         payload = payload.dict() | {'avg_rating': float(0), 'rate_count': Int64(0), 'rate_value': Int64(0)}
         try:
