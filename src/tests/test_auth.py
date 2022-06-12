@@ -40,6 +40,19 @@ async def test_logout(async_client: AsyncClient):
 
 
 @mark.asyncio
+async def test_login_to_non_existing_account(async_client: AsyncClient):
+    data = {
+        'username': 'testTest',
+        'password': 'Jan1233'
+    }
+    response = await async_client.post('/auth/token', data=data)
+    assert response.status_code == 401
+    assert response.json() == {
+        'detail': 'Invalid username or password'
+    }
+
+
+@mark.asyncio
 async def test_login_with_invalid_credentials(async_client: AsyncClient):
     data = {
         'username': TEST_USERNAME_FIXTURE,

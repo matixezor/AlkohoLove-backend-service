@@ -24,3 +24,11 @@ class TokenRevokedException(HTTPException):
             status.HTTP_401_UNAUTHORIZED,
             f'{token_type} token is blacklisted',
         )
+
+
+class InvalidCredentialsException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_401_UNAUTHORIZED,
+            detail=f'Invalid username or password'
+        )
