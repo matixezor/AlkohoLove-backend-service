@@ -428,7 +428,7 @@ async def search_alcohols(
             total=total
         )
     )
- 
+
 
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
