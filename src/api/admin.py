@@ -351,6 +351,7 @@ async def add_category(
     try:
         await AlcoholCategoryDatabaseHandler.add_category(db.alcohol_categories, payload)
         await AlcoholDatabaseHandler.update_validation(db)
+        await AlcoholFilterDatabaseHandler.create_init_entry(db.alcohol_filters, payload.title)
     except OperationFailure as ex:
         await AlcoholCategoryDatabaseHandler.revert_by_removal(db.alcohol_categories, payload.title)
         raise ValidationErrorException(ex.args[0])
