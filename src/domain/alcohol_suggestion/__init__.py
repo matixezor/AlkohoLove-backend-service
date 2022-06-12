@@ -1,0 +1,2 @@
+from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
+from src.domain.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
