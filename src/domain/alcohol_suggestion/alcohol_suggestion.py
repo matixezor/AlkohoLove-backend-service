@@ -10,6 +10,4 @@ class AlcoholSuggestion(MongoBaseModel, AlcoholSuggestionBase):
 
     @validator('user_ids', always=True)
     def set_id(cls, v):
-        for i in range(len(v)):
-            v[i] = str(v[i])
-        return v
+        return [str(user_id) for user_id in v]

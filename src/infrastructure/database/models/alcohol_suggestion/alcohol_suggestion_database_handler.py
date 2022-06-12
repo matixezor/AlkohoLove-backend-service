@@ -43,7 +43,7 @@ class AlcoholSuggestionDatabaseHandler:
     async def append_to_suggestion(
             collection: Collection[AlcoholSuggestion],
             user_id: ObjectId,
-            description: str,
+            description: str | None,
             suggestion: AlcoholSuggestion
     ) -> None:
         if description is not None:
