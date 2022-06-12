@@ -16,8 +16,8 @@ class AlcoholSuggestionDatabaseHandler:
         return list(suggestions_collection.find({}).skip(offset).limit(limit))
 
     @staticmethod
-    async def delete_suggestion(collection: Collection[AlcoholSuggestion], suggestion_id: str) -> None:
-        collection.delete_one({'_id': ObjectId(suggestion_id)})
+    async def delete_suggestion(collection: Collection[AlcoholSuggestion], suggestion_id: ObjectId) -> None:
+        collection.delete_one({'_id': suggestion_id})
 
     @staticmethod
     async def count_suggestions(
@@ -28,9 +28,9 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def get_suggestion_by_id(
             collection: Collection[AlcoholSuggestion],
-            suggestion_id: str
+            suggestion_id: ObjectId
     ) -> dict | None:
-        return collection.find_one({'_id': ObjectId(suggestion_id)})
+        return collection.find_one({'_id': suggestion_id})
 
     @staticmethod
     async def get_suggestion_by_barcode(

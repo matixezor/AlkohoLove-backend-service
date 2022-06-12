@@ -461,6 +461,7 @@ async def get_suggestion_by_id(
         suggestion_id: str,
         db: Database = Depends(get_db)
 ) -> AlcoholSuggestion:
+    suggestion_id = validate_object_id(suggestion_id)
     db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
                                                                                  suggestion_id)
     if not db_suggestions:
@@ -480,6 +481,7 @@ async def delete_suggestion(
     """
     Delete alcohol suggestion by suggestion id
     """
+    suggestion_id = validate_object_id(suggestion_id)
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
 
 
