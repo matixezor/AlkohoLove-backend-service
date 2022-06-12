@@ -6,14 +6,15 @@ from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
 from src.domain.common.page_info import PageInfo
+from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.config.app_config import STATIC_DIR
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
-from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
@@ -24,8 +25,12 @@ from src.infrastructure.database.models.reported_error import ReportedErrorDatab
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
+from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
 from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
+from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
+    AlcoholSuggestionDatabaseHandler
+
 
 router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_permission)])
 
@@ -405,6 +410,77 @@ async def delete_image(image_name: str):
         remove(image_path)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+
+
+@router.get(
+    path='/suggestions',
+    response_model=PaginatedAlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohol suggestions with pagination',
+    response_model_by_alias=False
+)
+async def get_suggestions(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+):
+    suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestions(db.alcohol_suggestion, limit, offset)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return PaginatedAlcoholSuggestion(
+        suggestions=suggestions,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/suggestions/total',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get total number of suggestions',
+    response_model_by_alias=False
+)
+async def get_suggestions(
+        db: Database = Depends(get_db)
+) -> int:
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return total
+
+
+@router.get(
+    path='/suggestions/{suggestion_id}',
+    response_model=AlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohol suggestion by id',
+    response_model_by_alias=False
+)
+async def get_suggestion_by_id(
+        suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> AlcoholSuggestion:
+    db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
+                                                                                 suggestion_id)
+    if not db_suggestions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Suggestion not found')
+    return db_suggestions
+
+
+@router.delete(
+    path='/suggestions/{suggestion_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol suggestion'
+)
+async def delete_suggestion(
+        suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol suggestion by suggestion id
+    """
+    await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
 
 
 @router.delete(

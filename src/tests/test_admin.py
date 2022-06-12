@@ -1,6 +1,9 @@
 from pytest import mark
 from httpx import AsyncClient
 
+from src.tests.response_fixtures.alcohol_suggestions import SUGGESTION_ID_FIXTURE, SUGGESTIONS_RESPONSE_FIXTURE, \
+    NON_EXISTING_ID_FIXTURE
+
 REPORTED_ERROR_ID_FIXTURE = '507f191e810c19729de860ea'
 REPORTED_DESCRIPTION_FIXTURE = 'This app sucks'
 USER_ID_FIXTURE = '6288e2fdd5ab6070dde8db8b'
@@ -373,3 +376,83 @@ async def test_get_schemas(
         {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
         {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
     ]
+
+
+# --------------------------------------------alcohol_suggestions---------------------------------------------
+@mark.asyncio
+async def test_get_suggestions_with_insufficient_permissions(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/suggestions', headers=user_token_headers
+    )
+    assert response.status_code == 403
+
+
+@mark.asyncio
+async def test_delete_suggestion_with_insufficient_permissions(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.delete(
+        f'/admin/suggestions/{SUGGESTION_ID_FIXTURE}', headers=user_token_headers
+    )
+    assert response.status_code == 403
+
+
+@mark.asyncio
+async def test_delete_suggestion(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.delete(f'/admin/suggestions/{SUGGESTION_ID_FIXTURE}', headers=admin_token_headers)
+    assert response.status_code == 204
+
+
+@mark.asyncio
+async def test_get_suggestions(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get('/admin/suggestions?limit=1&offset=0', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['suggestions']) == 1
+    assert response['page_info']['total'] == 3
+    assert response['page_info']['limit'] == 1
+    assert response['page_info']['offset'] == 0
+    assert response['suggestions'] == [SUGGESTIONS_RESPONSE_FIXTURE]
+
+
+@mark.asyncio
+async def test_get_suggestion_by_id(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/{SUGGESTION_ID_FIXTURE}', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == SUGGESTIONS_RESPONSE_FIXTURE
+
+
+@mark.asyncio
+async def test_get_total_suggestions_no(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get('/admin/suggestions/total', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == 3
+
+
+@mark.asyncio
+async def test_get_suggestion_by_id_that_doesnt_exist(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/{NON_EXISTING_ID_FIXTURE}', headers=admin_token_headers)
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == "Suggestion not found"
