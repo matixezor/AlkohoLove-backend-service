@@ -32,7 +32,7 @@ async def test_search_alcohols(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.get(
+    response = await async_client.post(
         '/alcohols?limit=1&offset=0', headers=user_token_headers
     )
     assert response.status_code == 200

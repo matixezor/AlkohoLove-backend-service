@@ -285,22 +285,23 @@ db.createCollection(
     }
 )
 
-db.alcohols.createIndex(
-    {barcode: 1}
-)
+db.alcohols.createIndex({barcode: 1})
+
+db.alcohols.createIndex({name: 1})
+db.alcohols.createIndex({kind: 1})
+db.alcohols.createIndex({type: 1})
+db.alcohols.createIndex({color: 1})
+db.alcohols.createIndex({country: 1})
 
 db.alcohols.createIndex(
     {
-        name: 'text',
         kind: 'text',
         type: 'text',
         color: 'text',
-        description: 'text',
         keywords: 'text'
     },
     {
         weights: {
-            name: 15,
             kind: 8,
             type: 7,
             color: 5,
