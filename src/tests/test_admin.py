@@ -128,6 +128,32 @@ async def test_get_user(
 
 
 @mark.asyncio
+async def test_get_non_existing_user(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        f'/admin/users/629d086dcaf272ea1d806ab4', headers=admin_token_headers
+    )
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'User not found'
+
+
+@mark.asyncio
+async def test_get_user_invalid_object_id(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        f'/admin/users/1', headers=admin_token_headers
+    )
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == '1 is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
+
+
+@mark.asyncio
 @mark.parametrize(
     'to_ban',
     [True, False]

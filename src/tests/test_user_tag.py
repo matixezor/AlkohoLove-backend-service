@@ -83,7 +83,6 @@ async def test_create_tag_without_required_data(
 
 @mark.asyncio
 async def test_get_tags(async_client: AsyncClient, user_token_headers: dict[str, str]):
-
     response = await async_client.get('/me/tags?limit=10&offset=0', headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
@@ -137,6 +136,62 @@ async def test_add_alcohol(
         headers=user_token_headers
     )
     assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_add_alcohol_invalid_tag_id(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/me/tags/1/alcohol/6288e32dd5ab6070dde8db8b',
+        headers=user_token_headers
+    )
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == '1 is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
+
+
+@mark.asyncio
+async def test_add_alcohol_invalid_alcohol_id(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/1',
+        headers=user_token_headers
+    )
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == '1 is not a valid ObjectId, it must be a 12-byte input or a 24-character hex string'
+
+
+@mark.asyncio
+async def test_add_alcohol_non_existing_tag_id(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/me/tags/629d0e4a962d06f7d6ec5eb0/alcohol/6288e32dd5ab6070dde8db8b',
+        headers=user_token_headers
+    )
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'Tag not found'
+
+
+@mark.asyncio
+async def test_add_alcohol_non_existing_alcohol_id(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/629d0e4a962d06f7d6ec5eb0',
+        headers=user_token_headers
+    )
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'Alcohol not found'
 
 
 @mark.asyncio

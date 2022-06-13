@@ -21,17 +21,18 @@ class UserFavouritesHandler:
 
     @staticmethod
     async def delete_alcohol_from_favourites(collection: Collection[Favourites], user_id: ObjectId,
-                                             alcohol_id: str) -> None:
-        collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': ObjectId(alcohol_id)}})
+                                             alcohol_id: ObjectId) -> None:
+        collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': alcohol_id}})
 
     @staticmethod
-    async def add_alcohol_to_favourites(collection: Collection[Favourites], user_id: ObjectId, alcohol_id: str) -> None:
-        collection.update_one({'user_id': user_id}, {'$push': {'alcohols': ObjectId(alcohol_id)}})
+    async def add_alcohol_to_favourites(collection: Collection[Favourites], user_id: ObjectId,
+                                        alcohol_id: ObjectId) -> None:
+        collection.update_one({'user_id': user_id}, {'$push': {'alcohols': alcohol_id}})
 
     @staticmethod
     async def check_if_alcohol_in_favourites(collection: Collection[Favourites], user_id: ObjectId,
-                                             alcohol_id: str) -> bool:
-        if collection.find_one({'user_id': user_id, 'alcohols': ObjectId(alcohol_id)}):
+                                             alcohol_id: ObjectId) -> bool:
+        if collection.find_one({'user_id': user_id, 'alcohols': alcohol_id}):
             return True
         else:
             return False
