@@ -444,10 +444,10 @@ async def delete_alcohol_form_wishlist(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
-    alcohol_id = validate_object_id(alcohol_id)
     """
     Delete alcohol from wishlist by alcohol id
     """
+    alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
 
