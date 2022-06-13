@@ -6,11 +6,16 @@ Use `$ pip install -r requirements.txt`
 
 ## Local development
 
-When running with IDE, set Run/Debug configurations with env variable  
+When running with IDE, set Run/Debug configurations with env variables:  
 `DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority`  
 `CLOUDINARY_URL` - get from heroku  
-To upload image to production storage add env variable `ALCOHOL_IMAGES_DIR=alcohols`  
-When using docs to test the API use `ModHeader` extension and add header `Authorization: Bearer <token>`
+`SECRET_KEY` - get from heroku  
+`ALCOHOL_IMAGES_DIR=test`  
+`ALGORITHM` - get from heroku  
+`LOCAL=1`  
+or create `.env` file with these env variables except `LOCAL=1`  
+To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
+When using docs to test the API use `ModHeader` extension and add header `Authorization: Bearer <token>`  
 
 ## Docs
 
@@ -18,14 +23,18 @@ Docs are available under `/docs` path
 
 ## Docker
 
+When running with docker create `.env` file with env variables:  
+`DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority`  
+`CLOUDINARY_URL` - get from heroku  
+`SECRET_KEY` - get from heroku  
+`ALCOHOL_IMAGES_DIR=test`  
+`ALGORITHM` - get from heroku  
 To run `$ docker-compose up --build -d`  
 To stop `$ docker-compose down --volumes`  
 To run just the db `$ docker-compose run -d --service-ports mongodb`  
 Db is persisted between launches, to get a brand-new db delete `mongo-data` directory  
-Backend on docker will be under `http://localhost:8008/docs`  
-To run with image handling add env variable to `Dockerfile` `ENV CLOUDINARY_URL <get from heroku>`  
-To upload image to production storage change env variable in `Dockerfile` to `ENV ALCOHOL_IMAGES_DIR alcohols`  
-To upload image to production storage change env variable in `docker-compose` to `ALCOHOL_IMAGES_DIR=alcohols`  
+Backend on docker will be under `http://localhost:8008/docs`   
+To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
 
 ## Tests
 

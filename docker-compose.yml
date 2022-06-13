@@ -7,10 +7,11 @@ services:
     ports:
       - 8008:8000
     environment:
-      - DATABASE_URL=mongodb://alkoholove_admin:Test1234@mongodb/alkoholove?retryWrites=true&w=majority
-      - ALCOHOL_IMAGES_DIR=test
-    env_file:
-      - docker.env
+      - DATABASE_URL=${DATABASE_URL}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALCOHOL_IMAGES_DIR=${ALCOHOL_IMAGES_DIR}
+      - ALGORITHM=${ALGORITHM}
     depends_on:
       - mongodb
   mongodb:

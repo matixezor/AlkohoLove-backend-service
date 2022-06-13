@@ -26,7 +26,11 @@ jobs:
 
       - name: Run tests
         env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALCOHOL_IMAGES_DIR: ${{ secrets.ALCOHOL_IMAGES_DIR }}
+          ALGORITHM: ${{ secrets.ALGORITHM }}
         run: |
           cd src/tests/
           pytest
