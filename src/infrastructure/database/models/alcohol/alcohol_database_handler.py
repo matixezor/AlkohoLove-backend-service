@@ -157,14 +157,14 @@ class AlcoholDatabaseHandler:
         return collection.count_documents(filters) if filters else collection.estimated_document_count()
 
     @staticmethod
-    async def delete_alcohol(collection: Collection, alcohol_id: str) -> None:
-        collection.delete_one({'_id': ObjectId(alcohol_id)})
+    async def delete_alcohol(collection: Collection, alcohol_id: ObjectId) -> None:
+        collection.delete_one({'_id': alcohol_id})
 
     @staticmethod
-    async def update_alcohol(collection: Collection, alcohol_id: str, payload: AlcoholUpdate) -> dict | None:
+    async def update_alcohol(collection: Collection, alcohol_id: ObjectId, payload: AlcoholUpdate) -> dict | None:
         try:
             return collection.find_one_and_update(
-                {'_id': ObjectId(alcohol_id)},
+                {'_id': alcohol_id},
                 {'$set': payload.dict(exclude_none=True)},
                 return_document=ReturnDocument.AFTER
             )
