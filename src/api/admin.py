@@ -1,6 +1,5 @@
-from PIL import Image
-from os import remove
-from os.path import exists
+import cloudinary
+import cloudinary.uploader
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
@@ -9,7 +8,6 @@ from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol_suggestion import AlcoholSuggestion
-from src.infrastructure.config.app_config import STATIC_DIR
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -20,6 +18,7 @@ from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
@@ -181,13 +180,19 @@ async def delete_error(
 )
 async def delete_alcohol(
         alcohol_id: str,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Delete alcohol by id
     """
     alcohol_id = validate_object_id(alcohol_id)
+    alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
+    image_name = alcohol['name'].lower().replace(' ', '_')
+    image_path = f'{settings.ALCOHOL_IMAGES_DIR}/{image_name}'
+    cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
+    cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
 
 
 @router.put(
@@ -375,7 +380,7 @@ async def add_category(
 
 
 @router.post(
-    '/static',
+    '/image',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(admin_permission)],
@@ -384,6 +389,7 @@ async def add_category(
 async def upload_image(
         image_name: str = Form(...),
         file: UploadFile = File(...),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Upload file with:
@@ -394,25 +400,13 @@ async def upload_image(
     if file.content_type != 'image/png':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    image = Image.open(file.file)
-    image.save(f'{STATIC_DIR}/{image_name}.png')
-
-
-@router.delete(
-    '/static',
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary='[For admin] Delete image',
-    dependencies=[Depends(admin_permission)],
-)
-async def delete_image(image_name: str):
-    """
-    Delete image by name. It should contain `_sm` or `_md` if there are multiple variants
-    """
-    image_path = f'{STATIC_DIR}/{image_name}.png'
-    if exists(image_path):
-        remove(image_path)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Image not found')
+    cloudinary.uploader.upload(
+        file.file,
+        folder=settings.ALCOHOL_IMAGES_DIR,
+        public_id=image_name,
+        resource_type='image',
+        overwrite=True,
+        invalidate=True)
 
 
 @router.post(

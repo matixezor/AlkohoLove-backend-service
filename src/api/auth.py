@@ -11,6 +11,7 @@ from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
+from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
@@ -29,10 +30,11 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         authorize: AuthJWT = Depends(),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     user = await UserDatabaseHandler.authenticate_user(db.users, form_data.username, form_data.password, True)
-    return await generate_tokens(user['username'], authorize)
+    return await generate_tokens(user['username'], authorize, settings)
 
 
 @router.post(
@@ -42,7 +44,8 @@ async def login(
 )
 async def refresh(
         authorize: AuthJWT = Depends(),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     await authorize.jwt_refresh_token_required()
 
@@ -57,7 +60,7 @@ async def refresh(
     if db_user['is_banned']:
         raise UserBannedException()
 
-    return await generate_tokens(current_user, authorize)
+    return await generate_tokens(current_user, authorize, settings)
 
 
 @router.post(
