@@ -12,13 +12,13 @@ from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
-from src.infrastructure.config.app_config import get_settings
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
@@ -180,7 +180,8 @@ async def delete_error(
 )
 async def delete_alcohol(
         alcohol_id: str,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Delete alcohol by id
@@ -189,7 +190,7 @@ async def delete_alcohol(
     alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
     image_name = alcohol['name'].lower().replace(' ', '_')
-    image_path = f'{get_settings().ALCOHOL_IMAGES_DIR}/{image_name}'
+    image_path = f'{settings.ALCOHOL_IMAGES_DIR}/{image_name}'
     cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
     cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
 
@@ -388,6 +389,7 @@ async def add_category(
 async def upload_image(
         image_name: str = Form(...),
         file: UploadFile = File(...),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Upload file with:
@@ -400,7 +402,7 @@ async def upload_image(
 
     cloudinary.uploader.upload(
         file.file,
-        folder=get_settings().ALCOHOL_IMAGES_DIR,
+        folder=settings.ALCOHOL_IMAGES_DIR,
         public_id=image_name,
         resource_type='image',
         overwrite=True,

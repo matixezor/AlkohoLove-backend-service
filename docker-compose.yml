@@ -8,6 +8,8 @@ services:
       - 8008:8000
     depends_on:
       - db
+    environment:
+      - ENV=DOCKER
   db:
     image: mongo:5.0.8
     restart: always

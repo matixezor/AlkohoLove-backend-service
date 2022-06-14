@@ -1,16 +1,8 @@
 from os import getenv
 from cloudinary import config
-from dotenv import find_dotenv
 from functools import lru_cache
+from pydantic import BaseSettings
 from async_fastapi_jwt_auth import AuthJWT
-from pydantic import BaseModel, BaseSettings
-
-
-if getenv('ENV') == 'LOCAL':
-    env_path = find_dotenv(filename='.local.env')
-
-else:
-    env_path = find_dotenv(filename='.docker.env')
 
 
 class ApplicationSettings(BaseSettings):
@@ -18,17 +10,20 @@ class ApplicationSettings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: str = getenv('CLOUDINARY_CLOUD_NAME')
     CLOUDINARY_API_KEY: str = getenv('CLOUDINARY_API_KEY')
     CLOUDINARY_API_SECRET: str = getenv('CLOUDINARY_API_SECRET')
-    SECRET_KEY: str = getenv('SECRET_KEY')
     ALCOHOL_IMAGES_DIR: str = getenv('ALCOHOL_IMAGES_DIR')
     ALGORITHM: str = getenv('ALGORITHM')
-
-    class Config:
-        env_file = f'{env_path}'
+    authjwt_secret_key: str = getenv('SECRET_KEY')
 
 
 @lru_cache()
 def get_settings():
-    return ApplicationSettings()
+    env = getenv('ENV')
+    if env == 'LOCAL':
+        return ApplicationSettings(_env_file='.local.env')
+    elif env == 'DOCKER':
+        return ApplicationSettings(_env_file='.docker.env')
+    else:
+        return ApplicationSettings()
 
 
 ALLOWED_ORIGINS = ['*']
@@ -43,10 +38,6 @@ config(
 )
 
 
-class Settings(BaseModel):
-    authjwt_secret_key: str = get_settings().SECRET_KEY
-
-
 @AuthJWT.load_config
 def get_config():
-    return Settings()
+    return get_settings()
