@@ -8,12 +8,14 @@ Use `$ pip install -r requirements.txt`
 
 When running with IDE, set Run/Debug configurations with env variables:  
 `DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority`  
-`CLOUDINARY_URL` - get from heroku  
+`CLOUDINARY_CLOUD_NAME` - get from heroku  
+`CLOUDINARY_API_KEY` - get from heroku  
+`CLOUDINARY_API_SECRET` - get from heroku  
 `SECRET_KEY` - get from heroku  
 `ALCOHOL_IMAGES_DIR=test`  
-`ALGORITHM` - get from heroku  
-`LOCAL=1`  
-or create `.env` file with these env variables except `LOCAL=1`  
+`ALGORITHM` - get from heroku   
+or create `.local.env` file with these env variables and set set Run/Debug configurations with env variable  
+`ENV=LOCAL`  
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
 When using docs to test the API use `ModHeader` extension and add header `Authorization: Bearer <token>`  
 
@@ -23,9 +25,11 @@ Docs are available under `/docs` path
 
 ## Docker
 
-When running with docker create `.env` file with env variables:  
-`DATABASE_URL=mongodb://alkoholove_admin:Test1234@localhost:27017/alkoholove?retryWrites=true&w=majority`  
-`CLOUDINARY_URL` - get from heroku  
+When running with docker create `.docker.env` file with env variables:  
+`DATABASE_URL=mongodb://alkoholove_admin:Test1234@db:27017/alkoholove?retryWrites=true&w=majority`
+`CLOUDINARY_CLOUD_NAME` - get from heroku  
+`CLOUDINARY_API_KEY` - get from heroku  
+`CLOUDINARY_API_SECRET` - get from heroku  
 `SECRET_KEY` - get from heroku  
 `ALCOHOL_IMAGES_DIR=test`  
 `ALGORITHM` - get from heroku  

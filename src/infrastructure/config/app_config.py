@@ -1,50 +1,54 @@
 from os import getenv
+from cloudinary import config
+from dotenv import find_dotenv
 from functools import lru_cache
-from dotenv import load_dotenv
 from async_fastapi_jwt_auth import AuthJWT
 from pydantic import BaseModel, BaseSettings
 
-load_dotenv()
 
-if getenv('LOCAL') == "1":
-    class FastAPISettings(BaseSettings):
-        DATABASE_URL: str
-        CLOUDINARY_URL: str
-        SECRET_KEY: str
-        ALCOHOL_IMAGES_DIR: str
-        ALGORITHM: str
-
-        class Config:
-            env_file = ".env"
-
-    @lru_cache()
-    def get_settings():
-        return FastAPISettings()
-
-    settings = get_settings()
-
-    DATABASE_URL = settings.DATABASE_URL
-    SECRET_KEY = settings.SECRET_KEY
-    ALGORITHM = settings.ALGORITHM
-    ALCOHOL_IMAGES_DIR = settings.ALCOHOL_IMAGES_DIR
-    ALLOWED_ORIGINS = ['*']
-    ALLOWED_METHODS = ['*']
-    ALLOWED_HEADERS = ['*']
-    ALLOW_CREDENTIALS = False
+if getenv('ENV') == 'LOCAL':
+    env_path = find_dotenv(filename='.local.env')
 
 else:
-    DATABASE_URL = getenv('DATABASE_URL')
-    SECRET_KEY = getenv('SECRET_KEY')
-    ALGORITHM = getenv('ALGORITHM')
-    ALCOHOL_IMAGES_DIR = getenv('ALCOHOL_IMAGES_DIR')
-    ALLOWED_ORIGINS = ['*']
-    ALLOWED_METHODS = ['*']
-    ALLOWED_HEADERS = ['*']
-    ALLOW_CREDENTIALS = False
+    env_path = find_dotenv(filename='.docker.env')
+
+
+class ApplicationSettings(BaseSettings):
+    DATABASE_URL: str = getenv('DATABASE_URL')
+    CLOUDINARY_CLOUD_NAME: str = getenv('CLOUDINARY_CLOUD_NAME')
+    CLOUDINARY_API_KEY: str = getenv('CLOUDINARY_API_KEY')
+    CLOUDINARY_API_SECRET: str = getenv('CLOUDINARY_API_SECRET')
+    SECRET_KEY: str = getenv('SECRET_KEY')
+    ALCOHOL_IMAGES_DIR: str = getenv('ALCOHOL_IMAGES_DIR')
+    ALGORITHM: str = getenv('ALGORITHM')
+
+    class Config:
+        env_file = f'{env_path}'
+
+
+@lru_cache()
+def get_settings():
+    return ApplicationSettings()
+
+
+DATABASE_URL = getenv('DATABASE_URL')
+SECRET_KEY = getenv('SECRET_KEY')
+ALGORITHM = getenv('ALGORITHM')
+ALCOHOL_IMAGES_DIR = getenv('ALCOHOL_IMAGES_DIR')
+ALLOWED_ORIGINS = ['*']
+ALLOWED_METHODS = ['*']
+ALLOWED_HEADERS = ['*']
+ALLOW_CREDENTIALS = False
+
+config(
+    cloud_name=get_settings().CLOUDINARY_CLOUD_NAME,
+    api_key=get_settings().CLOUDINARY_API_KEY,
+    api_secret=get_settings().CLOUDINARY_API_SECRET
+)
 
 
 class Settings(BaseModel):
-    authjwt_secret_key: str = SECRET_KEY
+    authjwt_secret_key: str = get_settings().SECRET_KEY
 
 
 @AuthJWT.load_config

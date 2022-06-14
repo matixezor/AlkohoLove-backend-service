@@ -8,7 +8,7 @@ from src.domain.common.page_info import PageInfo
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
-from src.infrastructure.config.app_config import ALCOHOL_IMAGES_DIR
+from src.infrastructure.config.app_config import get_settings
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
@@ -174,7 +174,7 @@ async def delete_alcohol(
     alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
     image_name = alcohol['name'].lower().replace(' ', '_')
-    image_path = f'{ALCOHOL_IMAGES_DIR}/{image_name}'
+    image_path = f'{get_settings().ALCOHOL_IMAGES_DIR}/{image_name}'
     cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
     cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
 
@@ -381,7 +381,7 @@ async def upload_image(
 
     cloudinary.uploader.upload(
         file.file,
-        folder=ALCOHOL_IMAGES_DIR,
+        folder=get_settings().ALCOHOL_IMAGES_DIR,
         public_id=image_name,
         resource_type='image',
         overwrite=True,
