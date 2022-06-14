@@ -23,7 +23,7 @@ async def get_valid_token(
     return authorization.replace('Bearer ', '')
 
 
-async def generate_tokens(subject: str, authorize: AuthJWT, settings: ApplicationSettings = Depends(get_settings)):
+async def generate_tokens(subject: str, authorize: AuthJWT, settings: ApplicationSettings):
     return {
         'access_token': await authorize.create_access_token(
             subject=subject,
