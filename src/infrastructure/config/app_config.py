@@ -31,10 +31,6 @@ def get_settings():
     return ApplicationSettings()
 
 
-DATABASE_URL = getenv('DATABASE_URL')
-SECRET_KEY = getenv('SECRET_KEY')
-ALGORITHM = getenv('ALGORITHM')
-ALCOHOL_IMAGES_DIR = getenv('ALCOHOL_IMAGES_DIR')
 ALLOWED_ORIGINS = ['*']
 ALLOWED_METHODS = ['*']
 ALLOWED_HEADERS = ['*']
