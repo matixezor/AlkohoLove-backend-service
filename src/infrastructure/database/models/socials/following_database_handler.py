@@ -24,18 +24,18 @@ class FollowingDatabaseHandler:
 
     @staticmethod
     async def delete_user_from_following(collection: Collection[Following], user_id: ObjectId,
-                                         following_user_id: str) -> None:
-        collection.update_one({'_id': user_id}, {'$pull': {'following': ObjectId(following_user_id)}})
+                                         following_user_id: ObjectId) -> None:
+        collection.update_one({'_id': user_id}, {'$pull': {'following': following_user_id}})
 
     @staticmethod
     async def add_user_to_following(collection: Collection[Following], user_id: ObjectId,
-                                    following_user_id: str) -> None:
-        collection.update_one({'_id': user_id}, {'$push': {'following': ObjectId(following_user_id)}})
+                                    following_user_id: ObjectId) -> None:
+        collection.update_one({'_id': user_id}, {'$push': {'following': following_user_id}})
 
     @staticmethod
     async def check_if_user_in_following(collection: Collection[Following], user_id: ObjectId,
-                                         following_user_id: str) -> bool:
-        if collection.find_one({'_id': user_id, 'following': ObjectId(following_user_id)}):
+                                         following_user_id: ObjectId) -> bool:
+        if collection.find_one({'_id': user_id, 'following': following_user_id}):
             return True
         else:
             return False

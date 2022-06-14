@@ -25,3 +25,7 @@ class AlcoholFilterDatabaseHandler:
     @staticmethod
     async def get_all_filters(collection: Collection[AlcoholFilter]) -> list[AlcoholFilter]:
         return list(collection.find({}))
+
+    @staticmethod
+    async def create_init_entry(collection: Collection[AlcoholFilter], kind: str) -> None:
+        collection.insert_one({'_id': kind, 'type': [], 'country': [], 'color': []})

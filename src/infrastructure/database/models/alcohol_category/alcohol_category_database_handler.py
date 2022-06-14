@@ -29,9 +29,9 @@ class AlcoholCategoryDatabaseHandler:
     @staticmethod
     async def get_category_by_id(
             collection: Collection[AlcoholCategory],
-            category_id: str
+            category_id: ObjectId
     ) -> AlcoholCategory | None:
-        return collection.find_one({'_id': ObjectId(category_id)})
+        return collection.find_one({'_id': category_id})
 
     @staticmethod
     async def update_category(

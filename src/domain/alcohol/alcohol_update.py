@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Extra, root_validator
 
+from src.infrastructure.common.utils import parse_float
+
 
 class AlcoholUpdate(BaseModel):
     name: str | None
@@ -25,6 +27,10 @@ class AlcoholUpdate(BaseModel):
         excluded = ('avg_count', 'rate_count', 'rate_value')
         if any(key in list(values.keys()) for key in excluded):
             raise ValueError(f'Invalid payload. Attempted to update excluded fields: {excluded}')
+        required_fields = cls.__fields__.keys()
+        for key, value in values.items():
+            if key not in required_fields and isinstance(value, str):
+                values[key] = parse_float(value)
         return values
 
     class Config:

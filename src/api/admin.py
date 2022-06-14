@@ -4,14 +4,18 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
+from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
+from src.domain.alcohol_filter import AlcoholFilters
+from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.infrastructure.config.app_config import get_settings
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
-from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
@@ -22,8 +26,12 @@ from src.infrastructure.database.models.reported_error import ReportedErrorDatab
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
+from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
 from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
+from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
+    AlcoholSuggestionDatabaseHandler
+
 
 router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_permission)])
 
@@ -70,6 +78,7 @@ async def get_user(
     """
     Read user information
     """
+    user_id = validate_object_id(user_id)
     db_user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
     if not db_user:
         raise UserNotFoundException()
@@ -90,6 +99,7 @@ async def ban_user(
     Ban user by id.
     *to_ban: bool = True* - query param that specifies if the user should be banned or unbanned
     """
+    user_id = validate_object_id(user_id)
     if to_ban:
         await UserDatabaseHandler.ban_user(db.users, user_id)
     else:
@@ -107,6 +117,7 @@ async def get_error(error_id: str, db: Database = Depends(get_db)):
     """
     Read reported error by id
     """
+    error_id = validate_object_id(error_id)
     db_reported_error = await ReportedErrorDatabaseHandler.get_reported_error_by_id(db.reported_errors, error_id)
     if not db_reported_error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Reported error not found')
@@ -130,6 +141,8 @@ async def get_errors(
     Search reported errors with pagination.
     You can specify user_id to fetch errors reported by given user
     """
+    if user_id is not None:
+        user_id = validate_object_id(user_id)
     reported_errors = await ReportedErrorDatabaseHandler.get_reported_errors(
         db.reported_errors, limit, offset, user_id
     )
@@ -156,6 +169,7 @@ async def delete_error(
     """
     Delete reported error by reported error id
     """
+    error_id = validate_object_id(error_id)
     await ReportedErrorDatabaseHandler.delete_reported_error(db.reported_errors, error_id)
 
 
@@ -171,6 +185,7 @@ async def delete_alcohol(
     """
     Delete alcohol by id
     """
+    alcohol_id = validate_object_id(alcohol_id)
     alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
     image_name = alcohol['name'].lower().replace(' ', '_')
@@ -194,14 +209,15 @@ async def update_alcohol(
     """
     Update alcohol by id
     """
+    alcohol_id = validate_object_id(alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
     ):
-        if not str(alcohol['_id']) == alcohol_id:
+        if not alcohol['_id'] == alcohol_id:
             raise AlcoholExistsException()
     if alcohol := await AlcoholDatabaseHandler.get_alcohol_by_name(db.alcohols, payload.name):
-        if not str(alcohol['_id']) == alcohol_id:
+        if not alcohol['_id'] == alcohol_id:
             raise AlcoholExistsException()
     db_alcohol = await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
@@ -279,6 +295,7 @@ async def add_category_traits(
         payload: AlcoholCategoryUpdate,
         db: Database = Depends(get_db)
 ):
+    category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(
@@ -313,6 +330,7 @@ async def remove_category_traits(
         payload: AlcoholCategoryDelete,
         db: Database = Depends(get_db)
 ):
+    category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
         raise HTTPException(
@@ -354,6 +372,7 @@ async def add_category(
     try:
         await AlcoholCategoryDatabaseHandler.add_category(db.alcohol_categories, payload)
         await AlcoholDatabaseHandler.update_validation(db)
+        await AlcoholFilterDatabaseHandler.create_init_entry(db.alcohol_filters, payload.title)
     except OperationFailure as ex:
         await AlcoholCategoryDatabaseHandler.revert_by_removal(db.alcohol_categories, payload.title)
         raise ValidationErrorException(ex.args[0])
@@ -388,6 +407,110 @@ async def upload_image(
         invalidate=True)
 
 
+@router.post(
+    path='alcohols/search',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Search for alcohols by phrase',
+    response_model_by_alias=False,
+)
+async def search_alcohols(
+        limit: int = 10,
+        offset: int = 0,
+        filters: AlcoholFilters | None = None,
+        phrase: str | None = '',
+        db: Database = Depends(get_db)
+):
+    """
+    Search for alcohols with pagination. Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    - **phrase**: str - default ''
+    """
+    alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    return PaginatedAlcohol(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/suggestions',
+    response_model=PaginatedAlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohol suggestions with pagination',
+    response_model_by_alias=False
+)
+async def get_suggestions(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+):
+    suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestions(db.alcohol_suggestion, limit, offset)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return PaginatedAlcoholSuggestion(
+        suggestions=suggestions,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/suggestions/total',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get total number of suggestions',
+    response_model_by_alias=False
+)
+async def get_suggestions(
+        db: Database = Depends(get_db)
+) -> int:
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    return total
+
+
+@router.get(
+    path='/suggestions/{suggestion_id}',
+    response_model=AlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohol suggestion by id',
+    response_model_by_alias=False
+)
+async def get_suggestion_by_id(
+        suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> AlcoholSuggestion:
+    suggestion_id = validate_object_id(suggestion_id)
+    db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
+                                                                                 suggestion_id)
+    if not db_suggestions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Suggestion not found')
+    return db_suggestions
+
+
+@router.delete(
+    path='/suggestions/{suggestion_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete alcohol suggestion'
+)
+async def delete_suggestion(
+        suggestion_id: str,
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Delete alcohol suggestion by suggestion id
+    """
+    suggestion_id = validate_object_id(suggestion_id)
+    await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
+
+
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
@@ -402,7 +525,8 @@ async def delete_review(
     """
     Delete review by id
     """
-
+    review_id = validate_object_id(review_id)
+    alcohol_id = validate_object_id(alcohol_id)
     rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
