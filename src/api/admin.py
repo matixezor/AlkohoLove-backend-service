@@ -410,7 +410,7 @@ async def upload_image(
 
 
 @router.post(
-    path='alcohols/search',
+    path='/alcohols/search',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
     summary='Search for alcohols by phrase',
