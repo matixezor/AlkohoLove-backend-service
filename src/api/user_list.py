@@ -98,7 +98,7 @@ async def get_search_history(
     )
     total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
-        alcohols_and_dates=alcohols_and_dates,
+        alcohols=alcohols_and_dates,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
