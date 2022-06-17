@@ -174,11 +174,11 @@ async def test_get_search_history(
     response = await async_client.get('/me/search_history', headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
-    assert len(response['alcohols_and_dates']) == 2
+    assert len(response['alcohols']) == 2
     assert response['page_info']['total'] == 2
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
-    assert response['alcohols_and_dates'] == SEARCH_HISTORY_FIXTURE
+    assert response['alcohols'] == SEARCH_HISTORY_FIXTURE
 
 
 @mark.asyncio
