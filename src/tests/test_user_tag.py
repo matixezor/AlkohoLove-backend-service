@@ -132,7 +132,7 @@ async def test_add_alcohol(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/6288e32dd5ab6070dde8db8b',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 201
@@ -144,7 +144,7 @@ async def test_add_alcohol_invalid_tag_id(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/1/alcohol/6288e32dd5ab6070dde8db8b',
+        '/me/tags/1/alcohols/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -158,7 +158,7 @@ async def test_add_alcohol_invalid_alcohol_id(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/1',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/1',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -172,7 +172,7 @@ async def test_add_alcohol_non_existing_tag_id(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/629d0e4a962d06f7d6ec5eb0/alcohol/6288e32dd5ab6070dde8db8b',
+        '/me/tags/629d0e4a962d06f7d6ec5eb0/alcohols/6288e32dd5ab6070dde8db8b',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -186,7 +186,7 @@ async def test_add_alcohol_non_existing_alcohol_id(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/629d0e4a962d06f7d6ec5eb0',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/629d0e4a962d06f7d6ec5eb0',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -200,7 +200,7 @@ async def test_add_alcohol_with_existing_alcohol_in_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/6288e32dd5ab6070dde8db8a',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -214,7 +214,7 @@ async def test_add_alcohol_without_existing_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3d/alcohol/6288e32dd5ab6070dde8db8a',
+        '/me/tags/628f9071f32df3b39ced1a3d/alcohols/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -228,7 +228,7 @@ async def test_add_alcohol_without_existing_alcohol(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/6288e32dd5ab6070dde8db9a',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/6288e32dd5ab6070dde8db9a',
         headers=user_token_headers
     )
     assert response.status_code == 404
@@ -242,7 +242,7 @@ async def test_add_alcohol_to_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post(
-        '/me/tags/628f9071f32df3b39ced1a3c/alcohol/6288e32dd5ab6070dde8db8a',
+        '/me/tags/628f9071f32df3b39ced1a3c/alcohols/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400
@@ -282,7 +282,7 @@ async def test_remove_alcohol_from_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags/628f9071f32df3b39ced1a3a/alcohol/6288e32dd5ab6070dde8db8a',
+        '/me/tags/628f9071f32df3b39ced1a3a/alcohols/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 204
@@ -294,7 +294,7 @@ async def test_remove_alcohol_from_tag_that_does_not_belong_to_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/me/tags/628f9071f32df3b39ced1a3c/alcohol/6288e32dd5ab6070dde8db8a',
+        '/me/tags/628f9071f32df3b39ced1a3c/alcohols/6288e32dd5ab6070dde8db8a',
         headers=user_token_headers
     )
     assert response.status_code == 400

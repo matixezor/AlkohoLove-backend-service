@@ -5,5 +5,5 @@ from src.domain.user_list.search_history_entry import SearchHistoryEntry
 
 
 class PaginatedSearchHistory(BaseModel):
-    alcohols_and_dates: list[SearchHistoryEntry]
+    alcohols: list[SearchHistoryEntry]
     page_info: PageInfo

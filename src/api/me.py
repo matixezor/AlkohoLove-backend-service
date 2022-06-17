@@ -184,7 +184,7 @@ async def create_tag(
 
 
 @router.post(
-    '/tags/{tag_id}/alcohol/{alcohol_id}',
+    '/tags/{tag_id}/alcohols/{alcohol_id}',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol to tag'
@@ -227,7 +227,7 @@ async def add_alcohol(
 
 
 @router.delete(
-    path='/tags/{tag_id}/alcohol/{alcohol_id}',
+    path='/tags/{tag_id}/alcohols/{alcohol_id}',
     response_class=Response,
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Remove alcohol from tag'
@@ -425,7 +425,7 @@ async def get_search_history(
     )
     total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
-        alcohols_and_dates=alcohols_and_dates,
+        alcohols=alcohols_and_dates,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
