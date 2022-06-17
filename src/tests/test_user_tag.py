@@ -102,7 +102,7 @@ async def test_get_alcohols_with_not_existing_tag(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/me/tags/628f9071f32df3b39ced1a3d/alcohols?limit=10&offset=0', headers=user_token_headers
+        '/me/tags/628f9071f32df3b39ced1a3d/alcohol?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 404
     response = response.json()
@@ -115,7 +115,7 @@ async def test_get_alcohols(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/me/tags/628f9071f32df3b39ced1a3b/alcohols?limit=10&offset=0', headers=user_token_headers
+        '/me/tags/628f9071f32df3b39ced1a3b/alcohol?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 200
     response = response.json()

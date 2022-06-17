@@ -292,7 +292,7 @@ async def update_tag(
 
 
 @router.get(
-    path='/tags/{tag_id}/alcohols',
+    path='/tags/{tag_id}/alcohol',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
     summary='Read your tag alcohols',
