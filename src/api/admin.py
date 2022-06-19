@@ -257,33 +257,6 @@ async def create_alcohol(
     )
 
 
-@router.get(
-    path='/alcohols/metadata/categories',
-    response_model=PaginatedAlcoholCategories,
-    status_code=status.HTTP_200_OK,
-    summary='Read alcohol categories schema',
-    response_model_by_alias=False
-)
-async def get_schemas(
-        limit: int = 10,
-        offset: int = 0,
-        db: Database = Depends(get_db)
-):
-    alcohol_categories = [
-        map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
-        await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, limit, offset)
-    ]
-    total = await AlcoholCategoryDatabaseHandler.count_categories(db.alcohol_categories)
-    return PaginatedAlcoholCategories(
-        categories=alcohol_categories,
-        page_info=PageInfo(
-            limit=limit,
-            offset=offset,
-            total=total
-        )
-    )
-
-
 @router.put(
     path='/alcohols/metadata/categories/{category_id}',
     response_model=AlcoholCategory,
