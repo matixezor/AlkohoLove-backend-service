@@ -16,6 +16,7 @@ from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
@@ -28,7 +29,6 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
-from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
 
