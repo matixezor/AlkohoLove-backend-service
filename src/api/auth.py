@@ -15,8 +15,7 @@ from src.infrastructure.config.app_config import ApplicationSettings, get_settin
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
-    import UserBannedException, TokenRevokedException, CredentialsException
-
+    import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -35,6 +34,25 @@ async def login(
 ):
     user = await UserDatabaseHandler.authenticate_user(db.users, form_data.username, form_data.password, True)
     return await generate_tokens(user['username'], authorize, settings)
+
+
+@router.post(
+    '/token/admin',
+    response_model=Token,
+    status_code=status.HTTP_200_OK,
+    summary='Login for admin token'
+)
+async def admin_login(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
+):
+    user = await UserDatabaseHandler.authenticate_user(db.users, form_data.username, form_data.password, True)
+    if user['is_admin']:
+        return await generate_tokens(user['username'], authorize, settings)
+    else:
+        raise InsufficientPermissionsException()
 
 
 @router.post(
