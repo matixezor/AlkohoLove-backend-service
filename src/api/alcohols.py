@@ -101,7 +101,7 @@ async def get_alcohol_by_barcode(barcode: str, db: Database = Depends(get_db)):
 
 
 @router.get(
-    path='/alcohols/metadata/categories',
+    path='/metadata/categories',
     response_model=PaginatedAlcoholCategories,
     status_code=status.HTTP_200_OK,
     summary='Read alcohol categories schema',
