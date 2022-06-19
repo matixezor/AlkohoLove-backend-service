@@ -26,6 +26,41 @@ ALCOHOL_FIXTURE = {
     'age': 4
 }
 
+ALCOHOL_CATEGORY_FIXTURE = {
+    'id': '628d20d87bde3e0dcb2ed69b',
+    'properties': {
+        'kind': {
+            'enum': ['piwo']
+        },
+        'ibu': {
+            'bsonType': ['int', 'null'],
+            'description': '4'
+        },
+        'srm': {
+            'bsonType': ['double', 'null'],
+            'description': '4'
+        },
+        'extract': {
+            'bsonType': ['double', 'null'],
+            'description': '11.6'
+        },
+        'fermentation': {
+            'bsonType': ['string'],
+            'description': 'górna'
+        },
+        'is_filtered': {
+            'bsonType': ['bool'],
+            'description': 'true'
+        },
+        'is_pasteurized': {
+            'bsonType': ['bool'],
+            'description': 'true'
+        }
+    },
+    'required': ['ibu', 'srm', 'extract', 'fermentation', 'is_filtered', 'is_pasteurized'],
+    'title': 'piwo'
+}
+
 
 @mark.asyncio
 async def test_search_alcohols(
@@ -67,3 +102,28 @@ async def test_get_alcohol_filters(async_client: AsyncClient):
     response = response.json()
     assert len(response['filters']) == 4
     assert response['filters'][0] == ALCOHOL_FILTER_FIXTURE
+
+
+@mark.asyncio
+async def test_get_schemas(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get('/alcohols/metadata/categories', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['total'] == 7
+    assert response['categories'][1]['id'] == ALCOHOL_CATEGORY_FIXTURE['id']
+    assert response['categories'][1]['title'] == ALCOHOL_CATEGORY_FIXTURE['title']
+    assert response['categories'][1]['required'] == ALCOHOL_CATEGORY_FIXTURE['required']
+    assert response['categories'][1]['properties'] == [
+        {'name': 'kind', 'metadata': {'enum': ['piwo']}},
+        {'name': 'ibu', 'metadata': {'title': 'ibu', 'bsonType': ['int', 'null'], 'description': '4'}},
+        {'name': 'srm', 'metadata': {'title': 'srm', 'bsonType': ['double', 'null'], 'description': '4'}},
+        {'name': 'extract', 'metadata': {'title': 'ekstrakt', 'bsonType': ['double', 'null'], 'description': '11.6'}},
+        {'name': 'fermentation', 'metadata': {'title': 'fermentacja', 'bsonType': ['string'], 'description': 'górna'}},
+        {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
+        {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
+    ]

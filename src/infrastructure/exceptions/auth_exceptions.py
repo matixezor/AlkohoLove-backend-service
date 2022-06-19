@@ -32,3 +32,11 @@ class InvalidCredentialsException(HTTPException):
             status.HTTP_401_UNAUTHORIZED,
             detail=f'Invalid username or password'
         )
+
+
+class InsufficientPermissionsException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_401_UNAUTHORIZED,
+            detail=f'Insufficient permissions'
+        )

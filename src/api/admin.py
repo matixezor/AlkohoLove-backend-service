@@ -16,6 +16,7 @@ from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
@@ -28,7 +29,6 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
-from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
 
@@ -254,33 +254,6 @@ async def create_alcohol(
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
-    )
-
-
-@router.get(
-    path='/alcohols/metadata/categories',
-    response_model=PaginatedAlcoholCategories,
-    status_code=status.HTTP_200_OK,
-    summary='Read alcohol categories schema',
-    response_model_by_alias=False
-)
-async def get_schemas(
-        limit: int = 10,
-        offset: int = 0,
-        db: Database = Depends(get_db)
-):
-    alcohol_categories = [
-        map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
-        await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, limit, offset)
-    ]
-    total = await AlcoholCategoryDatabaseHandler.count_categories(db.alcohol_categories)
-    return PaginatedAlcoholCategories(
-        categories=alcohol_categories,
-        page_info=PageInfo(
-            limit=limit,
-            offset=offset,
-            total=total
-        )
     )
 
 

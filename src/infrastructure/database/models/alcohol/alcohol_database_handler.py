@@ -129,6 +129,7 @@ class AlcoholDatabaseHandler:
                     ]
                 }
             },
+            {'$sort': {'score': -1}},
             {
                 '$facet': {
                     'alcohols': [{'$skip': offset}, {'$limit': limit}],

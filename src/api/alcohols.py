@@ -1,14 +1,17 @@
 from pymongo.database import Database
-from fastapi import APIRouter, status, HTTPException, Depends, Query
+from fastapi import APIRouter, status, Depends, Query
 
 from src.domain.common import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
+from src.domain.alcohol_category import PaginatedAlcoholCategories
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
+from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
+from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 
 router = APIRouter(prefix='/alcohols', tags=['alcohol'])
 
@@ -95,3 +98,30 @@ async def get_alcohol_by_barcode(barcode: str, db: Database = Depends(get_db)):
     if not db_alcohol:
         raise AlcoholNotFoundException()
     return db_alcohol
+
+
+@router.get(
+    path='/metadata/categories',
+    response_model=PaginatedAlcoholCategories,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohol categories schema',
+    response_model_by_alias=False
+)
+async def get_schemas(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+):
+    alcohol_categories = [
+        map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
+        await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, limit, offset)
+    ]
+    total = await AlcoholCategoryDatabaseHandler.count_categories(db.alcohol_categories)
+    return PaginatedAlcoholCategories(
+        categories=alcohol_categories,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
