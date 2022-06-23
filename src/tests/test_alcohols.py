@@ -80,6 +80,26 @@ async def test_search_alcohols(
 
 
 @mark.asyncio
+async def search_alcohols_with_filters_with_empty_kind(async_client: AsyncClient):
+    body = {'kind': ''}
+    response = await async_client.post(
+        '/alcohols?limit=1&offset=0', json=body
+    )
+    assert response.status_code == 422
+    response = response.json()
+    assert response['detail'] == 'Kind filter must be provided'
+
+
+@mark.asyncio
+async def search_alcohols_with_filters_without_kind(async_client: AsyncClient):
+    body = {'color': ['test']}
+    response = await async_client.post(
+        '/alcohols?limit=1&offset=0', json=body
+    )
+    assert response.status_code == 422
+
+
+@mark.asyncio
 async def test_get_alcohol_by_barcode(async_client: AsyncClient):
     response = await async_client.get('/alcohols/5011007003234')
     assert response.status_code == 200
