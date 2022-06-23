@@ -89,6 +89,7 @@ async def search_alcohols_with_filters_with_empty_kind(async_client: AsyncClient
     response = response.json()
     assert response['detail'] == 'Kind filter must be provided'
 
+
 @mark.asyncio
 async def search_alcohols_with_filters_without_kind(async_client: AsyncClient):
     body = {'color': ['test']}
