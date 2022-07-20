@@ -88,6 +88,7 @@ async def get_user(
 @router.put(
     path='/users/{user_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='[For Admin] Ban or unban user',
 )
 async def ban_user(
@@ -160,6 +161,7 @@ async def get_errors(
 @router.delete(
     path='/errors/{error_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete reported error'
 )
 async def delete_error(
@@ -176,6 +178,7 @@ async def delete_error(
 @router.delete(
     path='/alcohols/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol',
 )
 async def delete_alcohol(
@@ -473,6 +476,7 @@ async def get_suggestion_by_id(
 @router.delete(
     path='/suggestions/{suggestion_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol suggestion'
 )
 async def delete_suggestion(
@@ -489,6 +493,7 @@ async def delete_suggestion(
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='[For admin] Delete review',
     dependencies=[Depends(admin_permission)],
 )
