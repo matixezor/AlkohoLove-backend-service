@@ -7,6 +7,7 @@ from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
 from src.domain.alcohol_category import PaginatedAlcoholCategories
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
@@ -44,6 +45,7 @@ async def search_alcohols(
     - **phrase**: str - default None, if given then phrase needs to have min 3 characters
     """
     alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(

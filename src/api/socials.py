@@ -1,13 +1,12 @@
-from bson import ObjectId
 from starlette import status
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, Query
 
 from src.domain.common import PageInfo
-from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 

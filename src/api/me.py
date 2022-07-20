@@ -8,12 +8,12 @@ from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
 from src.domain.review.review_update import ReviewUpdate
-from src.utils.validate_object_id import validate_object_id
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
