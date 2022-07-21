@@ -19,7 +19,11 @@ WISHLIST_FIXTURE = [
         'avg_rating': 5.0,
         'rate_count': 1,
         'rate_value': 5,
-        'age': 4
+        'additional_properties': [{
+            'name': 'age',
+            'display_name': 'wiek',
+            'value': 4
+        }]
     },
     {
         'name': 'Jameson Caskmates Stout Edition',
@@ -41,7 +45,11 @@ WISHLIST_FIXTURE = [
         'avg_rating': 3.0,
         'rate_count': 2,
         'rate_value': 6,
-        'age': 4
+        'additional_properties': [{
+            'name': 'age',
+            'display_name': 'wiek',
+            'value': 4
+        }]
     }
 ]
 
@@ -65,7 +73,8 @@ FAVOURITES_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
-        "keywords": ['szwedzka']
+        "keywords": ['szwedzka'],
+        'additional_properties': []
     },
     {
         "id": '6288e32dd5ab6070dde8db8e',
@@ -86,7 +95,8 @@ FAVOURITES_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
-        "keywords": ['wódka', 'pigwowa', 'pigwowy']
+        "keywords": ['wódka', 'pigwowa', 'pigwowy'],
+        'additional_properties': []
     }
 ]
 
@@ -94,7 +104,11 @@ SEARCH_HISTORY_FIXTURE = [
     {
         'alcohol':
             {
-                'age': 4,
+                'additional_properties': [{
+                    'name': 'age',
+                    'display_name': 'wiek',
+                    'value': 4
+                }],
                 'alcohol_by_volume': 40.0,
                 'aroma': ['kwiaty', 'owoce', 'nuty korzenne', 'drewno'],
                 'avg_rating': 5.0,
@@ -117,14 +131,19 @@ SEARCH_HISTORY_FIXTURE = [
                           'wanilia',
                           'słodkie sherry',
                           'łagodny'],
-                'type': 'blended'
+                'type': 'blended',
+
             },
         'date': '2022-04-25T19:13:25+00:00'
     },
     {
         'alcohol':
             {
-                'age': 4,
+                'additional_properties': [{
+                    'name': 'age',
+                    'display_name': 'wiek',
+                    'value': 4
+                }],
                 'alcohol_by_volume': 40.0,
                 'aroma': ['owoce',
                           'jabłko',

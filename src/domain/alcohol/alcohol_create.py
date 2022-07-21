@@ -1,7 +1,7 @@
 from pydantic import validator, root_validator
 
 from src.domain.alcohol import AlcoholBase
-from src.infrastructure.common.utils import parse_float
+from src.infrastructure.common.scalar_utils import parse_float
 
 
 class AlcoholCreate(AlcoholBase):

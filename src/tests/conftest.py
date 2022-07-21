@@ -7,7 +7,7 @@ from typing import Callable, AsyncGenerator
 def mock_settings_env_vars():
     from os import environ
     from unittest import mock
-    with mock.patch.dict(environ, {'STATIC_DIR': '../../static'}):
+    with mock.patch.dict(environ, {'STATIC_DIR': '../../static', 'ENV': 'LOCAL'}):
         yield
 
 

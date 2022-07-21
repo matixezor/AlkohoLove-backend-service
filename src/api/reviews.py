@@ -2,10 +2,10 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status
 
 from src.domain.common import PageInfo
-from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException

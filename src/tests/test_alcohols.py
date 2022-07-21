@@ -23,7 +23,11 @@ ALCOHOL_FIXTURE = {
     'avg_rating': 5.0,
     'rate_count': 1,
     'rate_value': 5,
-    'age': 4
+    'additional_properties': [{
+        'name': 'age',
+        'display_name': 'wiek',
+        'value': 4
+    }]
 }
 
 ALCOHOL_CATEGORY_FIXTURE = {

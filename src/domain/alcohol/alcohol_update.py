@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Extra, root_validator
 
-from src.infrastructure.common.utils import parse_float
+from src.infrastructure.common.scalar_utils import parse_float
 
 
 class AlcoholUpdate(BaseModel):

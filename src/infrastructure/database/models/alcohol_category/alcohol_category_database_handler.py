@@ -1,3 +1,5 @@
+from functools import cache
+
 from bson import ObjectId
 from pymongo.collection import Collection, ReturnDocument
 
@@ -93,3 +95,8 @@ class AlcoholCategoryDatabaseHandler:
     @staticmethod
     async def revert_by_removal(collection: Collection[AlcoholCategory], name: str) -> None:
         collection.find_one_and_delete({'title': name})
+
+    @staticmethod
+    @cache
+    def get_category_by_title(collection: Collection[AlcoholCategory], title: str) -> AlcoholCategory | None:
+        return collection.find_one({'title': title})
