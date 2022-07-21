@@ -7,8 +7,8 @@ from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
 from src.domain.alcohol_category import PaginatedAlcoholCategories
-from src.infrastructure.alcohol.alcohol_mappers import map_alcohols
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
@@ -99,7 +99,7 @@ async def get_alcohol_by_barcode(barcode: str, db: Database = Depends(get_db)):
     db_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, [barcode])
     if not db_alcohol:
         raise AlcoholNotFoundException()
-    return db_alcohol
+    return map_alcohol(db_alcohol, db.alcohol_categories)
 
 
 @router.get(

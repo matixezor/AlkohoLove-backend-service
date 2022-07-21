@@ -19,6 +19,7 @@ from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
@@ -224,7 +225,7 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
-    return db_alcohol
+    return map_alcohol(db_alcohol, db.alcohol_categories)
 
 
 @router.post(
@@ -403,6 +404,7 @@ async def search_alcohols(
     - **phrase**: str - default ''
     """
     alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(

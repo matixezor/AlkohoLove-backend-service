@@ -21,7 +21,7 @@ def map_alcohol(
         } for property_name, property_metadata in category_properties.items()
     ]
 
-    alcohol['additionalProperties'] = mapped_properties
+    alcohol['additional_properties'] = mapped_properties
     return alcohol
 
 
