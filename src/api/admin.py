@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
-from src.infrastructure.common.utils import image_size
+from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
@@ -212,8 +212,8 @@ async def update_alcohol(
     """
     Update alcohol by id
     """
-    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     alcohol_id = validate_object_id(alcohol_id)
+    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -402,7 +402,8 @@ async def upload_image(
             public_id=image_name,
             resource_type='image',
             overwrite=False,
-            invalidate=True,)
+            invalidate=True
+        )
     except Exception as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
