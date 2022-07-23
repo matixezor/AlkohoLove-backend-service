@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
+from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
@@ -205,12 +206,14 @@ async def delete_alcohol(
 async def update_alcohol(
         alcohol_id: str,
         payload: AlcoholUpdate,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Update alcohol by id
     """
     alcohol_id = validate_object_id(alcohol_id)
+    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -224,6 +227,19 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
+    if payload.name:
+        new_image_name = payload.name.lower().replace(' ', '_')
+        old_image_name = old_alcohol['name'].lower().replace(' ', '_')
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
+            invalidate=True
+        )
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
+            invalidate=True
+        )
     return db_alcohol
 
 
@@ -373,13 +389,23 @@ async def upload_image(
     if file.content_type != 'image/png':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    cloudinary.uploader.upload(
-        file.file,
-        folder=settings.ALCOHOL_IMAGES_DIR,
-        public_id=image_name,
-        resource_type='image',
-        overwrite=True,
-        invalidate=True)
+    if image_size(file.file) > 400000:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='File size too large. Maximum is 400 kb'
+        )
+
+    try:
+        cloudinary.uploader.upload(
+            file.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=image_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+    except Exception as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.post(
