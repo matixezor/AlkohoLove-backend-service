@@ -230,20 +230,19 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
-    if payload.name:
+    if payload.name and payload.name != old_alcohol['name']:
         new_image_name = payload.name.lower().replace(' ', '_')
         old_image_name = old_alcohol['name'].lower().replace(' ', '_')
-        if new_image_name != old_image_name:
-            cloudinary.uploader.rename(
-                f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
-                f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
-                invalidate=True
-            )
-            cloudinary.uploader.rename(
-                f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
-                f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
-                invalidate=True
-            )
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
+            invalidate=True
+        )
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
+            invalidate=True
+        )
     return db_alcohol
 
 
