@@ -9,17 +9,18 @@ from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
-from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
@@ -243,7 +244,7 @@ async def update_alcohol(
             f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
             invalidate=True
         )
-    return db_alcohol
+    return map_alcohol(db_alcohol, db.alcohol_categories)
 
 
 @router.post(
@@ -432,6 +433,7 @@ async def search_alcohols(
     - **phrase**: str - default ''
     """
     alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(

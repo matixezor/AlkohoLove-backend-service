@@ -314,7 +314,7 @@ async def test_update_alcohol(
     response = response.json()
     assert response['id'] == '6288e32dd5ab6070dde8db8f'
     assert response['name'] == 'Havana Cub Anejo 3 Anos Blanco'
-    assert response['age'] == 25
+    assert response['additional_properties'] == [{'name': 'age', 'display_name': 'wiek', 'value': 25}]
     assert response['food'] == ['test_food']
     assert response['color'] == 'czarny'
 

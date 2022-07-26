@@ -22,7 +22,11 @@ TAG_ALCOHOLS_FIXTURE = [
         'avg_rating': 5.0,
         'rate_count': 1,
         'rate_value': 5,
-        'age': 4
+        'additional_properties': [{
+            'name': 'age',
+            'display_name': 'wiek',
+            'value': 4
+        }]
     },
     {
         "id": '6288e32dd5ab6070dde8db8c',
@@ -43,7 +47,8 @@ TAG_ALCOHOLS_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
-        "keywords": ['szwedzka']
+        "keywords": ['szwedzka'],
+        'additional_properties': []
     }
 
 ]
