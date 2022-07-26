@@ -101,6 +101,7 @@ async def update_self(
 @router.delete(
     path='',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your account'
 )
 async def delete_self(
@@ -143,6 +144,7 @@ async def get_tags(
 @router.delete(
     path='/tags/{tag_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your tag'
 )
 async def delete_tag(
@@ -449,6 +451,7 @@ async def get_search_history(
 @router.delete(
     path='/wishlist/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from wishlist'
 )
 async def delete_alcohol_form_wishlist(
@@ -467,6 +470,7 @@ async def delete_alcohol_form_wishlist(
 @router.delete(
     path='/favourites/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from favourites'
 )
 async def delete_alcohol_form_favourites(
@@ -485,6 +489,7 @@ async def delete_alcohol_form_favourites(
 @router.delete(
     path='/search_history/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from search history'
 )
 async def delete_alcohol_form_search_history(
@@ -628,6 +633,7 @@ async def get_following(
 @router.delete(
     path='/following/{user_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete user from following'
 )
 async def delete_user_from_following(
@@ -709,6 +715,7 @@ async def create_review(
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your review'
 )
 async def delete_review(
