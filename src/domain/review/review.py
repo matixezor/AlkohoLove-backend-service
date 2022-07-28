@@ -12,5 +12,5 @@ class Review(MongoBaseModel, ReviewBase):
     alcohol_id: PyObjectId = Field(default_factory=PyObjectId, alias="alcohol_id")
 
     @validator('alcohol_id', always=True)
-    def set_user_id(cls, v):
+    def set_alcohol_id(cls, v):
         return str(v)

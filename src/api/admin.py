@@ -8,6 +8,7 @@ from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.domain.review.paginated_reported_review import PaginatedReportedReview
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -533,3 +534,29 @@ async def delete_review(
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
         await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+
+
+@router.get(
+    path='/reviews/{review_id}/',
+    response_model=PaginatedReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported reviews',
+    response_model_by_alias=False
+)
+async def get_reported_reviews(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedReportedReview:
+
+    db_reported_reviews = await ReviewDatabaseHandler.get_reported_reviews(db.reviews, limit, offset)
+    total = await ReviewDatabaseHandler.count_reported_reviews(db.reviews)
+
+    return PaginatedReportedReview(
+        reviews=db_reported_reviews,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )

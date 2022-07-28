@@ -1,5 +1,7 @@
 from bson import ObjectId, Int64
 from datetime import datetime
+
+from pymongo import DESCENDING
 from pymongo.collection import Collection, ReturnDocument
 
 
@@ -27,6 +29,27 @@ class ReviewDatabaseHandler:
     ) -> int:
         return (
             collection.count_documents(filter={'alcohol_id': {'$eq': ObjectId(alcohol_id)}})
+        )
+
+    @staticmethod
+    async def get_reported_reviews(
+            collection: Collection[Review],
+            limit: int,
+            offset: int,
+    ) -> list[Review]:
+        return (
+            list(collection.find(filter={'report_count': {'$gt': 0}})
+                 .skip(offset)
+                 .limit(limit)
+                 .sort("report_count", DESCENDING))
+        )
+
+    @staticmethod
+    async def count_reported_reviews(
+            collection: Collection[Review]
+    ) -> int:
+        return (
+            collection.count_documents(filter={'report_count': {'$gt': 0}})
         )
 
     @staticmethod
@@ -193,3 +216,30 @@ class ReviewDatabaseHandler:
         return (
             collection.count_documents(filter={'user_id': {'$eq': user_id}})
         )
+
+    @staticmethod
+    async def check_if_user_is_in_reporters(
+            collection: Collection[Review],
+            review_id: ObjectId,
+            user_id: ObjectId
+    ) -> bool:
+        if collection.find_one({'reporters': user_id, '_id': review_id}):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    async def add_user_to_reporters(
+            collection: Collection[Review],
+            user_id: ObjectId,
+            review_id: ObjectId
+
+    ) -> None:
+        collection.update_one({'_id': review_id}, {'$push': {'reporters': user_id}})
+
+    @staticmethod
+    async def increase_review_report_count(
+            collection: Collection[Review],
+            review_id: ObjectId
+    ) -> None:
+        collection.update_one({'_id': review_id}, {'$inc': {'report_count': 1}})
