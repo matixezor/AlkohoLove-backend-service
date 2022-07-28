@@ -1,6 +1,5 @@
 from uvicorn import run
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from async_fastapi_jwt_auth.exceptions import AuthJWTException

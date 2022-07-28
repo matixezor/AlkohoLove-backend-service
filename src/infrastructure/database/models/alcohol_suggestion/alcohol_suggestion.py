@@ -1,5 +1,5 @@
 from bson import ObjectId
-from typing import TypedDict
+from typing_extensions import TypedDict
 
 
 class AlcoholSuggestion(TypedDict):

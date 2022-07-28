@@ -1,5 +1,5 @@
 import cloudinary
-import cloudinary.uploader
+import cloudinary.api
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
-from src.infrastructure.common.file_utils import image_size
+from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -509,13 +509,18 @@ async def get_suggestion_by_id(
 )
 async def delete_suggestion(
         suggestion_id: str,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Delete alcohol suggestion by suggestion id
     """
     suggestion_id = validate_object_id(suggestion_id)
+    suggestion = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion, suggestion_id)
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
+    image_name = get_suggestion_image_name(suggestion['name'], str(suggestion_id))
+    image_path = f'{settings.ALCOHOL_SUGGESTION_IMAGES_DIR}/{image_name}'
+    cloudinary.api.delete_resources_by_prefix(prefix=f'{image_path}')
 
 
 @router.delete(

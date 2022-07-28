@@ -1,5 +1,6 @@
 from bson import ObjectId
 from pymongo.collection import Collection
+from pymongo.results import InsertOneResult
 
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
@@ -56,11 +57,18 @@ class AlcoholSuggestionDatabaseHandler:
     async def create_suggestion(
             collection: Collection[AlcoholSuggestion],
             user_id: ObjectId,
-            payload: AlcoholSuggestionCreate
-    ) -> None:
+            payload: dict
+    ) -> InsertOneResult:
+        description = payload['description']
+        if not description:
+            description = ''
+
         db_suggestions = AlcoholSuggestion(
-            **payload.dict(),
-            descriptions=[payload.description],
+            _id=ObjectId(),
+            barcode=payload['barcode'],
+            kind=payload['kind'],
+            name=payload['name'],
+            descriptions=[description],
             user_ids=[user_id]
         )
-        collection.insert_one(db_suggestions)
+        return collection.insert_one(db_suggestions)
