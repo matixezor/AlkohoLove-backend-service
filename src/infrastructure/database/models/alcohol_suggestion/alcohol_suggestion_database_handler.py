@@ -59,16 +59,13 @@ class AlcoholSuggestionDatabaseHandler:
             user_id: ObjectId,
             payload: dict
     ) -> InsertOneResult:
-        description = payload['description']
-        if not description:
-            description = ''
 
         db_suggestions = AlcoholSuggestion(
             _id=ObjectId(),
             barcode=payload['barcode'],
             kind=payload['kind'],
             name=payload['name'],
-            descriptions=[description],
+            descriptions=payload['description'],
             user_ids=[user_id]
         )
         return collection.insert_one(db_suggestions)
