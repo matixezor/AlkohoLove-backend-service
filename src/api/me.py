@@ -767,7 +767,7 @@ async def update_review(
     summary='Report review',
     response_class=Response,
 )
-async def add_alcohol_to_favourites(
+async def report_review(
         review_id: str,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)

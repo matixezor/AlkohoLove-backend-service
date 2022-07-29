@@ -8,6 +8,7 @@ from pymongo.collection import Collection, ReturnDocument
 from src.domain.review import ReviewCreate
 from src.domain.review.review_update import ReviewUpdate
 from src.infrastructure.database.models.review import Review
+from src.infrastructure.database.models.review.banned_review import BannedReview
 
 
 class ReviewDatabaseHandler:
@@ -220,8 +221,8 @@ class ReviewDatabaseHandler:
     @staticmethod
     async def check_if_user_is_in_reporters(
             collection: Collection[Review],
-            review_id: ObjectId,
-            user_id: ObjectId
+            user_id: ObjectId,
+            review_id: ObjectId
     ) -> bool:
         if collection.find_one({'reporters': user_id, '_id': review_id}):
             return True
@@ -233,7 +234,6 @@ class ReviewDatabaseHandler:
             collection: Collection[Review],
             user_id: ObjectId,
             review_id: ObjectId
-
     ) -> None:
         collection.update_one({'_id': review_id}, {'$push': {'reporters': user_id}})
 
@@ -243,3 +243,46 @@ class ReviewDatabaseHandler:
             review_id: ObjectId
     ) -> None:
         collection.update_one({'_id': review_id}, {'$inc': {'report_count': 1}})
+
+    @staticmethod
+    async def get_review_by_id(
+            collection: Collection[Review],
+            review_id: ObjectId,
+    ) -> Review:
+        return collection.find_one({'_id': review_id})
+
+    @staticmethod
+    async def copy_review_to_banned_collection(
+            collection: Collection[Review],
+            banned_reviews_collection: Collection[BannedReview],
+            review_id: ObjectId,
+            reason: str
+    ) -> BannedReview:
+        db_banned_review = collection.find_one({'_id': review_id})
+        db_banned_review = BannedReview(
+            **dict(db_banned_review),
+            ban_date=datetime.now(),
+            reason=reason
+        )
+        banned_reviews_collection.insert_one(dict(db_banned_review))
+        return db_banned_review
+
+    @staticmethod
+    async def get_user_banned_reviews(
+            collection: Collection[BannedReview],
+            limit: int,
+            offset: int,
+            user_id: ObjectId
+    ) -> list[BannedReview]:
+        return (
+            list(collection.find({'user_id': user_id}).skip(offset).limit(limit))
+        )
+
+    @staticmethod
+    async def count_user_banned_reviews(
+            collection: Collection[BannedReview],
+            user_id: ObjectId
+    ) -> int:
+        return (
+            collection.count_documents(filter={'user_id': {'$eq': user_id}})
+        )

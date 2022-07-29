@@ -5,10 +5,14 @@ from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
 from src.domain.alcohol import PaginatedAlcohol
+from src.domain.banned_review import BannedReview
+from src.domain.banned_review.paginated_banned_review import PaginatedBannedReview
+from src.domain.banned_review.review_ban import ReviewBan
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.domain.review.paginated_reported_review import PaginatedReportedReview
+from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
 from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -537,7 +541,7 @@ async def delete_review(
 
 
 @router.get(
-    path='/reviews/{review_id}/',
+    path='/reviews',
     response_model=PaginatedReportedReview,
     status_code=status.HTTP_200_OK,
     summary='Get reported reviews',
@@ -554,6 +558,66 @@ async def get_reported_reviews(
 
     return PaginatedReportedReview(
         reviews=db_reported_reviews,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.put(
+    path='/reviews/{review_id}',
+    response_model=BannedReview,
+    status_code=status.HTTP_200_OK,
+    summary='[For Admin] Ban review by id'
+)
+async def ban_review(
+        review_id: str,
+        reason_payload: ReviewBan,
+        db: Database = Depends(get_db)
+):
+    review_id = validate_object_id(review_id)
+    db_review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    if db_review:
+        db_banned_review = await ReviewDatabaseHandler.copy_review_to_banned_collection(
+            db.reviews,
+            db.banned_reviews,
+            review_id,
+            reason_payload.reason
+        )
+        await ReviewDatabaseHandler.delete_review(db.reviews, review_id)
+    else:
+        raise ReviewNotFoundException()
+    return db_banned_review
+
+
+@router.get(
+    path='/reviews/banned/{user_id}',
+    response_model=PaginatedBannedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Read user banned reviews',
+)
+async def get_user_banned_reviews(
+        user_id: str,
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedBannedReview:
+    user_id = validate_object_id(user_id)
+    if not await UserDatabaseHandler.check_if_user_exists(
+        db.users,
+        user_id=user_id,
+    ):
+        raise UserNotFoundException()
+
+    reviews = await ReviewDatabaseHandler.get_user_banned_reviews(
+        db.banned_reviews, limit, offset, user_id
+    )
+    print(reviews)
+    total = await ReviewDatabaseHandler.count_user_banned_reviews(db.banned_reviews, user_id)
+    return PaginatedBannedReview(
+        reviews=reviews,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
