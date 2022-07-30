@@ -10,7 +10,7 @@ async def test_create_suggestion(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/suggestions', headers=user_token_headers, json=SUGGESTION_POST_FIXTURE)
+    response = await async_client.post('/suggestions', headers=user_token_headers, data=SUGGESTION_POST_FIXTURE)
     assert response.status_code == 201
 
 
@@ -29,7 +29,7 @@ async def test_create_suggestion_same_barcode_same_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post('/suggestions', headers=user_token_headers,
-                                       json=SUGGESTION_SAME_USER_FIXTURE)
+                                       data=SUGGESTION_SAME_USER_FIXTURE)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User already made a suggestion for this alcohol'
@@ -41,5 +41,5 @@ async def test_create_suggestion_when_barcode_exists(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post('/suggestions', headers=user_token_headers,
-                                       json=SUGGESTION_POST_BARCODE_EXISTS_FIXTURE)
+                                       data=SUGGESTION_POST_BARCODE_EXISTS_FIXTURE)
     assert response.status_code == 201

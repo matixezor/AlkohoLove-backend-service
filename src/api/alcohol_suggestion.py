@@ -60,7 +60,7 @@ async def create_suggestion(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='File size too large. Maximum is 9 mb'
             )
-        image_name = get_suggestion_image_name(payload['name'], str(suggestion.inserted_id))
+        image_name = get_suggestion_image_name(payload['name'], str(suggestion['_id']))
 
         try:
             cloudinary.uploader.upload(
