@@ -61,21 +61,15 @@ class AlcoholSuggestionDatabaseHandler:
     async def create_suggestion(
             collection: Collection[AlcoholSuggestion],
             user_id: ObjectId,
-            payload: dict
-    ) -> AlcoholSuggestion:
-
-        if payload['description']:
-            descriptions = [payload['description']]
+            payload: AlcoholSuggestionCreate
+    ) -> None:
+        if payload.description:
+            descriptions = [payload.description]
         else:
             descriptions = None
-
         db_suggestions = AlcoholSuggestion(
-            _id=ObjectId(),
-            barcode=payload['barcode'],
-            kind=payload['kind'],
-            name=payload['name'],
+            **payload.dict(),
             descriptions=descriptions,
             user_ids=[user_id]
         )
         collection.insert_one(db_suggestions)
-        return db_suggestions

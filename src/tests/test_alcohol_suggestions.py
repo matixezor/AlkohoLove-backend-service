@@ -2,7 +2,7 @@ from pytest import mark
 from httpx import AsyncClient
 
 from src.tests.response_fixtures.alcohol_suggestions import SUGGESTION_POST_FIXTURE, \
-    SUGGESTION_SAME_USER_FIXTURE, SUGGESTION_POST_BARCODE_EXISTS_FIXTURE
+    SUGGESTION_SAME_USER_FIXTURE, SUGGESTION_POST_BARCODE_EXISTS_FIXTURE, SUGGESTION_POST_FIXTURE_NO_DESC
 
 
 @mark.asyncio
@@ -10,7 +10,7 @@ async def test_create_suggestion(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/suggestions', headers=user_token_headers, data=SUGGESTION_POST_FIXTURE)
+    response = await async_client.post('/suggestions', headers=user_token_headers, json=SUGGESTION_POST_FIXTURE)
     assert response.status_code == 201
 
 
@@ -29,7 +29,7 @@ async def test_create_suggestion_same_barcode_same_user(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post('/suggestions', headers=user_token_headers,
-                                       data=SUGGESTION_SAME_USER_FIXTURE)
+                                       json=SUGGESTION_SAME_USER_FIXTURE)
     assert response.status_code == 400
     response = response.json()
     assert response['detail'] == 'User already made a suggestion for this alcohol'
@@ -41,5 +41,14 @@ async def test_create_suggestion_when_barcode_exists(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.post('/suggestions', headers=user_token_headers,
-                                       data=SUGGESTION_POST_BARCODE_EXISTS_FIXTURE)
+                                       json=SUGGESTION_POST_BARCODE_EXISTS_FIXTURE)
+    assert response.status_code == 201
+
+
+@mark.asyncio
+async def test_create_suggestion_with_no_description(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post('/suggestions', headers=user_token_headers, json=SUGGESTION_POST_FIXTURE_NO_DESC)
     assert response.status_code == 201

@@ -8,6 +8,12 @@ SUGGESTION_POST_FIXTURE = {
     "description": "Odważna, oryginalna i kreatywna."
 }
 
+SUGGESTION_POST_FIXTURE_NO_DESC = {
+    "barcode": "5902573006616",
+    "kind": "wódka",
+    "name": "Amundsen Vodka"
+}
+
 SUGGESTION_SAME_USER_FIXTURE = {
     "barcode": "5900699104827",
     "kind": "piwo",
