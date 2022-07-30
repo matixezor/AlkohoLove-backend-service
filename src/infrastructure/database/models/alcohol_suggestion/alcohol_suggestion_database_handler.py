@@ -1,6 +1,5 @@
 from bson import ObjectId
 from pymongo.collection import Collection
-from pymongo.results import InsertOneResult
 
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion

@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
-from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -24,6 +23,7 @@ from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
+from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler

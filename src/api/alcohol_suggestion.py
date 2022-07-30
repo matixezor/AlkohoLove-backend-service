@@ -4,12 +4,12 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, Response, UploadFile, File, HTTPException, Form
 
 from src.infrastructure.database.models.user import User
+from src.infrastructure.common.file_utils import image_size
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
-from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.exceptions.alcohol_suggestion_exception import SuggestionAlreadyMadeException
 from src.infrastructure.database.models.alcohol_suggestion import AlcoholSuggestionDatabaseHandler as DatabaseHandler, \
