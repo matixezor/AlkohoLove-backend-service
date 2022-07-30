@@ -1,5 +1,6 @@
 import cloudinary
 import cloudinary.api
+import cloudinary.uploader
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
