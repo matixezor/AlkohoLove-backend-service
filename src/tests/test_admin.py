@@ -25,40 +25,6 @@ ALCOHOL_FIXTURE = {
     'barcode': ['123456789'],
     'age': 12
 }
-ALCOHOL_CATEGORY_FIXTURE = {
-    'id': '628d20d87bde3e0dcb2ed69b',
-    'properties': {
-        'kind': {
-            'enum': ['piwo']
-        },
-        'ibu': {
-            'bsonType': ['int', 'null'],
-            'description': '4'
-        },
-        'srm': {
-            'bsonType': ['double', 'null'],
-            'description': '4'
-        },
-        'extract': {
-            'bsonType': ['double', 'null'],
-            'description': '11.6'
-        },
-        'fermentation': {
-            'bsonType': ['string'],
-            'description': 'górna'
-        },
-        'is_filtered': {
-            'bsonType': ['bool'],
-            'description': 'true'
-        },
-        'is_pasteurized': {
-            'bsonType': ['bool'],
-            'description': 'true'
-        }
-    },
-    'required': ['ibu', 'srm', 'extract', 'fermentation', 'is_filtered', 'is_pasteurized'],
-    'title': 'piwo'
-}
 
 ALCOHOL_ID_FIXTURE = '6288e32dd5ab6070dde8db8f'
 
@@ -348,34 +314,9 @@ async def test_update_alcohol(
     response = response.json()
     assert response['id'] == '6288e32dd5ab6070dde8db8f'
     assert response['name'] == 'Havana Cub Anejo 3 Anos Blanco'
-    assert response['age'] == 25
+    assert response['additional_properties'] == [{'name': 'age', 'display_name': 'wiek', 'value': 25}]
     assert response['food'] == ['test_food']
     assert response['color'] == 'czarny'
-
-
-@mark.asyncio
-async def test_get_schemas(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    response = await async_client.get('admin/alcohols/metadata/categories', headers=admin_token_headers)
-    assert response.status_code == 200
-    response = response.json()
-    assert response['page_info']['limit'] == 10
-    assert response['page_info']['offset'] == 0
-    assert response['page_info']['total'] == 7
-    assert response['categories'][1]['id'] == ALCOHOL_CATEGORY_FIXTURE['id']
-    assert response['categories'][1]['title'] == ALCOHOL_CATEGORY_FIXTURE['title']
-    assert response['categories'][1]['required'] == ALCOHOL_CATEGORY_FIXTURE['required']
-    assert response['categories'][1]['properties'] == [
-        {'name': 'kind', 'metadata': {'enum': ['piwo']}},
-        {'name': 'ibu', 'metadata': {'title': 'ibu', 'bsonType': ['int', 'null'], 'description': '4'}},
-        {'name': 'srm', 'metadata': {'title': 'srm', 'bsonType': ['double', 'null'], 'description': '4'}},
-        {'name': 'extract', 'metadata': {'title': 'ekstrakt', 'bsonType': ['double', 'null'], 'description': '11.6'}},
-        {'name': 'fermentation', 'metadata': {'title': 'fermentacja', 'bsonType': ['string'], 'description': 'górna'}},
-        {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
-        {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
-    ]
 
 
 # --------------------------------------------alcohol_suggestions---------------------------------------------

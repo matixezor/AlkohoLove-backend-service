@@ -7,16 +7,18 @@ from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
+from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
-from src.utils.validate_object_id import validate_object_id
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
@@ -98,6 +100,7 @@ async def update_self(
 @router.delete(
     path='',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your account'
 )
 async def delete_self(
@@ -140,6 +143,7 @@ async def get_tags(
 @router.delete(
     path='/tags/{tag_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your tag'
 )
 async def delete_tag(
@@ -330,6 +334,7 @@ async def get_alcohols(
         db.user_tags,
         db.alcohols,
     )
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
 
     return PaginatedAlcohol(
         alcohols=alcohols,
@@ -359,7 +364,9 @@ async def get_wishlist(
     """
     user_id = current_user['_id']
     alcohols = await UserWishlistHandler.get_user_wishlist_by_user_id(
-        limit, offset, db.user_wishlist, db.alcohols, user_id)
+        limit, offset, db.user_wishlist, db.alcohols, user_id
+    )
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     total = await UserWishlistHandler.count_alcohols_in_wishlist(db.user_wishlist, db.alcohols, user_id)
     return PaginatedAlcohol(
         alcohols=alcohols,
@@ -391,6 +398,7 @@ async def get_favourites(
     alcohols = await UserFavouritesHandler.get_user_favourites_by_user_id(
         limit, offset, db.user_favourites, db.alcohols, user_id
     )
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, db.alcohols, user_id)
     return PaginatedAlcohol(
         alcohols=alcohols,
@@ -422,6 +430,12 @@ async def get_search_history(
     alcohols_and_dates = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )
+    alcohols_and_dates = [
+        SearchHistoryEntry(
+            alcohol=map_alcohol(alcohol_and_date.alcohol.dict(), db.alcohol_categories),
+            date=alcohol_and_date.date
+        ) for alcohol_and_date in alcohols_and_dates
+    ]
     total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
         alcohols=alcohols_and_dates,
@@ -436,6 +450,7 @@ async def get_search_history(
 @router.delete(
     path='/wishlist/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from wishlist'
 )
 async def delete_alcohol_form_wishlist(
@@ -454,6 +469,7 @@ async def delete_alcohol_form_wishlist(
 @router.delete(
     path='/favourites/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from favourites'
 )
 async def delete_alcohol_form_favourites(
@@ -472,6 +488,7 @@ async def delete_alcohol_form_favourites(
 @router.delete(
     path='/search_history/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol from search history'
 )
 async def delete_alcohol_form_search_history(
@@ -615,6 +632,7 @@ async def get_following(
 @router.delete(
     path='/following/{user_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete user from following'
 )
 async def delete_user_from_following(
@@ -696,6 +714,7 @@ async def create_review(
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete your review'
 )
 async def delete_review(

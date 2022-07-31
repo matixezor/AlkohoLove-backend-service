@@ -10,6 +10,7 @@ from src.domain.banned_review.paginated_banned_review import PaginatedBannedRevi
 from src.domain.banned_review.review_ban import ReviewBan
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
+from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.domain.review.paginated_reported_review import PaginatedReportedReview
 from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
@@ -19,10 +20,13 @@ from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
@@ -33,7 +37,6 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
-from src.domain.alcohol_category import PaginatedAlcoholCategories, AlcoholCategory, AlcoholCategoryUpdate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
 
@@ -93,6 +96,7 @@ async def get_user(
 @router.put(
     path='/users/{user_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='[For Admin] Ban or unban user',
 )
 async def ban_user(
@@ -165,6 +169,7 @@ async def get_errors(
 @router.delete(
     path='/errors/{error_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete reported error'
 )
 async def delete_error(
@@ -181,6 +186,7 @@ async def delete_error(
 @router.delete(
     path='/alcohols/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol',
 )
 async def delete_alcohol(
@@ -210,12 +216,14 @@ async def delete_alcohol(
 async def update_alcohol(
         alcohol_id: str,
         payload: AlcoholUpdate,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Update alcohol by id
     """
     alcohol_id = validate_object_id(alcohol_id)
+    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -229,7 +237,20 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
-    return db_alcohol
+    if payload.name and payload.name != old_alcohol['name']:
+        new_image_name = payload.name.lower().replace(' ', '_')
+        old_image_name = old_alcohol['name'].lower().replace(' ', '_')
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
+            invalidate=True
+        )
+        cloudinary.uploader.rename(
+            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
+            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
+            invalidate=True
+        )
+    return map_alcohol(db_alcohol, db.alcohol_categories)
 
 
 @router.post(
@@ -259,33 +280,6 @@ async def create_alcohol(
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
-    )
-
-
-@router.get(
-    path='/alcohols/metadata/categories',
-    response_model=PaginatedAlcoholCategories,
-    status_code=status.HTTP_200_OK,
-    summary='Read alcohol categories schema',
-    response_model_by_alias=False
-)
-async def get_schemas(
-        limit: int = 10,
-        offset: int = 0,
-        db: Database = Depends(get_db)
-):
-    alcohol_categories = [
-        map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
-        await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, limit, offset)
-    ]
-    total = await AlcoholCategoryDatabaseHandler.count_categories(db.alcohol_categories)
-    return PaginatedAlcoholCategories(
-        categories=alcohol_categories,
-        page_info=PageInfo(
-            limit=limit,
-            offset=offset,
-            total=total
-        )
     )
 
 
@@ -405,13 +399,23 @@ async def upload_image(
     if file.content_type != 'image/png':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    cloudinary.uploader.upload(
-        file.file,
-        folder=settings.ALCOHOL_IMAGES_DIR,
-        public_id=image_name,
-        resource_type='image',
-        overwrite=True,
-        invalidate=True)
+    if image_size(file.file) > 400000:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='File size too large. Maximum is 400 kb'
+        )
+
+    try:
+        cloudinary.uploader.upload(
+            file.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=image_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+    except Exception as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.post(
@@ -435,6 +439,7 @@ async def search_alcohols(
     - **phrase**: str - default ''
     """
     alcohols, total = await AlcoholDatabaseHandler.search_alcohols(db.alcohols, limit, offset, phrase, filters)
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
@@ -505,6 +510,7 @@ async def get_suggestion_by_id(
 @router.delete(
     path='/suggestions/{suggestion_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Delete alcohol suggestion'
 )
 async def delete_suggestion(
@@ -521,6 +527,7 @@ async def delete_suggestion(
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='[For admin] Delete review',
     dependencies=[Depends(admin_permission)],
 )

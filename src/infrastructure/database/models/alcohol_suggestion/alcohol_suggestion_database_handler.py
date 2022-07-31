@@ -60,6 +60,7 @@ class AlcoholSuggestionDatabaseHandler:
     ) -> None:
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
+            descriptions=[payload.description],
             user_ids=[user_id]
         )
         collection.insert_one(db_suggestions)
