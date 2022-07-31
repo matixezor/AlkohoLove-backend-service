@@ -6,15 +6,11 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, File, U
 
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.banned_review import BannedReview
-from src.domain.banned_review.paginated_banned_review import PaginatedBannedReview
 from src.domain.banned_review.review_ban import ReviewBan
 from src.domain.common.page_info import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
 from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
-from src.domain.review.paginated_reported_review import PaginatedReportedReview
-from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
-from src.utils.validate_object_id import validate_object_id
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
@@ -24,10 +20,13 @@ from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
+from src.domain.review.paginated_reported_review import PaginatedReportedReview
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
+from src.domain.banned_review.paginated_banned_review import PaginatedBannedReview
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
+from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
