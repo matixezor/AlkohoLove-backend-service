@@ -4,11 +4,12 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
+
 from src.domain.alcohol import PaginatedAlcohol
-from src.domain.banned_review import BannedReview
-from src.domain.banned_review.review_ban import ReviewBan
 from src.domain.common.page_info import PageInfo
+from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
+from src.domain.banned_review.review_ban import ReviewBan
 from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.database_config import get_db
