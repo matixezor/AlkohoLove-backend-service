@@ -57,20 +57,22 @@ db.createCollection(
     }
 )
 
-db.reviews.createIndex({user_id: 1})
+db.banned_reviews.createIndex({user_id: 1})
 
-db.reviews.insertMany(
+db.banned_reviews.insertMany(
     [
-//        {
-//            _id: ObjectId('6296768d872c15947e569b97'),
-//            username: 'DariuszGołąbski',
-//            user_id: ObjectId('6288e2fdd5ab6070dde8db8d'),
-//            alcohol_id: ObjectId('6288e32dd5ab6070dde8db8b'),
-//            review: 'DO DU**Y',
-//            rating: NumberInt(1),
-//            date: new ISODate('2022-05-15T12:42:32Z'),
-//            report_count: NumberInt(2),
-//            reporters: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8b')]
-//        }
+        {
+            _id: ObjectId('6296768d872c15947e569b96'),
+            username: 'DariuszGołąbski',
+            user_id: ObjectId('6288e2fdd5ab6070dde8db8d'),
+            alcohol_id: ObjectId('6288e32dd5ab6070dde8db8c'),
+            review: 'DO DU**Y!!!',
+            rating: NumberInt(1),
+            date: new ISODate('2022-05-15T12:43:32Z'),
+            report_count: NumberInt(2),
+            reporters: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8b')],
+            ban_date: new ISODate('2022-07-31T13:54:29.671972'),
+            reason: 'Wulgaryzm!'
+        }
     ]
 )

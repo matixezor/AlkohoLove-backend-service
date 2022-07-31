@@ -593,7 +593,7 @@ async def ban_review(
 
 
 @router.get(
-    path='/reviews/banned/{user_id}',
+    path='/reviews/ban/{user_id}',
     response_model=PaginatedBannedReview,
     status_code=status.HTTP_200_OK,
     summary='Read user banned reviews',

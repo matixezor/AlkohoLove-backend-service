@@ -56,6 +56,25 @@ REPORTED_REVIEWS_FIXTURE = [
     }
 ]
 
+BANNED_REVIEWS_FIXTURE = [
+    {
+        "review": "DO DU**Y!!!",
+        "rating": 1,
+        "_id": "6296768d872c15947e569b96",
+        "user_id": "6288e2fdd5ab6070dde8db8d",
+        "username": "DariuszGołąbski",
+        "date": "2022-05-15T12:43:32",
+        "alcohol_id": "6288e32dd5ab6070dde8db8c",
+        "report_count": 2,
+        "reporters": [
+            "6288e2fdd5ab6070dde8db8c",
+            "6288e2fdd5ab6070dde8db8b"
+        ],
+        "ban_date": "2022-07-31T13:54:29.672000",
+        "reason": "Wulgaryzm!"
+    }
+]
+
 
 @mark.asyncio
 async def test_get_alcohol_reviews(async_client: AsyncClient):
@@ -376,3 +395,35 @@ async def test_admin_ban_review_that_not_exists(
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == 'Review not found'
+
+
+@mark.asyncio
+async def test_admin_get_user_banned_reviews(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/reviews/ban/6288e2fdd5ab6070dde8db8d?limit=10&offset=0',
+        headers=admin_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['reviews']) == 1
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['total'] == 1
+    assert response['reviews'] == BANNED_REVIEWS_FIXTURE
+
+
+@mark.asyncio
+async def test_admin_get_not_existing_user_banned_reviews(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/reviews/ban/6288e21dd5ab6070dde8db8d?limit=10&offset=0',
+        headers=admin_token_headers,
+    )
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'User not found'
