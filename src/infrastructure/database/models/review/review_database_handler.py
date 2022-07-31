@@ -2,11 +2,9 @@ from bson import ObjectId, Int64
 from datetime import datetime
 
 from pymongo import DESCENDING
-from pymongo.collection import Collection, ReturnDocument
-
-
 from src.domain.review import ReviewCreate
 from src.domain.review.review_update import ReviewUpdate
+from pymongo.collection import Collection, ReturnDocument
 from src.infrastructure.database.models.review import Review
 from src.infrastructure.database.models.review.banned_review import BannedReview
 

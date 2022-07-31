@@ -14,8 +14,8 @@ from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
-from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
