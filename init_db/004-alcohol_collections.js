@@ -168,12 +168,12 @@ let beer = {
         },
         is_filtered: {
             title: 'filtrowane',
-            bsonType: ['bool'],
+            bsonType: ['bool', 'null'],
             description: 'true'
         },
         is_pasteurized: {
             title: 'pasteryzowane',
-            bsonType: ['bool'],
+            bsonType: ['bool', 'null'],
             description: 'true'
         },
     }
