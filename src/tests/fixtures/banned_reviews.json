@@ -1,0 +1,28 @@
+[
+    {
+      "_id": {
+        "$oid": "6296768d872c15947e569b96"
+      },
+      "username": "DariuszGołąbski",
+      "user_id": {
+        "$oid": "6288e2fdd5ab6070dde8db8d"
+      },
+      "alcohol_id": {
+        "$oid": "6288e32dd5ab6070dde8db8c"
+      },
+      "review": "DO DU**Y!!!",
+      "rating": 1,
+      "date": "2022-05-15T12:43:32",
+      "report_count": 2,
+      "reporters": [
+        {
+          "$oid": "6288e2fdd5ab6070dde8db8c"
+        },
+        {
+          "$oid": "6288e2fdd5ab6070dde8db8b"
+        }
+      ],
+      "ban_date": "2022-07-31T13:54:29.672000",
+      "reason": "Wulgaryzm!"
+    }
+]
