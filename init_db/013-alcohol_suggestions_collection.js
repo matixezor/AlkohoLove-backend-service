@@ -27,7 +27,7 @@ let suggestion = {
             },
             descriptions: {
                 title: 'opisy',
-                bsonType: 'array',
+                bsonType: 'array' | 'null',
                 description: 'Pyszna whisky',
                 items: {
                     bsonType: 'string'

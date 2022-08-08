@@ -12,6 +12,7 @@ class ApplicationSettings(BaseSettings):
     CLOUDINARY_API_KEY: str = getenv('CLOUDINARY_API_KEY')
     CLOUDINARY_API_SECRET: str = getenv('CLOUDINARY_API_SECRET')
     ALCOHOL_IMAGES_DIR: str = getenv('ALCOHOL_IMAGES_DIR')
+    ALCOHOL_SUGGESTION_IMAGES_DIR: str = getenv('ALCOHOL_SUGGESTION_IMAGES_DIR')
     ALGORITHM: str = getenv('ALGORITHM')
     SECRET_KEY: str = getenv('SECRET_KEY')
     authjwt_secret_key: str = ''

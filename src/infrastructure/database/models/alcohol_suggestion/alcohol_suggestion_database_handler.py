@@ -46,9 +46,13 @@ class AlcoholSuggestionDatabaseHandler:
             description: str | None,
             suggestion: AlcoholSuggestion
     ) -> None:
-        if description is not None:
-            collection.update_one({'_id': suggestion['_id']},
-                                  {'$push': {'user_ids': user_id, 'descriptions': description}})
+        if suggestion['descriptions']:
+            if description is not None:
+                collection.update_one({'_id': suggestion['_id']},
+                                      {'$push': {'user_ids': user_id, 'descriptions': description}})
+            else:
+                collection.update_one({'_id': suggestion['_id']},
+                                      {'$push': {'user_ids': user_id, 'descriptions': [description]}})
         else:
             collection.update_one({'_id': suggestion['_id']}, {'$push': {'user_ids': user_id}})
 
@@ -58,9 +62,13 @@ class AlcoholSuggestionDatabaseHandler:
             user_id: ObjectId,
             payload: AlcoholSuggestionCreate
     ) -> None:
+        if payload.description:
+            descriptions = [payload.description]
+        else:
+            descriptions = None
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
-            descriptions=[payload.description],
+            descriptions=descriptions,
             user_ids=[user_id]
         )
         collection.insert_one(db_suggestions)
