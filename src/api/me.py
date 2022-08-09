@@ -380,6 +380,7 @@ async def get_wishlist(
 
 @router.get(
     path='/favourites/{alcohol_id}',
+    response_model=bool,
     status_code=status.HTTP_200_OK,
     summary='Check if alcohol is in user\'s favourites list',
     response_model_by_alias=False
