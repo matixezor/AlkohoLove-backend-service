@@ -167,6 +167,28 @@ async def test_get_favourites(
 
 
 @mark.asyncio
+async def test_is_alcohol_in_favourites_positive(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/favourites/6288e32dd5ab6070dde8db8e', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response
+
+
+@mark.asyncio
+async def test_is_alcohol_in_favourites_negative(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/favourites/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert not response
+
+
+@mark.asyncio
 async def test_get_search_history(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]

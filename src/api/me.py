@@ -379,6 +379,25 @@ async def get_wishlist(
 
 
 @router.get(
+    path='/favourites/{alcohol_id}',
+    status_code=status.HTTP_200_OK,
+    summary='Check if alcohol is in user\'s favourites list',
+    response_model_by_alias=False
+)
+async def is_alcohol_in_favourites(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> bool:
+    """
+    Check if alcohol is in user's favourites list
+    """
+    alcohol_id = validate_object_id(alcohol_id)
+    user_id = current_user['_id']
+    return await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites, user_id, alcohol_id)
+
+
+@router.get(
     path='/favourites',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
