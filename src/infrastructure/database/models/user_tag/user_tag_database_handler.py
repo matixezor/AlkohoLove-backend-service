@@ -1,7 +1,6 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from src.domain.alcohol.alcohol_base import AlcoholBase
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.database.models.user_tag import UserTag
 
@@ -140,3 +139,16 @@ class UserTagDatabaseHandler:
             return True
         else:
             return False
+
+    @staticmethod
+    async def get_alcohol_tags(
+            collection: Collection[UserTag],
+            alcohol_id: ObjectId,
+            user_id: ObjectId
+    ) -> list[str]:
+        tags = list(collection.find({'user_id': user_id}))
+        result = []
+        for tag in tags:
+            if alcohol_id in tag.get('alcohols'):
+                result.append(str(tag.get('_id')))
+        return result
