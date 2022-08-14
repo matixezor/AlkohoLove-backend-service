@@ -213,3 +213,7 @@ class AlcoholDatabaseHandler:
             return True
         else:
             return False
+
+    @staticmethod
+    async def revert_by_removal(collection: Collection, name: str) -> None:
+        collection.find_one_and_delete({'name': name})

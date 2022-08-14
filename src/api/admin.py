@@ -254,8 +254,10 @@ async def update_alcohol(
     summary='Create alcohol'
 )
 async def create_alcohol(
-        payload: AlcoholCreate,
-        db: Database = Depends(get_db)
+        payload: AlcoholCreate = Depends(),
+        db: Database = Depends(get_db),
+        file: UploadFile = File(...),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Create alcohol
@@ -272,6 +274,32 @@ async def create_alcohol(
         )
 
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
+
+    if file.content_type != 'image/png':
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
+
+    if image_size(file.file) > 1000000:
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='File size too large. Maximum is 1 mb'
+        )
+
+    try:
+        image_name = payload.name.lower().replace(' ', '_')
+        cloudinary.uploader.upload(
+            file.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=image_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+    except Exception as error:
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
     )
@@ -393,10 +421,10 @@ async def upload_image(
     if file.content_type != 'image/png':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    if image_size(file.file) > 400000:
+    if image_size(file.file) > 1000000:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='File size too large. Maximum is 400 kb'
+            detail='File size too large. Maximum is 1 mb'
         )
 
     try:
