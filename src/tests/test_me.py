@@ -144,8 +144,8 @@ async def test_get_wishlist(
     response = await async_client.get('/me/wishlist', headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
-    assert len(response['alcohols']) == 2
-    assert response['page_info']['total'] == 2
+    assert len(response['alcohols']) == 3
+    assert response['page_info']['total'] == 3
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['alcohols'] == WISHLIST_FIXTURE
@@ -164,6 +164,32 @@ async def test_get_favourites(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['alcohols'] == FAVOURITES_FIXTURE
+
+
+@mark.asyncio
+async def test_get_alcohol_lists_positive(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/list/6288e32dd5ab6070dde8db8c', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['is_in_favourites']
+    assert response['is_in_wishlist']
+    assert response['alcohol_tags'] == ["628f9071f32df3b39ced1a3b"]
+
+
+@mark.asyncio
+async def test_get_alcohol_lists_negative(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('/me/list/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert not response['is_in_favourites']
+    assert not response['is_in_wishlist']
+    assert response['alcohol_tags'] == []
 
 
 @mark.asyncio

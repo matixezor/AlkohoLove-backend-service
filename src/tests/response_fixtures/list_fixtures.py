@@ -50,6 +50,28 @@ WISHLIST_FIXTURE = [
             'display_name': 'wiek',
             'value': 4
         }]
+    },
+    {
+        "name": "Absolut Vodka",
+        "kind": "wódka",
+        "type": "czysta",
+        "alcohol_by_volume": 40.0,
+        "description": "Lorem ipsum",
+        "color": "bezbarwny",
+        "manufacturer": "The Absolut Company",
+        "country": "Szwecja",
+        "region": "Ahus",
+        "food": [],
+        "finish": [],
+        "aroma": [],
+        "taste": [],
+        "barcode": ['7312040017072'],
+        "keywords": ["szwedzka"],
+        "id": '6288e32dd5ab6070dde8db8c',
+        "avg_rating": 0.0,
+        "rate_count": 0,
+        "rate_value": 0,
+        'additional_properties': []
     }
 ]
 
