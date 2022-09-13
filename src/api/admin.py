@@ -1,6 +1,7 @@
 import cloudinary
 import cloudinary.api
 import cloudinary.uploader
+from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
@@ -11,11 +12,12 @@ from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
-from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
+from src.infrastructure.database.models.user import User as UserDb
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
@@ -263,6 +265,7 @@ async def update_alcohol(
 )
 async def create_alcohol(
         payload: AlcoholCreate,
+        current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
     """
@@ -279,9 +282,42 @@ async def create_alcohol(
             detail='Alcohol category does not exist. Create one first!'
         )
 
+    payload = AlcoholCreate(
+        **payload.dict(),
+        username=current_user["username"],
+        date=datetime.now()
+    )
+
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
+    )
+
+
+@router.get(
+    path='/alcohols',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Read alcohols created by you',
+    response_model_by_alias=False
+)
+async def admin_get_my_alcohols(
+        limit: int = 10,
+        offset: int = 0,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    alcohols = await AlcoholDatabaseHandler.get_my_alcohols(
+        db.alcohols, limit, offset, current_user["username"]
+    )
+    total = await AlcoholDatabaseHandler.count_my_alcohols(db.alcohols, current_user["username"])
+    return PaginatedAlcohol(
+        alcohols=alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
     )
 
 
