@@ -510,6 +510,7 @@ async def delete_alcohol_form_favourites(
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
     await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
+    await UserDatabaseHandler.remove_from_favourite_counter(db.users, user_id)
 
 
 @router.delete(
@@ -572,6 +573,7 @@ async def add_alcohol_to_favourites(
     user_id = current_user['_id']
     if not await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites, user_id, alcohol_id):
         await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, alcohol_id)
+        await UserDatabaseHandler.add_to_favourite_counter(db.users, user_id)
     else:
         raise AlcoholAlreadyInListException()
 
@@ -737,6 +739,12 @@ async def create_review(
             review_create_payload.rating
         )
 
+        await ReviewDatabaseHandler.add_rating_to_user(
+            db.users,
+            current_user['_id'],
+            review_create_payload.rating
+        )
+
 
 @router.delete(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
@@ -765,6 +773,7 @@ async def delete_review(
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
         await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+        await ReviewDatabaseHandler.remove_rating_from_user(db.users, current_user['_id'], rating)
 
 
 @router.put(

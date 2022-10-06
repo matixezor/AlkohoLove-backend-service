@@ -68,7 +68,7 @@ async def get_user_reviews(
         raise UserNotFoundException()
 
     reviews = await ReviewDatabaseHandler.get_user_reviews(
-        db.reviews, limit, offset, user_id
+        db.reviews, db.alcohols, limit, offset, user_id
     )
     total = await ReviewDatabaseHandler.count_user_reviews(db.reviews, user_id)
     return PaginatedReview(
