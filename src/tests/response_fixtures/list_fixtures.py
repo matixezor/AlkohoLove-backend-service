@@ -75,6 +75,8 @@ WISHLIST_FIXTURE = [
         "avg_rating": 0.0,
         "rate_count": 0,
         "rate_value": 0,
+        'date': None,
+        'username': None,
         'additional_properties': []
     }
 ]
