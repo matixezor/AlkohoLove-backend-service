@@ -11,7 +11,6 @@ from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
-from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission

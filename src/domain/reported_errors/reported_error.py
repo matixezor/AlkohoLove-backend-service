@@ -7,6 +7,7 @@ from src.domain.reported_errors import ReportedErrorBase
 
 class ReportedError(MongoBaseModel, ReportedErrorBase):
     user_id: PyObjectId = Field(default_factory=PyObjectId, alias="user_id")
+    username: str
 
     @validator('user_id', always=True)
     def set_user_id(cls, v):
