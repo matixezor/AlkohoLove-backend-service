@@ -125,7 +125,7 @@ async def test_get_user_reviews_without_existing_user(async_client: AsyncClient)
 
 
 @mark.asyncio
-async def test_create_tag(async_client: AsyncClient, user_token_headers: dict[str, str]):
+async def test_create_review(async_client: AsyncClient, user_token_headers: dict[str, str]):
     data = {
         'review': 'test',
         'rating': 4
@@ -427,3 +427,14 @@ async def test_admin_get_not_existing_user_banned_reviews(
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == 'User not found'
+
+
+@mark.asyncio
+async def test_get_reported_review_by_id(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/reviews/6296768d872c15947e569b97', headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == REPORTED_REVIEWS_FIXTURE[0]
