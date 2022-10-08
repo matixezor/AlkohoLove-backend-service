@@ -211,5 +211,3 @@ async def test_get_total_alcohols_created_by_user(
     assert response.status_code == 200
     response = response.json()
     assert response == 1
-
-
