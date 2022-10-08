@@ -11,6 +11,7 @@ from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
+from src.domain.user_list.list_belonging import ListsBelonging
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
@@ -376,6 +377,32 @@ async def get_wishlist(
             total=total
         )
     )
+
+
+@router.get(
+    path='/list/{alcohol_id}',
+    response_model=ListsBelonging,
+    status_code=status.HTTP_200_OK,
+    summary='Check if alcohol is in user\'s lists',
+    response_model_by_alias=False
+)
+async def get_belonging_to_lists(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> ListsBelonging:
+    """
+    Check if alcohol is in user's lists
+    """
+    alcohol_id = validate_object_id(alcohol_id)
+    user_id = current_user['_id']
+
+    return ListsBelonging(
+        is_in_favourites=await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites,
+                                                                                    user_id, alcohol_id),
+        is_in_wishlist=await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id),
+        alcohol_tags=await UserTagDatabaseHandler.get_alcohol_tags(db.user_tags, alcohol_id, user_id)
+        )
 
 
 @router.get(
