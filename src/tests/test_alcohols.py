@@ -182,12 +182,12 @@ async def test_get_schemas(
 
 
 @mark.asyncio
-async def test_get_my_alcohols(
+async def test_get_alcohols_created_by_user(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.get(
-        '/admin/alcohols?limit=10&offset=0',
+        '/admin/alcohols/admin?limit=10&offset=0',
         headers=admin_token_headers,
     )
     assert response.status_code == 200
@@ -197,3 +197,19 @@ async def test_get_my_alcohols(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['total'] == 1
     assert response['alcohols'] == MY_ALCOHOLS_FIXTURE
+
+
+@mark.asyncio
+async def test_get_total_alcohols_created_by_user(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/alcohols/total/admin',
+        headers=admin_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == 1
+
+

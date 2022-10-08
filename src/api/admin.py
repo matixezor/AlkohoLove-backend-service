@@ -294,33 +294,6 @@ async def create_alcohol(
     )
 
 
-@router.get(
-    path='/alcohols',
-    response_model=PaginatedAlcohol,
-    status_code=status.HTTP_200_OK,
-    summary='Read alcohols created by you',
-    response_model_by_alias=False
-)
-async def admin_get_my_alcohols(
-        limit: int = 10,
-        offset: int = 0,
-        current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
-):
-    alcohols = await AlcoholDatabaseHandler.get_my_alcohols(
-        db.alcohols, limit, offset, current_user["username"]
-    )
-    total = await AlcoholDatabaseHandler.count_my_alcohols(db.alcohols, current_user["username"])
-    return PaginatedAlcohol(
-        alcohols=alcohols,
-        page_info=PageInfo(
-            limit=limit,
-            offset=offset,
-            total=total
-        )
-    )
-
-
 @router.put(
     path='/alcohols/metadata/categories/{category_id}',
     response_model=AlcoholCategory,
@@ -674,3 +647,44 @@ async def get_user_banned_reviews(
             total=total
         )
     )
+
+
+@router.get(
+    path='/alcohols/{username}',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedAlcohol:
+
+    db_alcohols = await AlcoholDatabaseHandler.get_alcohols_created_by_user(db.alcohols, limit, offset, username)
+    total = await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)
+
+    return PaginatedAlcohol(
+        alcohols=db_alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/alcohols/total/{username}',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get number of alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        db: Database = Depends(get_db)
+) -> int:
+    return await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)
