@@ -17,3 +17,12 @@ db.alcohols.aggregate([
         }
     }
 ])
+
+db.alcohol_filters.insert(
+    {
+        _id: "all",
+        type: db.alcohols.distinct('type'),
+        color: db.alcohols.distinct('color'),
+        country: db.alcohols.distinct('country'),
+    }
+)
