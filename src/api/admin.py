@@ -3,15 +3,13 @@ import cloudinary.api
 import cloudinary.uploader
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
-from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
-
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Query
 
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
-from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -41,7 +39,6 @@ from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import Paginated
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
-
 
 router = APIRouter(prefix='/admin', tags=['admin'], dependencies=[Depends(admin_permission)])
 
@@ -465,7 +462,7 @@ async def get_suggestions(
         db: Database = Depends(get_db)
 ):
     suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestions(db.alcohol_suggestion, limit, offset)
-    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion, '')
     return PaginatedAlcoholSuggestion(
         suggestions=suggestions,
         page_info=PageInfo(
@@ -486,8 +483,40 @@ async def get_suggestions(
 async def get_suggestions(
         db: Database = Depends(get_db)
 ) -> int:
-    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion, '')
     return total
+
+
+@router.get(
+    path='/suggestions/search',
+    response_model=PaginatedAlcoholSuggestion,
+    status_code=status.HTTP_200_OK,
+    summary='Search for alcohol suggestions by phrase',
+    response_model_by_alias=False,
+)
+async def search_suggestions_by_phrase(
+        limit: int = 10,
+        offset: int = 0,
+        phrase: str | None = Query(default=None, min_length=3),
+        db: Database = Depends(get_db)
+):
+    """
+    Search for suggestions with pagination. Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    - **phrase**: str - default '', at least 3 characters
+    """
+    suggestions = await AlcoholSuggestionDatabaseHandler.search_suggestions_by_phrase(
+        db.alcohol_suggestion, limit, offset, phrase)
+    total = await AlcoholSuggestionDatabaseHandler.count_suggestions(db.alcohol_suggestion, phrase)
+    return PaginatedAlcoholSuggestion(
+        suggestions=suggestions,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
 
 
 @router.get(
@@ -566,7 +595,6 @@ async def get_reported_reviews(
         offset: int = 0,
         db: Database = Depends(get_db)
 ) -> PaginatedReportedReview:
-
     db_reported_reviews = await ReviewDatabaseHandler.get_reported_reviews(db.reviews, limit, offset)
     total = await ReviewDatabaseHandler.count_reported_reviews(db.reviews)
 
@@ -620,8 +648,8 @@ async def get_user_banned_reviews(
 ) -> PaginatedBannedReview:
     user_id = validate_object_id(user_id)
     if not await UserDatabaseHandler.check_if_user_exists(
-        db.users,
-        user_id=user_id,
+            db.users,
+            user_id=user_id,
     ):
         raise UserNotFoundException()
 
