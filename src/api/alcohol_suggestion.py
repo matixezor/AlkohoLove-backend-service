@@ -24,12 +24,6 @@ router = APIRouter(prefix='/suggestions', tags=['alcohol_suggestions'])
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol suggestion'
 )
-@router.post(
-    '',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol suggestion'
-)
 async def create_suggestion(
         payload: AlcoholSuggestionCreate,
         current_user: User = Depends(get_valid_user),
