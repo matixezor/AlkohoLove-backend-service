@@ -19,7 +19,6 @@ from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
-from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
 from src.domain.review.paginated_reported_review import PaginatedReportedReview
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
@@ -37,6 +36,7 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
+from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate, PaginatedAlcoholCategories
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
 
@@ -375,6 +375,40 @@ async def add_category(
     except OperationFailure as ex:
         await AlcoholCategoryDatabaseHandler.revert_by_removal(db.alcohol_categories, payload.title)
         raise ValidationErrorException(ex.args[0])
+
+
+@router.get(
+    path='/alcohols/metadata/categories/search',
+    response_model=PaginatedAlcoholCategories,
+    status_code=status.HTTP_200_OK,
+    summary='Search alcohol categories by phrase',
+    response_model_by_alias=False
+)
+async def search_alcohol_categories_by_phrase(
+        limit: int = 10,
+        offset: int = 0,
+        phrase: str = Query(default='', min_length=3),
+        db: Database = Depends(get_db),
+) -> PaginatedAlcoholCategories:
+    """
+       Search for categories with pagination. Query params:
+       - **limit**: int - default 10
+       - **offset**: int - default 0
+       - **phrase**: str - default '', at least 3 characters
+    """
+    alcohol_categories = [
+        map_to_alcohol_category(db_alcohol_category) for db_alcohol_category in
+        await AlcoholCategoryDatabaseHandler.search_categories_by_phrase(db.alcohol_categories, limit, offset, phrase)
+    ]
+    total = await AlcoholCategoryDatabaseHandler.count_categories_by_phrase(db.alcohol_categories, phrase)
+    return PaginatedAlcoholCategories(
+        categories=alcohol_categories,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
 
 
 @router.post(
