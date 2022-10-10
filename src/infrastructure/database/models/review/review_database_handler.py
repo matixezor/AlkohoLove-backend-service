@@ -44,11 +44,36 @@ class ReviewDatabaseHandler:
         )
 
     @staticmethod
+    async def get_reported_reviews_by_phrase(
+            collection: Collection[Review],
+            phrase: str,
+            limit: int,
+            offset: int,
+    ) -> list[Review]:
+        return (
+            list(collection.find(
+                {'$and': [{'report_count': {'$gt': 0}}, {'username': {'$regex': phrase, '$options': 'i'}}]})
+                 .skip(offset)
+                 .limit(limit)
+                 .sort("report_count", DESCENDING))
+        )
+
+    @staticmethod
     async def count_reported_reviews(
             collection: Collection[Review]
     ) -> int:
         return (
             collection.count_documents(filter={'report_count': {'$gt': 0}})
+        )
+
+    @staticmethod
+    async def count_reported_reviews_by_phrase(
+            collection: Collection[Review],
+            phrase: str
+    ) -> int:
+        return (
+            collection.count_documents(
+                filter={'$and': [{'report_count': {'$gt': 0}}, {'username': {'$regex': phrase, '$options': 'i'}}]})
         )
 
     @staticmethod
@@ -72,7 +97,7 @@ class ReviewDatabaseHandler:
 
         rate_count = alcohol['rate_count'] + 1
         rate_value = alcohol['rate_value'] + rating
-        avg_rating = rate_value/rate_count
+        avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
@@ -94,7 +119,7 @@ class ReviewDatabaseHandler:
         if rate_count < 1:
             avg_rating = 0
         else:
-            avg_rating = rate_value/rate_count
+            avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},

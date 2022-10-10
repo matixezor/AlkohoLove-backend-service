@@ -531,7 +531,7 @@ async def get_suggestions(
 async def search_suggestions_by_phrase(
         limit: int = 10,
         offset: int = 0,
-        phrase: str | None = Query(default=None, min_length=3),
+        phrase: str = Query(default='', min_length=3),
         db: Database = Depends(get_db)
 ):
     """
@@ -631,6 +631,32 @@ async def get_reported_reviews(
 ) -> PaginatedReportedReview:
     db_reported_reviews = await ReviewDatabaseHandler.get_reported_reviews(db.reviews, limit, offset)
     total = await ReviewDatabaseHandler.count_reported_reviews(db.reviews)
+
+    return PaginatedReportedReview(
+        reviews=db_reported_reviews,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/reviews/search',
+    response_model=PaginatedReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported reviews by phrase (username)',
+    response_model_by_alias=False
+)
+async def get_reported_reviews_by_phrase(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db),
+        phrase: str = Query(default='', min_length=3),
+) -> PaginatedReportedReview:
+    db_reported_reviews = await ReviewDatabaseHandler.get_reported_reviews_by_phrase(db.reviews, phrase, limit, offset)
+    total = await ReviewDatabaseHandler.count_reported_reviews_by_phrase(db.reviews, phrase)
 
     return PaginatedReportedReview(
         reviews=db_reported_reviews,
