@@ -39,7 +39,7 @@ async def test_search_users_by_phrase(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.get('socials/users?phrase=Ada', headers=user_token_headers)
+    response = await async_client.get('socials/users?phrase=Dar', headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
     assert len(response['users']) == 1
@@ -47,3 +47,33 @@ async def test_search_users_by_phrase(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['users'] == USERS_FIXTURE
+
+
+@mark.asyncio
+async def test_search_users_by_phrase_case_insensitive(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('socials/users?phrase=dar', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['users']) == 1
+    assert response['page_info']['total'] == 1
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['users'] == USERS_FIXTURE
+
+
+@mark.asyncio
+async def test_search_users_by_phrase_no_current_user(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('socials/users?phrase=Adam', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['users']) == 0
+    assert response['page_info']['total'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['users'] == []
