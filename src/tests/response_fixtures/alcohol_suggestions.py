@@ -40,6 +40,10 @@ SUGGESTIONS_RESPONSE_FIXTURE = {
     "user_ids": [
         "6288e2fdd5ab6070dde8db8c",
         "6288e2fdd5ab6070dde8db8b"
+    ],
+    "usernames": [
+        "Adam_Skorupa",
+        "admin"
     ]
 }
 
