@@ -6,7 +6,7 @@ from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
-
+from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
@@ -587,6 +587,25 @@ async def get_reported_reviews(
             total=total
         )
     )
+
+
+@router.get(
+    path='/reviews/{review_id}',
+    response_model=ReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported review by id',
+    response_model_by_alias=False
+)
+async def get_reported_review(
+        review_id: str,
+        db: Database = Depends(get_db)
+) -> ReportedReview:
+    review_id = validate_object_id(review_id)
+    db_reported_review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    if db_reported_review:
+        return db_reported_review
+    else:
+        raise ReviewNotFoundException()
 
 
 @router.put(
