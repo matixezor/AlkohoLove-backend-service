@@ -1,3 +1,4 @@
+import pymongo
 from bson import ObjectId
 from bson.int64 import Int64
 from pymongo.database import Database
@@ -155,7 +156,7 @@ class AlcoholDatabaseHandler:
             offset: int,
             filters: dict
     ) -> list[dict]:
-        return list(collection.find(filters).skip(offset).limit(limit))
+        return list(collection.find(filters).sort('name', pymongo.ASCENDING).skip(offset).limit(limit))
 
     @staticmethod
     async def get_alcohols_created_by_user(
