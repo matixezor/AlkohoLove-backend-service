@@ -1,5 +1,7 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+
+from src.domain.common.base_model import BaseModel
 
 
 class PyObjectId(ObjectId):
