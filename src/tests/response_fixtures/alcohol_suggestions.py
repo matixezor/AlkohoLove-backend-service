@@ -62,7 +62,8 @@ SUGGESTIONS_SEARCH_RESPONSE_FIXTURE = \
                 "descriptions": [
                     "Białe piwo pszeniczne żywiec.",
                     "Dobre piwo o aromacie kolendry."
-                ]
+                ],
+                'usernames': ['Adam_Skorupa', 'admin']
             }
         ],
         "page_info": {
@@ -81,17 +82,21 @@ ALL_SUGGESTIONS_RESPONSE_FIXTURE = \
                       'kind': 'piwo',
                       'name': 'Żywiec białe',
                       'user_ids': ['6288e2fdd5ab6070dde8db8c',
-                                   '6288e2fdd5ab6070dde8db8b']},
+                                   '6288e2fdd5ab6070dde8db8b'],
+                      'usernames': ['Adam_Skorupa', 'admin']},
                      {'barcode': '3800006901502',
                       'descriptions': ['Czerwone wino deserowe słodkie.'],
                       'id': '6299eb5a894d907992ecbd7e',
                       'kind': 'wino',
                       'name': 'Witosha premium sweet red',
-                      'user_ids': ['6288e2fdd5ab6070dde8db8d']},
+                      'user_ids': ['6288e2fdd5ab6070dde8db8d'],
+                      'usernames': ['DariuszGołąbski'],
+                      },
                      {'barcode': '1111111111111',
                       'descriptions': ['Dobry likier ziołowy.', 'Bardzo dobry'],
                       'id': '6299eb5f31a05c42142ea55c',
                       'kind': 'likier',
                       'name': 'Jagermeister',
                       'user_ids': ['6288e2fdd5ab6070dde8db8c',
-                                   '6288e2fdd5ab6070dde8db8d']}]}
+                                   '6288e2fdd5ab6070dde8db8d'],
+                      'usernames': ['Adam_Skorupa', 'DariuszGołąbski']}]}
