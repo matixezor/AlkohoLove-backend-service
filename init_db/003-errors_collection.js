@@ -7,6 +7,10 @@ let error = {
                 bsonType: 'objectId',
                 description: 'must be an objectId'
             },
+            username: {
+                bsonType: 'string',
+                description: 'must be a string'
+            },
             description: {
                 bsonType: 'string',
                 description: 'must be a string'
@@ -29,16 +33,19 @@ db.reported_errors.insertMany(
         {
             _id: ObjectId('507f191e810c19729de860ea'),
             user_id: ObjectId('6288e2fdd5ab6070dde8db8b'),
+            username: 'admin',
             description: 'This app sucks'
         },
         {
             _id: ObjectId('507f191e810c19729de860eb'),
             user_id: ObjectId('6288e2fdd5ab6070dde8db8b'),
+            username: 'admin',
             description: 'This app sucks very much'
         },
         {
             _id: ObjectId('507f191e810c19729de860ec'),
             user_id: ObjectId('6288e2fdd5ab6070dde8db8c'),
+            username: 'Adam_Skorupa',
             description: 'Pagination does not work'
         }
     ]

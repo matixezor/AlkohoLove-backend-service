@@ -11,6 +11,10 @@
         "$oid": "6288e2fdd5ab6070dde8db8b"
       }
     ],
+    "usernames": [
+      "Adam_Skorupa",
+      "admin"
+    ],
     "barcode": "5900699104827",
     "kind": "piwo",
     "name": "Żywiec białe",
@@ -27,6 +31,9 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8d"
       }
+    ],
+    "usernames": [
+      "DariuszGołąbski"
     ],
     "barcode": "3800006901502",
     "kind": "wino",
@@ -46,6 +53,10 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8d"
       }
+    ],
+    "usernames": [
+      "Adam_Skorupa",
+      "DariuszGołąbski"
     ],
     "barcode": "1111111111111",
     "kind": "likier",

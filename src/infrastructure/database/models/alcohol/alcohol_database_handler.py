@@ -1,3 +1,4 @@
+import pymongo
 from bson import ObjectId
 from bson.int64 import Int64
 from pymongo.database import Database
@@ -155,7 +156,20 @@ class AlcoholDatabaseHandler:
             offset: int,
             filters: dict
     ) -> list[dict]:
-        return list(collection.find(filters).skip(offset).limit(limit))
+        return list(collection.find(filters).sort('name', pymongo.ASCENDING).skip(offset).limit(limit))
+
+    @staticmethod
+    async def get_alcohols_created_by_user(
+            collection: Collection,
+            limit: int,
+            offset: int,
+            username: str
+    ) -> list[dict]:
+        return list(collection.find({'username': username}).skip(offset).limit(limit))
+
+    @staticmethod
+    async def count_alcohols_created_by_user(collection: Collection, username: str) -> int:
+        return collection.count_documents(filter={'username': {'$eq': username}})
 
     @staticmethod
     async def count_alcohols(collection: Collection, filters: dict) -> int:

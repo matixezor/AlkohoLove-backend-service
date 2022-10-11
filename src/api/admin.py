@@ -1,21 +1,23 @@
 import cloudinary
 import cloudinary.api
 import cloudinary.uploader
+from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 
-
+from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
-from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
+from src.infrastructure.database.models.user import User as UserDb
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
@@ -263,6 +265,7 @@ async def update_alcohol(
 )
 async def create_alcohol(
         payload: AlcoholCreate,
+        current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
     """
@@ -278,6 +281,12 @@ async def create_alcohol(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Alcohol category does not exist. Create one first!'
         )
+
+    payload = AlcoholCreate(
+        **payload.dict(),
+        username=current_user["username"],
+        date=datetime.now()
+    )
 
     await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
@@ -580,6 +589,25 @@ async def get_reported_reviews(
     )
 
 
+@router.get(
+    path='/reviews/{review_id}',
+    response_model=ReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported review by id',
+    response_model_by_alias=False
+)
+async def get_reported_review(
+        review_id: str,
+        db: Database = Depends(get_db)
+) -> ReportedReview:
+    review_id = validate_object_id(review_id)
+    db_reported_review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    if db_reported_review:
+        return db_reported_review
+    else:
+        raise ReviewNotFoundException()
+
+
 @router.put(
     path='/reviews/{review_id}',
     response_model=BannedReview,
@@ -638,3 +666,44 @@ async def get_user_banned_reviews(
             total=total
         )
     )
+
+
+@router.get(
+    path='/alcohols/{username}',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedAlcohol:
+
+    db_alcohols = await AlcoholDatabaseHandler.get_alcohols_created_by_user(db.alcohols, limit, offset, username)
+    total = await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)
+
+    return PaginatedAlcohol(
+        alcohols=db_alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/alcohols/total/{username}',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get number of alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        db: Database = Depends(get_db)
+) -> int:
+    return await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)

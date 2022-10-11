@@ -22,7 +22,7 @@ FOLLOWING_FIXTURE = [
 ]
 USERS_FIXTURE = [
     {
-        "username": "Adam_Skorupa",
-        "id": "6288e2fdd5ab6070dde8db8c"
+        "username": "DariuszGołąbski",
+        "id": "6288e2fdd5ab6070dde8db8d"
     }
 ]
