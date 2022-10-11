@@ -19,6 +19,8 @@ WISHLIST_FIXTURE = [
         'avg_rating': 5.0,
         'rate_count': 1,
         'rate_value': 5,
+        'date': None,
+        'username': None,
         'additional_properties': [{
             'name': 'age',
             'display_name': 'wiek',
@@ -45,6 +47,8 @@ WISHLIST_FIXTURE = [
         'avg_rating': 3.0,
         'rate_count': 2,
         'rate_value': 6,
+        'date': None,
+        'username': None,
         'additional_properties': [{
             'name': 'age',
             'display_name': 'wiek',
@@ -71,6 +75,8 @@ WISHLIST_FIXTURE = [
         "avg_rating": 0.0,
         "rate_count": 0,
         "rate_value": 0,
+        'date': None,
+        'username': None,
         'additional_properties': []
     }
 ]
@@ -95,6 +101,8 @@ FAVOURITES_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
+        'date': None,
+        'username': None,
         "keywords": ['szwedzka'],
         'additional_properties': []
     },
@@ -117,6 +125,8 @@ FAVOURITES_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
+        'date': "2022-08-15T18:46:11.900000",
+        'username': "admin",
         "keywords": ['wódka', 'pigwowa', 'pigwowy'],
         'additional_properties': []
     }
@@ -147,6 +157,8 @@ SEARCH_HISTORY_FIXTURE = [
                 'name': 'Jameson',
                 'rate_count': 1,
                 'rate_value': 5,
+                'date': None,
+                'username': None,
                 'region': 'Cork',
                 'taste': ['nuty korzenne',
                           'orzechy',
@@ -191,6 +203,8 @@ SEARCH_HISTORY_FIXTURE = [
                 'name': 'Jameson Caskmates Stout Edition',
                 'rate_count': 2,
                 'rate_value': 6,
+                'date': None,
+                'username': None,
                 'region': 'Cork',
                 'taste': ['mleczna czekolada', 'chmiel', 'kakao', 'marcepan'],
                 'type': 'blended'
