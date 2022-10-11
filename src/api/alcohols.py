@@ -77,7 +77,7 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
             filter_dict['filters'].append({
                 'name': key,
                 'display_name': translate[key],
-                'values': values
+                'values': [value for value in values if value != '']
             })
         filters.append(filter_dict)
     return AlcoholFiltersMetadata(

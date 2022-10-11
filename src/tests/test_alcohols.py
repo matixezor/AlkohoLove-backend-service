@@ -93,6 +93,31 @@ MY_ALCOHOLS_FIXTURE = [
     }
 ]
 
+ALCOHOL_FIXTURE_2 = {
+    'name': 'Absolut Vodka',
+    'kind': 'wódka',
+    'type': 'czysta',
+    'alcohol_by_volume': 40.0,
+    'description': 'Lorem ipsum',
+    'color': 'bezbarwny',
+    'manufacturer': 'The Absolut Company',
+    'country': 'Szwecja',
+    'region': 'Ahus',
+    'food': [],
+    'finish': [],
+    'aroma': [],
+    'taste': [],
+    'barcode': ['7312040017072'],
+    'keywords': ['szwedzka'],
+    'id': '6288e32dd5ab6070dde8db8c',
+    'avg_rating': 0.0,
+    'rate_count': 0,
+    'rate_value': 0,
+    'username': None,
+    'date': None,
+    'additional_properties': []
+}
+
 
 @mark.asyncio
 async def test_search_alcohols(
@@ -108,7 +133,7 @@ async def test_search_alcohols(
     assert response['page_info']['total'] == 5
     assert response['page_info']['limit'] == 1
     assert response['page_info']['offset'] == 0
-    assert response['alcohols'][0] == ALCOHOL_FIXTURE
+    assert response['alcohols'][0] == ALCOHOL_FIXTURE_2
 
 
 @mark.asyncio
