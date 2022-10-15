@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, Query
 
 from src.domain.common import PageInfo
 from src.domain.user.user_info import UserInfo
+from src.infrastructure.database.models.user import User
+from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.infrastructure.database.models.user import UserDatabaseHandler
@@ -86,7 +88,8 @@ async def search_users_by_phrase(
         limit: int = 10,
         offset: int = 0,
         phrase: str = Query(default=..., min_length=3),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        current_user: User = Depends(get_valid_user),
 ):
     """
     Search for users with pagination. Query params:
@@ -94,8 +97,8 @@ async def search_users_by_phrase(
     - **offset**: int - default 0
     - **phrase**: str - default '', at least 3 characters
     """
-    users = await UserDatabaseHandler.search_users_by_phrase(db.users, limit, offset, phrase)
-    total = await UserDatabaseHandler.count_users(db.users, phrase)
+    users = await UserDatabaseHandler.search_users_by_phrase(db.users, limit, offset, phrase, current_user)
+    total = await UserDatabaseHandler.count_users_without_current(db.users, phrase, current_user)
     return PaginatedUserSocial(
         users=users,
         page_info=PageInfo(

@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-
 from src.domain.common import PageInfo
+from src.domain.common.base_model import BaseModel
 from src.domain.banned_review import BannedReview
 
 

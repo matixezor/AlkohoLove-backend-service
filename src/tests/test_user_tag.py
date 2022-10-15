@@ -22,6 +22,8 @@ TAG_ALCOHOLS_FIXTURE = [
         'avg_rating': 5.0,
         'rate_count': 1,
         'rate_value': 5,
+        'date': None,
+        'username': None,
         'additional_properties': [{
             'name': 'age',
             'display_name': 'wiek',
@@ -47,6 +49,8 @@ TAG_ALCOHOLS_FIXTURE = [
         "rate_count": 0,
         "rate_value": 0,
         "avg_rating": 0.0,
+        'date': None,
+        'username': None,
         "keywords": ['szwedzka'],
         'additional_properties': []
     }

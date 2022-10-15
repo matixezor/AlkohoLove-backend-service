@@ -51,6 +51,15 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
+    async def count_users_without_current(collection: Collection[User], username: str, current_user: User) -> int:
+        return (
+            collection.count_documents(
+                filter={'username': {'$regex': username, '$options': 'i', '$ne': current_user['username']}})
+            if username
+            else collection.estimated_document_count()
+        )
+
+    @staticmethod
     async def delete_user(collection: Collection[User], user_id: ObjectId) -> None:
         collection.delete_one({'_id': user_id})
 
@@ -154,9 +163,12 @@ class UserDatabaseHandler:
     async def search_users_by_phrase(
             collection: Collection,
             limit: int, offset: int,
-            phrase: str
+            phrase: str,
+            current_user: User
     ) -> list[dict]:
-        result = list(collection.find({'username': {'$regex': phrase}}).skip(offset).limit(limit))
+        result = list(collection.find(
+            {'username': {'$regex': phrase, '$options': 'i', '$ne': current_user['username']}}).skip(offset).limit(
+            limit))
         return result
 
     @staticmethod
