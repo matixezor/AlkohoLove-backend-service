@@ -43,12 +43,11 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def append_to_suggestion(
             alcohol_collection: Collection[AlcoholSuggestion],
-            user_collection: Collection[User],
             user_id: ObjectId,
             description: str | None,
-            suggestion: AlcoholSuggestion
+            suggestion: AlcoholSuggestion,
+            username: str
     ) -> None:
-        username = user_collection.find_one({'_id': user_id})
         if suggestion['descriptions']:
             if description is not None:
                 alcohol_collection.update_one({'_id': suggestion['_id']},
@@ -65,15 +64,14 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def create_suggestion(
             suggestions_collection: Collection[AlcoholSuggestion],
-            user_collection: Collection[User],
             user_id: ObjectId,
-            payload: AlcoholSuggestionCreate
+            payload: AlcoholSuggestionCreate,
+            username: str
     ) -> None:
         if payload.description:
             descriptions = [payload.description]
         else:
             descriptions = None
-        username = user_collection.find_one({'_id': user_id})
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
             descriptions=descriptions,

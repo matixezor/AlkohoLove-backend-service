@@ -24,12 +24,6 @@ router = APIRouter(prefix='/suggestions', tags=['alcohol_suggestions'])
     status_code=status.HTTP_201_CREATED,
     summary='Add alcohol suggestion'
 )
-@router.post(
-    '',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol suggestion'
-)
 async def create_suggestion(
         payload: AlcoholSuggestionCreate,
         current_user: User = Depends(get_valid_user),
@@ -48,10 +42,11 @@ async def create_suggestion(
             raise SuggestionAlreadyMadeException()
         else:
             await DatabaseHandler.append_to_suggestion(
-                db.alcohol_suggestion, db.user, current_user['_id'], payload.description, suggestion)
+                db.alcohol_suggestion, current_user['_id'], payload.description, suggestion,
+                current_user['username'])
     else:
         await DatabaseHandler.create_suggestion(
-            db.alcohol_suggestion, db.user, current_user['_id'], payload
+            db.alcohol_suggestion, current_user['_id'], payload, current_user['username']
         )
 
 
