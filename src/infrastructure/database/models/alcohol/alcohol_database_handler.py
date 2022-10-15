@@ -70,10 +70,10 @@ class AlcoholDatabaseHandler:
         return collection.find_one({'_id': ObjectId(alcohol_id)})
 
     @staticmethod
-    async def add_alcohol(collection: Collection, payload: AlcoholCreate) -> None:
+    async def add_alcohol(collection: Collection, payload: AlcoholCreate):
         payload = payload.dict() | {'avg_rating': float(0), 'rate_count': Int64(0), 'rate_value': Int64(0)}
         try:
-            collection.insert_one(payload)
+            return collection.insert_one(payload)
         except WriteError as ex:
             raise ValidationErrorException(ex.args[0])
 

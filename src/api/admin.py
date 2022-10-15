@@ -2,7 +2,7 @@ import cloudinary
 import cloudinary.uploader
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
-from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Body
 
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
@@ -209,15 +209,16 @@ async def delete_alcohol(
 )
 async def update_alcohol(
         alcohol_id: str,
-        payload: AlcoholUpdate,
+        payload: AlcoholUpdate = Body(...),
         db: Database = Depends(get_db),
-        settings: ApplicationSettings = Depends(get_settings)
+        settings: ApplicationSettings = Depends(get_settings),
+        sm: UploadFile | None = None,
+        md: UploadFile | None = None
 ):
     """
     Update alcohol by id
     """
     alcohol_id = validate_object_id(alcohol_id)
-    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -231,20 +232,59 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
-    if payload.name and payload.name != old_alcohol['name']:
-        new_image_name = payload.name.lower().replace(' ', '_')
-        old_image_name = old_alcohol['name'].lower().replace(' ', '_')
-        cloudinary.uploader.rename(
-            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
-            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
-            invalidate=True
-        )
-        cloudinary.uploader.rename(
-            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
-            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
-            invalidate=True
-        )
+
+    if sm and md:
+        try:
+            sm_name = f'{alcohol_id}_sm'
+            md_name = f'{alcohol_id}_md'
+            cloudinary.uploader.upload(
+                sm.file,
+                folder=settings.ALCOHOL_IMAGES_DIR,
+                public_id=sm_name,
+                resource_type='image',
+                overwrite=True,
+                invalidate=True
+            )
+            cloudinary.uploader.upload(
+                md.file,
+                folder=settings.ALCOHOL_IMAGES_DIR,
+                public_id=md_name,
+                resource_type='image',
+                overwrite=True,
+                invalidate=True
+            )
+        except Exception as error:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+
     return map_alcohol(db_alcohol, db.alcohol_categories)
+
+
+@router.post(
+    path='/alcohols/update_names',
+    response_class=Response,
+    status_code=status.HTTP_201_CREATED,
+    summary='Update Alcohol Names'
+)
+async def update_alcohol_names(
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
+):
+    collection = db['alcohols']
+    alcohols = collection.find({})
+    for document in alcohols:
+        new_image_name = document["_id"]
+        old_image_name = document['name'].lower().replace(' ', '_')
+        print(old_image_name, new_image_name)
+        # cloudinary.uploader.rename(
+        #     f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
+        #     f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
+        #     invalidate=True
+        # )
+        # cloudinary.uploader.rename(
+        #     f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
+        #     f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
+        #     invalidate=True
+        # )
 
 
 @router.post(
@@ -254,9 +294,10 @@ async def update_alcohol(
     summary='Create alcohol'
 )
 async def create_alcohol(
-        payload: AlcoholCreate = Depends(),
+        payload: AlcoholCreate = Body(...),
         db: Database = Depends(get_db),
-        file: UploadFile = File(...),
+        sm: UploadFile = File(...),
+        md: UploadFile = File(...),
         settings: ApplicationSettings = Depends(get_settings)
 ):
     """
@@ -272,14 +313,13 @@ async def create_alcohol(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Alcohol category does not exist. Create one first!'
         )
+    alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
 
-    await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
-
-    if file.content_type != 'image/png':
+    if sm.content_type != 'image/png' and md.content_type != 'image/png':
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
-    if image_size(file.file) > 1000000:
+    if image_size(sm.file) > 1000000 and image_size(md.file) > 1000000:
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -287,11 +327,20 @@ async def create_alcohol(
         )
 
     try:
-        image_name = payload.name.lower().replace(' ', '_')
+        sm_name = f'{alcohol.inserted_id}_sm'
+        md_name = f'{alcohol.inserted_id}_md'
         cloudinary.uploader.upload(
-            file.file,
+            sm.file,
             folder=settings.ALCOHOL_IMAGES_DIR,
-            public_id=image_name,
+            public_id=sm_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+        cloudinary.uploader.upload(
+            md.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=md_name,
             resource_type='image',
             overwrite=False,
             invalidate=True

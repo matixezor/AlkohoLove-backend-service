@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Extra, root_validator
+import json
 
 from src.infrastructure.common.scalar_utils import parse_float
 
@@ -20,10 +21,18 @@ class AlcoholUpdate(BaseModel):
     barcode: list[str] | None
     keywords: list[str] | None
 
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate_to_json
+
+    @classmethod
+    def validate_to_json(cls, value):
+        if isinstance(value, str):
+            return cls(**json.loads(value))
+        return value
+
     @root_validator(pre=True)
     def validate_root(cls, values: dict):
-        if not any(values.values()):
-            raise ValueError('At least one value needs to be provided')
         excluded = ('avg_count', 'rate_count', 'rate_value')
         if any(key in list(values.keys()) for key in excluded):
             raise ValueError(f'Invalid payload. Attempted to update excluded fields: {excluded}')
