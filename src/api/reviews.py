@@ -2,6 +2,7 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status
 
 from src.domain.common import PageInfo
+from src.domain.review.paginated_user_reviews import PaginatedUserReview
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.database.models.user import UserDatabaseHandler
@@ -49,7 +50,7 @@ async def get_reviews(
 
 @router.get(
     path='/user/{user_id}',
-    response_model=PaginatedReview,
+    response_model=PaginatedUserReview,
     status_code=status.HTTP_200_OK,
     summary='Read user reviews',
     response_model_by_alias=False

@@ -87,10 +87,10 @@ class ReviewDatabaseHandler:
             user_id: ObjectId,
             rating: int,
     ):
-        alcohol = collection.find_one({'_id': user_id})
+        user = collection.find_one({'_id': user_id})
 
-        rate_count = alcohol['rate_count'] + 1
-        rate_value = alcohol['rate_value'] + rating
+        rate_count = user['rate_count'] + 1
+        rate_value = user['rate_value'] + rating
         avg_rating = rate_value/rate_count
 
         collection.update_one(
@@ -160,6 +160,26 @@ class ReviewDatabaseHandler:
             {'_id': {'$eq': alcohol_id}},
             {
                 '$set': {'rate_count': Int64(rate_count), 'avg_rating': float(avg_rating), 'rate_value': Int64(rate_value)}
+            }
+        )
+
+    @staticmethod
+    async def update_user_rating(
+            collection: Collection,
+            user_id: ObjectId,
+            rating_old: int,
+            rating_new: int
+    ):
+        user = collection.find_one({'_id': user_id})
+        rate_count = user['rate_count']
+        rate_value = user['rate_value'] - rating_old + rating_new
+        avg_rating = rate_value / rate_count
+
+        collection.update_one(
+            {'_id': {'$eq': user_id}},
+            {
+                '$set': {'rate_count': Int64(rate_count), 'avg_rating': float(avg_rating),
+                         'rate_value': Int64(rate_value)}
             }
         )
 

@@ -125,7 +125,7 @@ async def test_get_user_reviews_without_existing_user(async_client: AsyncClient)
 
 
 @mark.asyncio
-async def test_create_tag(async_client: AsyncClient, user_token_headers: dict[str, str]):
+async def test_create_review(async_client: AsyncClient, user_token_headers: dict[str, str]):
     data = {
         'review': 'test',
         'rating': 4

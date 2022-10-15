@@ -6,7 +6,7 @@ from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
-from src.domain.review import ReviewCreate, Review
+from src.domain.review import ReviewCreate, Review, ReviewBase
 from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
 from src.domain.user_tag.user_tag_create import UserTagCreate
@@ -509,8 +509,9 @@ async def delete_alcohol_form_favourites(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
-    await UserDatabaseHandler.remove_from_favourite_counter(db.users, user_id)
+    if await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites, user_id, alcohol_id):
+        await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id)
+        await UserDatabaseHandler.remove_from_favourite_counter(db.users, user_id)
 
 
 @router.delete(
@@ -675,8 +676,12 @@ async def delete_user_from_following(
     user_id = validate_object_id(user_id)
     current_user_id = current_user['_id']
     if await UserDatabaseHandler.get_user_by_id(db.users, user_id):
-        await FollowingDatabaseHandler.delete_user_from_following(db.following, current_user_id, user_id)
-        await FollowersDatabaseHandler.delete_user_from_followers(db.followers, user_id, current_user_id)
+        if await FollowingDatabaseHandler.check_if_user_in_following(db.following, current_user_id, user_id):
+            await FollowingDatabaseHandler.delete_user_from_following(db.following, current_user_id, user_id)
+            await FollowingDatabaseHandler.decrease_following_counter(db.users, current_user_id)
+        if await FollowersDatabaseHandler.check_if_user_in_followers(db.followers, user_id, current_user_id):
+            await FollowersDatabaseHandler.delete_user_from_followers(db.followers, user_id, current_user_id)
+            await FollowersDatabaseHandler.decrease_followers_counter(db.users, user_id)
     else:
         raise UserNotFoundException
 
@@ -699,8 +704,10 @@ async def add_user_to_following(
     current_user_id = current_user['_id']
     if not await FollowingDatabaseHandler.check_if_user_in_following(db.following, current_user_id, user_id):
         await FollowingDatabaseHandler.add_user_to_following(db.following, current_user_id, user_id)
+        await FollowingDatabaseHandler.increase_following_counter(db.users, current_user_id)
         if not await FollowersDatabaseHandler.check_if_user_in_followers(db.followers, user_id, current_user_id):
             await FollowersDatabaseHandler.add_user_to_followers(db.followers, user_id, current_user_id)
+            await FollowersDatabaseHandler.increase_followers_counter(db.users, user_id)
         else:
             UserAlreadyInFollowingException()
     else:
@@ -771,14 +778,15 @@ async def delete_review(
 
     rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
 
-    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
+    if await ReviewDatabaseHandler.check_if_review_exists(db.reviews, alcohol_id, current_user['_id']):
+        await ReviewDatabaseHandler.delete_review(db.reviews, review_id)
         await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
         await ReviewDatabaseHandler.remove_rating_from_user(db.users, current_user['_id'], rating)
 
 
 @router.put(
     path='/reviews/{review_id}/alcohol/{alcohol_id}',
-    response_model=Review,
+    response_model=ReviewBase,
     status_code=status.HTTP_200_OK,
     summary='Update your review'
 )
@@ -812,6 +820,7 @@ async def update_review(
     )
 
     await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
+    await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
     return review_update
 

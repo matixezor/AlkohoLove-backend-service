@@ -32,6 +32,33 @@ class FollowersDatabaseHandler:
         collection.update_one({'_id': user_id}, {'$push': {'followers': follower_user_id}})
 
     @staticmethod
+    async def increase_followers_counter(collection: Collection, other_user_id: ObjectId) -> None:
+        user = collection.find_one({'_id': other_user_id})
+
+        followers_count = user['followers_count'] + 1
+
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(other_user_id)}},
+            {
+                '$set': {'followers_count': followers_count}
+            }
+        )
+
+    @staticmethod
+    async def decrease_followers_counter(collection: Collection, other_user_id: ObjectId) -> None:
+        user = collection.find_one({'_id': other_user_id})
+
+        if user['followers_count']:
+            followers_count = user['followers_count'] - 1
+
+            collection.update_one(
+                {'_id': {'$eq': ObjectId(other_user_id)}},
+                {
+                    '$set': {'followers_count': followers_count}
+                }
+            )
+
+    @staticmethod
     async def check_if_user_in_followers(collection: Collection[Followers], user_id: ObjectId,
                                          follower_user_id: ObjectId) -> bool:
         if collection.find_one({'_id': user_id, 'followers': follower_user_id}):
