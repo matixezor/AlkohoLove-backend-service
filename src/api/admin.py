@@ -194,7 +194,7 @@ async def delete_alcohol(
     alcohol_id = validate_object_id(alcohol_id)
     alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
-    image_name = alcohol['name'].lower().replace(' ', '_')
+    image_name = alcohol['_id']
     image_path = f'{settings.ALCOHOL_IMAGES_DIR}/{image_name}'
     cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
     cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
