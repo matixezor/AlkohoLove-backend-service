@@ -27,7 +27,9 @@ USER_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbaa',
         'username': 'Adam_Skorupa',
         'date': '2022-04-14T11:11:23+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8a'
+        'alcohol_id': '6288e32dd5ab6070dde8db8a',
+        'alcohol_name': 'Jameson',
+        'kind': 'whisky'
     },
     {
         'review': 'ok',
@@ -35,7 +37,9 @@ USER_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbab',
         'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8b'
+        'alcohol_id': '6288e32dd5ab6070dde8db8b',
+        'alcohol_name': 'Jameson Caskmates Stout Edition',
+        'kind': 'whisky'
     }
 ]
 

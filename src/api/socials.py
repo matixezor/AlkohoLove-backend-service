@@ -117,17 +117,6 @@ async def get_user_info(
         user_id: str,
         db: Database = Depends(get_db)
 ):
-    reload = False
     user_id = validate_object_id(user_id)
-    user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
-    # if not user["avg_rating"]:
-    #     reload = True
-    # await UserDatabaseHandler.calculate_user_counters(
-    #     db.users,
-    #     db.reviews,
-    #     db.user_favourites,
-    #     db.followers,
-    #     db.following,
-    #     user_id)
     user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
     return user

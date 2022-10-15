@@ -1,16 +1,14 @@
-from bson import ObjectId
 from bcrypt import gensalt
 from datetime import datetime
+from bson import ObjectId, Int64
 from passlib.context import CryptContext
 from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
-from src.infrastructure.database.models.review import review_database_handler, ReviewDatabaseHandler
 from src.infrastructure.database.models.user import User
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
-from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException
 
@@ -96,11 +94,11 @@ class UserDatabaseHandler:
             is_admin=False,
             last_login=None,
             avg_rating=float(0),
-            rate_count=0,
+            rate_count=Int64(0),
             followers_count=0,
             following_count=0,
             favourites_count=0,
-            rate_value=0
+            rate_value=Int64(0)
         )
 
         collection.insert_one(db_user)
@@ -160,35 +158,6 @@ class UserDatabaseHandler:
     ) -> list[dict]:
         result = list(collection.find({'username': {'$regex': phrase}}).skip(offset).limit(limit))
         return result
-
-    @staticmethod
-    async def calculate_user_counters(
-            user_collection: Collection,
-            review_collection: Collection,
-            favourites_collection: Collection,
-            followers_collection: Collection,
-            following_collection: Collection,
-            user_id: ObjectId
-    ):
-        reviews = list(review_collection.find({'user_id': user_id}))
-        rate_count = len(reviews)
-        if rate_count:
-            rate_value = 0
-            for i in reviews:
-                rate_value += i['rating']
-            avg_rating = rate_value/rate_count
-        else:
-            rate_value = 0
-            avg_rating = 0
-
-        favourites = favourites_collection.find_one({'user_id': user_id})
-        favourites_count = len(favourites['alcohols'])
-
-        user_collection.update_many({'_id': user_id},
-                                    {'$set': {'avg_rating': avg_rating,
-                                              'rate_count': rate_count,
-                                              'rate_value': rate_value,
-                                              'favourites_count': favourites_count}})
 
     @staticmethod
     async def add_to_favourite_counter(

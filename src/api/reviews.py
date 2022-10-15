@@ -2,10 +2,10 @@ from pymongo.database import Database
 from fastapi import APIRouter, Depends, status
 
 from src.domain.common import PageInfo
-from src.domain.review.paginated_user_reviews import PaginatedUserReview
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.domain.review.paginated_user_reviews import PaginatedUserReview
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -60,7 +60,7 @@ async def get_user_reviews(
         limit: int = 10,
         offset: int = 0,
         db: Database = Depends(get_db)
-) -> PaginatedReview:
+) -> PaginatedUserReview:
     user_id = validate_object_id(user_id)
     if not await UserDatabaseHandler.check_if_user_exists(
         db.users,
@@ -72,7 +72,7 @@ async def get_user_reviews(
         db.reviews, db.alcohols, limit, offset, user_id
     )
     total = await ReviewDatabaseHandler.count_user_reviews(db.reviews, user_id)
-    return PaginatedReview(
+    return PaginatedUserReview(
         reviews=reviews,
         page_info=PageInfo(
             limit=limit,

@@ -30,12 +30,12 @@
     "is_admin": false,
     "is_banned": false,
     "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO",
-    "avg_rating": 0,
+    "avg_rating": 5,
     "favourites_count": 0,
     "followers_count": 0,
     "following_count": 0,
-    "rate_count": 0,
-    "rate_value": 0
+    "rate_count": 2,
+    "rate_value": 10
   },
   {
     "_id": {
