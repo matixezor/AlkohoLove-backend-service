@@ -17,13 +17,6 @@ from src.infrastructure.database.models.alcohol_suggestion import AlcoholSuggest
 
 router = APIRouter(prefix='/suggestions', tags=['alcohol_suggestions'])
 
-
-@router.post(
-    '',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    summary='Add alcohol suggestion'
-)
 @router.post(
     '',
     response_class=Response,
