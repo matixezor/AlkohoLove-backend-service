@@ -18,7 +18,7 @@ db.alcohols.aggregate([
     }
 ])
 
-db.alcohol_filters.insert(
+db.alcohol_filters.insertOne(
     {
         _id: "all",
         type: db.alcohols.distinct('type'),
