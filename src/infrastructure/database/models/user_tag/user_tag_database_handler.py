@@ -98,7 +98,7 @@ class UserTagDatabaseHandler:
             tag_name: str,
             alcohols: list[ObjectId],
     ) -> None:
-        collection.update_one({'user_id': user_id, 'tag_name': tag_name}, {'$push': {'alcohols': {'$each': alcohols }}})
+        collection.update_one({'user_id': user_id, 'tag_name': tag_name}, {'$push': {'alcohols': {'$each': alcohols}}})
 
     @staticmethod
     async def remove_alcohol(

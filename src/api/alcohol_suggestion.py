@@ -17,6 +17,7 @@ from src.infrastructure.database.models.alcohol_suggestion import AlcoholSuggest
 
 router = APIRouter(prefix='/suggestions', tags=['alcohol_suggestions'])
 
+
 @router.post(
     '',
     response_class=Response,
