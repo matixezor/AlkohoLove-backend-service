@@ -9,7 +9,6 @@ from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
-from src.infrastructure.exceptions.users_exceptions import UserExistsException
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException
 
@@ -47,6 +46,15 @@ class UserDatabaseHandler:
     async def count_users(collection: Collection[User], username: str) -> int:
         return (
             collection.count_documents(filter={'username': {'$regex': username, '$options': 'i'}})
+            if username
+            else collection.estimated_document_count()
+        )
+
+    @staticmethod
+    async def count_users_without_current(collection: Collection[User], username: str, current_user: User) -> int:
+        return (
+            collection.count_documents(
+                filter={'username': {'$regex': username, '$options': 'i', '$ne': current_user['username']}})
             if username
             else collection.estimated_document_count()
         )
@@ -149,7 +157,10 @@ class UserDatabaseHandler:
     async def search_users_by_phrase(
             collection: Collection,
             limit: int, offset: int,
-            phrase: str
+            phrase: str,
+            current_user: User
     ) -> list[dict]:
-        result = list(collection.find({'username': {'$regex': phrase}}).skip(offset).limit(limit))
+        result = list(collection.find(
+            {'username': {'$regex': phrase, '$options': 'i', '$ne': current_user['username']}}).skip(offset).limit(
+            limit))
         return result

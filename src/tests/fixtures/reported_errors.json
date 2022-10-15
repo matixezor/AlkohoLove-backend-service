@@ -6,6 +6,7 @@
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8b"
     },
+    "username": "admin",
     "description": "This app sucks"
   },
   {
@@ -15,6 +16,7 @@
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8b"
     },
+    "username": "admin",
     "description": "This app sucks very much"
   },
   {
@@ -24,6 +26,7 @@
     "user_id": {
       "$oid": "6288e2fdd5ab6070dde8db8c"
     },
+    "username": "Adam_Skorupa",
     "description": "Pagination does not work"
   }
 ]
