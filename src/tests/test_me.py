@@ -353,3 +353,29 @@ async def test_delete_non_existing_user_from_following(
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == 'User not found'
+
+
+@mark.asyncio
+async def test_mark_review_as_helpful(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['review'] == 'Pyszniutkie polecam'
+    assert response['helpful_count'] == 1
+    assert response['helpful'] is True
+
+
+@mark.asyncio
+async def test_mark_review_as_unhelpful(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['review'] == 'ok'
+    assert response['helpful_count'] == 1
+    assert response['helpful'] is False

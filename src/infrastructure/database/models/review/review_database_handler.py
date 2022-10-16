@@ -1,10 +1,10 @@
-from bson import ObjectId, Int64
 from datetime import datetime
-
 from pymongo import DESCENDING
+from bson import ObjectId, Int64
+from pymongo.collection import Collection, ReturnDocument
+
 from src.domain.review import ReviewCreate
 from src.domain.review.review_update import ReviewUpdate
-from pymongo.collection import Collection, ReturnDocument
 from src.infrastructure.database.models.review import Review
 from src.infrastructure.database.models.review.banned_review import BannedReview
 
@@ -137,7 +137,9 @@ class ReviewDatabaseHandler:
             username=username,
             date=datetime.now(),
             report_count=0,
-            reporters=[]
+            reporters=[],
+            helpful_count=0,
+            helpful_reporters=[]
         )
         return collection.insert_one(db_review)
 
@@ -186,6 +188,30 @@ class ReviewDatabaseHandler:
         return collection.find_one_and_update(
             {'_id': review_id},
             {'$set': payload.dict(exclude_none=True)},
+            return_document=ReturnDocument.AFTER
+        )
+
+    @staticmethod
+    async def add_to_helpful_reporters(
+            collection: Collection[Review],
+            review_id: ObjectId,
+            user_id: ObjectId
+    ):
+        return collection.find_one_and_update(
+            {'_id': review_id},
+            {'$inc': {'helpful_count': 1}, '$push': {'helpful_reporters': user_id}},
+            return_document=ReturnDocument.AFTER
+        )
+
+    @staticmethod
+    async def remove_from_helpful_reporters(
+            collection: Collection[Review],
+            review_id: ObjectId,
+            user_id: ObjectId
+    ):
+        return collection.find_one_and_update(
+            {'_id': review_id},
+            {"$inc": {'helpful_count': -1}, '$pull': {'helpful_reporters': user_id}},
             return_document=ReturnDocument.AFTER
         )
 

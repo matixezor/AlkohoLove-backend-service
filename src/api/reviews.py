@@ -1,9 +1,12 @@
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status
 
+from src.domain.review import Review
 from src.domain.common import PageInfo
+from src.infrastructure.database.models.user import User
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
+from src.infrastructure.auth.auth_utils import get_optional_user
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
@@ -25,9 +28,11 @@ async def get_reviews(
         alcohol_id: str,
         limit: int = 10,
         offset: int = 0,
+        current_user: User | None = Depends(get_optional_user),
         db: Database = Depends(get_db)
 ) -> PaginatedReview:
     alcohol_id = validate_object_id(alcohol_id)
+    user_id = None if not current_user else current_user.get('_id')
     if not await AlcoholDatabaseHandler.check_if_alcohol_exists(
             db.alcohols,
             alcohol_id):
@@ -38,7 +43,12 @@ async def get_reviews(
     )
     total = await ReviewDatabaseHandler.count_alcohol_reviews(db.reviews, alcohol_id)
     return PaginatedReview(
-        reviews=reviews,
+        reviews=[
+            Review(
+                **review,
+                helpful=True if user_id and user_id in review['helpful_reporters'] else False
+            ) for review in reviews
+        ],
         page_info=PageInfo(
             limit=limit,
             offset=offset,
@@ -58,9 +68,11 @@ async def get_user_reviews(
         user_id: str,
         limit: int = 10,
         offset: int = 0,
+        current_user: User | None = Depends(get_optional_user),
         db: Database = Depends(get_db)
 ) -> PaginatedReview:
     user_id = validate_object_id(user_id)
+    current_user_id = None if not current_user else current_user.get('_id')
     if not await UserDatabaseHandler.check_if_user_exists(
         db.users,
         user_id=user_id,
@@ -72,7 +84,12 @@ async def get_user_reviews(
     )
     total = await ReviewDatabaseHandler.count_user_reviews(db.reviews, user_id)
     return PaginatedReview(
-        reviews=reviews,
+        reviews=[
+            Review(
+                **review,
+                helpful=True if current_user_id and current_user_id in review['helpful_reporters'] else False
+            ) for review in reviews
+        ],
         page_info=PageInfo(
             limit=limit,
             offset=offset,
