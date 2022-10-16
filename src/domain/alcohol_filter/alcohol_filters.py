@@ -6,4 +6,3 @@ class AlcoholFilters(BaseModel):
     type: list[str] | None
     color: list[str] | None
     country: list[str] | None
-
