@@ -4,7 +4,7 @@ import cloudinary.uploader
 from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
-from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Body
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Body
 
 from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
@@ -12,7 +12,6 @@ from src.domain.common.page_info import PageInfo
 from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
-from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
@@ -297,7 +296,6 @@ async def create_alcohol(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Alcohol category does not exist. Create one first!'
         )
-    alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
 
     if sm.content_type != 'image/png' and md.content_type != 'image/png':
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
@@ -309,7 +307,7 @@ async def create_alcohol(
         date=datetime.now()
     )
 
-    await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
+    alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     if image_size(sm.file) > 1000000 and image_size(md.file) > 1000000:
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise HTTPException(
