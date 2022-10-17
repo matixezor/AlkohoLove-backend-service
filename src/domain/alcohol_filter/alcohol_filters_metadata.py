@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from src.domain.common.base_model import BaseModel
 
 
 class AlcoholFiltersMetadata(BaseModel):

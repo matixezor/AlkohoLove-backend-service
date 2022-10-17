@@ -23,6 +23,8 @@ ALCOHOL_FIXTURE = {
     'avg_rating': 5.0,
     'rate_count': 1,
     'rate_value': 5,
+    'date': None,
+    'username': None,
     'additional_properties': [{
         'name': 'age',
         'display_name': 'wiek',
@@ -65,6 +67,57 @@ ALCOHOL_CATEGORY_FIXTURE = {
     'title': 'piwo'
 }
 
+MY_ALCOHOLS_FIXTURE = [
+    {
+        'id': '6288e32dd5ab6070dde8db8e',
+        'barcode': ['5900595008427'],
+        'kind': 'likier',
+        'name': 'Kupnik Pigwa',
+        'type': 'owocowy',
+        'description': 'Lorem ipsum',
+        'alcohol_by_volume': 30.0,
+        'color': 'pomarańczowy',
+        'country': 'Polska',
+        'region': None,
+        'manufacturer': 'Sobieski Sp. z o.o.',
+        'food': [],
+        'taste': ['pigwa'],
+        'aroma': [],
+        'finish': [],
+        'rate_count': 0,
+        'rate_value': 0,
+        'avg_rating': 0.0,
+        'date': '2022-08-15T18:46:11.900000',
+        'username': 'admin',
+        'keywords': ['wódka', 'pigwowa', 'pigwowy'],
+    }
+]
+
+ALCOHOL_FIXTURE_2 = {
+    'name': 'Absolut Vodka',
+    'kind': 'wódka',
+    'type': 'czysta',
+    'alcohol_by_volume': 40.0,
+    'description': 'Lorem ipsum',
+    'color': 'bezbarwny',
+    'manufacturer': 'The Absolut Company',
+    'country': 'Szwecja',
+    'region': 'Ahus',
+    'food': [],
+    'finish': [],
+    'aroma': [],
+    'taste': [],
+    'barcode': ['7312040017072'],
+    'keywords': ['szwedzka'],
+    'id': '6288e32dd5ab6070dde8db8c',
+    'avg_rating': 0.0,
+    'rate_count': 0,
+    'rate_value': 0,
+    'username': None,
+    'date': None,
+    'additional_properties': []
+}
+
 
 @mark.asyncio
 async def test_search_alcohols(
@@ -80,7 +133,7 @@ async def test_search_alcohols(
     assert response['page_info']['total'] == 5
     assert response['page_info']['limit'] == 1
     assert response['page_info']['offset'] == 0
-    assert response['alcohols'][0] == ALCOHOL_FIXTURE
+    assert response['alcohols'][0] == ALCOHOL_FIXTURE_2
 
 
 @mark.asyncio
@@ -151,3 +204,35 @@ async def test_get_schemas(
         {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
         {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
     ]
+
+
+@mark.asyncio
+async def test_get_alcohols_created_by_user(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/alcohols/admin?limit=10&offset=0',
+        headers=admin_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['alcohols']) == 1
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['total'] == 1
+    assert response['alcohols'] == MY_ALCOHOLS_FIXTURE
+
+
+@mark.asyncio
+async def test_get_total_alcohols_created_by_user(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/admin/alcohols/total/admin',
+        headers=admin_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == 1

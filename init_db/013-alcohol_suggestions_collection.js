@@ -10,6 +10,13 @@ let suggestion = {
                     bsonType: 'objectId'
                 }
             },
+            usernames: {
+                bsonType: 'array',
+                description: 'must be an array of strings',
+                items: {
+                    bsonType: 'string'
+                }
+            },
             barcode: {
                 title: 'kod kreskowy',
                 bsonType: 'string',
@@ -27,7 +34,7 @@ let suggestion = {
             },
             descriptions: {
                 title: 'opisy',
-                bsonType: 'array',
+                bsonType: 'array' | 'null',
                 description: 'Pyszna whisky',
                 items: {
                     bsonType: 'string'
@@ -54,6 +61,7 @@ db.alcohol_suggestion.insertMany(
         {
             _id: ObjectId('6299e8c94105e843197376fd'),
             user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8b')],
+            usernames: ['Adam_Skorupa', 'admin'],
             barcode: '5900699104827',
             kind: 'piwo',
             name: 'Żywiec białe',
@@ -62,6 +70,7 @@ db.alcohol_suggestion.insertMany(
         {
             _id: ObjectId('6299eb5a894d907992ecbd7e'),
             user_ids: [ObjectId('6288e2fdd5ab6070dde8db8d')],
+            usernames: ['DariuszGołąbski'],
             barcode: '3800006901502',
             kind: 'wino',
             name: 'Witosha premium sweet red',
@@ -70,6 +79,7 @@ db.alcohol_suggestion.insertMany(
         {
             _id: ObjectId('6299eb5f31a05c42142ea55c'),
             user_ids: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8d')],
+            usernames: ['Adam_Skorupa', 'DariuszGołąbski'],
             barcode: '1111111111111',
             kind: 'likier',
             name: 'Jagermeister',

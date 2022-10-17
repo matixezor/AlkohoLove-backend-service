@@ -1,6 +1,7 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
+from src.domain.user import User
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
 
@@ -41,26 +42,42 @@ class AlcoholSuggestionDatabaseHandler:
 
     @staticmethod
     async def append_to_suggestion(
-            collection: Collection[AlcoholSuggestion],
+            alcohol_collection: Collection[AlcoholSuggestion],
+            user_collection: Collection[User],
             user_id: ObjectId,
             description: str | None,
             suggestion: AlcoholSuggestion
     ) -> None:
-        if description is not None:
-            collection.update_one({'_id': suggestion['_id']},
-                                  {'$push': {'user_ids': user_id, 'descriptions': description}})
+        username = user_collection.find_one({'_id': user_id})
+        if suggestion['descriptions']:
+            if description is not None:
+                alcohol_collection.update_one({'_id': suggestion['_id']},
+                                              {'$push': {'user_ids': user_id, 'descriptions': description,
+                                                         'usernames': username}})
+            else:
+                alcohol_collection.update_one({'_id': suggestion['_id']},
+                                              {'$push': {'user_ids': user_id, 'descriptions': [description],
+                                                         'usernames': username}})
         else:
-            collection.update_one({'_id': suggestion['_id']}, {'$push': {'user_ids': user_id}})
+            alcohol_collection.update_one({'_id': suggestion['_id']},
+                                          {'$push': {'user_ids': user_id}, 'usernames': username})
 
     @staticmethod
     async def create_suggestion(
-            collection: Collection[AlcoholSuggestion],
+            suggestions_collection: Collection[AlcoholSuggestion],
+            user_collection: Collection[User],
             user_id: ObjectId,
             payload: AlcoholSuggestionCreate
     ) -> None:
+        if payload.description:
+            descriptions = [payload.description]
+        else:
+            descriptions = None
+        username = user_collection.find_one({'_id': user_id})
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
-            descriptions=[payload.description],
+            descriptions=descriptions,
+            usernames=[username],
             user_ids=[user_id]
         )
-        collection.insert_one(db_suggestions)
+        suggestions_collection.insert_one(db_suggestions)

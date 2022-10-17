@@ -1,4 +1,6 @@
-from pydantic import BaseModel, validator
+from pydantic import validator
+
+from src.domain.common.base_model import BaseModel
 
 
 class PropertyOut(BaseModel):

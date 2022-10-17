@@ -12,8 +12,8 @@ async def test_get_wishlist(
     response = await async_client.get('/list/wishlist/6288e2fdd5ab6070dde8db8c', headers=user_token_headers)
     assert response.status_code == 200
     response = response.json()
-    assert len(response['alcohols']) == 2
-    assert response['page_info']['total'] == 2
+    assert len(response['alcohols']) == 3
+    assert response['page_info']['total'] == 3
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['alcohols'] == WISHLIST_FIXTURE

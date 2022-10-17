@@ -1,29 +1,40 @@
 import cloudinary
+import cloudinary.api
 import cloudinary.uploader
+from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Body
 
+from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
+from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
+from src.domain.banned_review.review_ban import ReviewBan
 from src.infrastructure.common.file_utils import image_size
 from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
 from src.domain.user import UserAdminInfo, PaginatedUserAdminInfo
+from src.infrastructure.database.models.user import User as UserDb
 from src.domain.alcohol import AlcoholCreate, Alcohol, AlcoholUpdate
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate
+from src.domain.review.paginated_reported_review import PaginatedReportedReview
 from src.domain.reported_errors import ReportedError, PaginatedReportedErrorInfo
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
+from src.domain.banned_review.paginated_banned_review import PaginatedBannedReview
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
+from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
+from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
@@ -267,6 +278,7 @@ async def update_alcohol(
 )
 async def create_alcohol(
         payload: AlcoholCreate = Body(...),
+        current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db),
         sm: UploadFile = File(...),
         md: UploadFile = File(...),
@@ -291,6 +303,13 @@ async def create_alcohol(
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
 
+    payload = AlcoholCreate(
+        **payload.dict(),
+        username=current_user["username"],
+        date=datetime.now()
+    )
+
+    await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     if image_size(sm.file) > 1000000 and image_size(md.file) > 1000000:
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise HTTPException(
@@ -422,46 +441,6 @@ async def add_category(
 
 
 @router.post(
-    '/image',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(admin_permission)],
-    summary='[For admin] Upload image'
-)
-async def upload_image(
-        image_name: str = Form(...),
-        file: UploadFile = File(...),
-        settings: ApplicationSettings = Depends(get_settings)
-):
-    """
-    Upload file with:
-    *image_name* - name for the image, it should contain `_sm` or `_md` to
-    specify size if multiple variants are to be uploaded
-    *file*: - image
-    """
-    if file.content_type != 'image/png':
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
-
-    if image_size(file.file) > 1000000:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='File size too large. Maximum is 1 mb'
-        )
-
-    try:
-        cloudinary.uploader.upload(
-            file.file,
-            folder=settings.ALCOHOL_IMAGES_DIR,
-            public_id=image_name,
-            resource_type='image',
-            overwrite=False,
-            invalidate=True
-        )
-    except Exception as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
-
-
-@router.post(
     path='/alcohols/search',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
@@ -558,13 +537,18 @@ async def get_suggestion_by_id(
 )
 async def delete_suggestion(
         suggestion_id: str,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Delete alcohol suggestion by suggestion id
     """
     suggestion_id = validate_object_id(suggestion_id)
+    suggestion = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion, suggestion_id)
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
+    image_name = get_suggestion_image_name(suggestion['name'], str(suggestion_id))
+    image_path = f'{settings.ALCOHOL_SUGGESTION_IMAGES_DIR}/{image_name}'
+    cloudinary.api.delete_resources_by_prefix(prefix=f'{image_path}')
 
 
 @router.delete(
@@ -588,3 +572,149 @@ async def delete_review(
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
         await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+
+
+@router.get(
+    path='/reviews',
+    response_model=PaginatedReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported reviews',
+    response_model_by_alias=False
+)
+async def get_reported_reviews(
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedReportedReview:
+
+    db_reported_reviews = await ReviewDatabaseHandler.get_reported_reviews(db.reviews, limit, offset)
+    total = await ReviewDatabaseHandler.count_reported_reviews(db.reviews)
+
+    return PaginatedReportedReview(
+        reviews=db_reported_reviews,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/reviews/{review_id}',
+    response_model=ReportedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Get reported review by id',
+    response_model_by_alias=False
+)
+async def get_reported_review(
+        review_id: str,
+        db: Database = Depends(get_db)
+) -> ReportedReview:
+    review_id = validate_object_id(review_id)
+    db_reported_review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    if db_reported_review:
+        return db_reported_review
+    else:
+        raise ReviewNotFoundException()
+
+
+@router.put(
+    path='/reviews/{review_id}',
+    response_model=BannedReview,
+    status_code=status.HTTP_200_OK,
+    summary='[For Admin] Ban review by id'
+)
+async def ban_review(
+        review_id: str,
+        reason_payload: ReviewBan,
+        db: Database = Depends(get_db)
+):
+    review_id = validate_object_id(review_id)
+    db_review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    if db_review:
+        db_banned_review = await ReviewDatabaseHandler.copy_review_to_banned_collection(
+            db.reviews,
+            db.banned_reviews,
+            review_id,
+            reason_payload.reason
+        )
+        await ReviewDatabaseHandler.delete_review(db.reviews, review_id)
+    else:
+        raise ReviewNotFoundException()
+    return db_banned_review
+
+
+@router.get(
+    path='/reviews/ban/{user_id}',
+    response_model=PaginatedBannedReview,
+    status_code=status.HTTP_200_OK,
+    summary='Read user banned reviews',
+)
+async def get_user_banned_reviews(
+        user_id: str,
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedBannedReview:
+    user_id = validate_object_id(user_id)
+    if not await UserDatabaseHandler.check_if_user_exists(
+        db.users,
+        user_id=user_id,
+    ):
+        raise UserNotFoundException()
+
+    reviews = await ReviewDatabaseHandler.get_user_banned_reviews(
+        db.banned_reviews, limit, offset, user_id
+    )
+    print(reviews)
+    total = await ReviewDatabaseHandler.count_user_banned_reviews(db.banned_reviews, user_id)
+    return PaginatedBannedReview(
+        reviews=reviews,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/alcohols/{username}',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Get alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> PaginatedAlcohol:
+
+    db_alcohols = await AlcoholDatabaseHandler.get_alcohols_created_by_user(db.alcohols, limit, offset, username)
+    total = await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)
+
+    return PaginatedAlcohol(
+        alcohols=db_alcohols,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/alcohols/total/{username}',
+    response_model=int,
+    status_code=status.HTTP_200_OK,
+    summary='Get number of alcohols created by user',
+    response_model_by_alias=False
+)
+async def get_alcohols_created_by_user(
+        username: str,
+        db: Database = Depends(get_db)
+) -> int:
+    return await AlcoholDatabaseHandler.count_alcohols_created_by_user(db.alcohols, username)

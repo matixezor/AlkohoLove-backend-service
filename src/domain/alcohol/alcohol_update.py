@@ -1,6 +1,7 @@
 import json
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import Extra, root_validator
 
+from src.domain.common.base_model import BaseModel
 from src.infrastructure.common.scalar_utils import parse_float
 
 

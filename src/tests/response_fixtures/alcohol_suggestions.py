@@ -5,27 +5,27 @@ SUGGESTION_POST_FIXTURE = {
     "barcode": "5902573006616",
     "kind": "wódka",
     "name": "Amundsen Vodka",
-    "descriptions": [
-        "Odważna, oryginalna i kreatywna."
-    ]
+    "description": "Odważna, oryginalna i kreatywna."
+}
+
+SUGGESTION_POST_FIXTURE_NO_DESC = {
+    "barcode": "5902573006616",
+    "kind": "wódka",
+    "name": "Amundsen Vodka"
 }
 
 SUGGESTION_SAME_USER_FIXTURE = {
     "barcode": "5900699104827",
     "kind": "piwo",
     "name": "Żywiec białe",
-    "descriptions": [
-        "Bardzo dobre na ciepłe dni."
-    ]
+    "description": "Bardzo dobre na ciepłe dni."
 }
 
 SUGGESTION_POST_BARCODE_EXISTS_FIXTURE = {
     "barcode": "3800006901502",
     "kind": "wino",
     "name": "Witosha premium sweet red",
-    "descriptions": [
-        "Bardzo dobre tanie wino."
-    ]
+    "description": "Bardzo dobre tanie wino."
 }
 
 SUGGESTIONS_RESPONSE_FIXTURE = {
@@ -40,5 +40,9 @@ SUGGESTIONS_RESPONSE_FIXTURE = {
     "user_ids": [
         "6288e2fdd5ab6070dde8db8c",
         "6288e2fdd5ab6070dde8db8b"
+    ],
+    "usernames": [
+        "Adam_Skorupa",
+        "admin"
     ]
 }

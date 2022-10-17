@@ -11,11 +11,12 @@ from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
+from src.domain.user_list.list_belonging import ListsBelonging
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
-from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
@@ -33,9 +34,8 @@ from src.infrastructure.database.models.user import User as UserDb, UserDatabase
     UserDatabaseHandler
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
-from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException,\
-    ReviewDoesNotBelongToUserException, ReviewNotFoundException
-
+from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
+    ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -377,6 +377,32 @@ async def get_wishlist(
             total=total
         )
     )
+
+
+@router.get(
+    path='/list/{alcohol_id}',
+    response_model=ListsBelonging,
+    status_code=status.HTTP_200_OK,
+    summary='Check if alcohol is in user\'s lists',
+    response_model_by_alias=False
+)
+async def get_belonging_to_lists(
+        alcohol_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> ListsBelonging:
+    """
+    Check if alcohol is in user's lists
+    """
+    alcohol_id = validate_object_id(alcohol_id)
+    user_id = current_user['_id']
+
+    return ListsBelonging(
+        is_in_favourites=await UserFavouritesHandler.check_if_alcohol_in_favourites(db.user_favourites,
+                                                                                    user_id, alcohol_id),
+        is_in_wishlist=await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id),
+        alcohol_tags=await UserTagDatabaseHandler.get_alcohol_tags(db.user_tags, alcohol_id, user_id)
+        )
 
 
 @router.get(
@@ -779,3 +805,26 @@ async def update_review(
     await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
 
     return review_update
+
+
+@router.post(
+    path='/reviews/report/{review_id}',
+    status_code=status.HTTP_201_CREATED,
+    summary='Report review',
+    response_class=Response,
+)
+async def report_review(
+        review_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Report review
+    """
+    review_id = validate_object_id(review_id)
+    user_id = current_user['_id']
+    if not await ReviewDatabaseHandler.check_if_user_is_in_reporters(db.reviews, user_id, review_id):
+        await ReviewDatabaseHandler.add_user_to_reporters(db.reviews, user_id, review_id)
+        await ReviewDatabaseHandler.increase_review_report_count(db.reviews, review_id)
+    else:
+        raise ReviewAlreadyReportedExcepiton()
