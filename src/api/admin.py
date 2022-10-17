@@ -260,34 +260,6 @@ async def update_alcohol(
 
 
 @router.post(
-    path='/alcohols/update_names',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    summary='Update Alcohol Names'
-)
-async def update_alcohol_names(
-        db: Database = Depends(get_db),
-        settings: ApplicationSettings = Depends(get_settings)
-):
-    collection = db['alcohols']
-    alcohols = collection.find({})
-    for document in alcohols:
-        new_image_name = document["_id"]
-        old_image_name = document['name'].lower().replace(' ', '_')
-        print(old_image_name, new_image_name)
-        # cloudinary.uploader.rename(
-        #     f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
-        #     f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
-        #     invalidate=True
-        # )
-        # cloudinary.uploader.rename(
-        #     f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
-        #     f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
-        #     invalidate=True
-        # )
-
-
-@router.post(
     path='/alcohols',
     response_class=Response,
     status_code=status.HTTP_201_CREATED,

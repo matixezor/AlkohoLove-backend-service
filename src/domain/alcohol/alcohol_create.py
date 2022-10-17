@@ -1,5 +1,4 @@
 import json
-
 from pydantic import validator, root_validator
 
 from src.domain.alcohol import AlcoholBase

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Extra, root_validator
 import json
+from pydantic import BaseModel, Extra, root_validator
 
 from src.infrastructure.common.scalar_utils import parse_float
 
