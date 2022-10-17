@@ -77,9 +77,12 @@ BANNED_REVIEWS_FIXTURE = [
 
 
 @mark.asyncio
-async def test_get_alcohol_reviews(async_client: AsyncClient):
+async def test_get_alcohol_reviews(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
     response = await async_client.get(
-        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0'
+        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 200
     response = response.json()
@@ -91,9 +94,25 @@ async def test_get_alcohol_reviews(async_client: AsyncClient):
 
 
 @mark.asyncio
-async def test_get_alcohol_reviews_without_existing_alcohol(async_client: AsyncClient):
+async def test_get_alcohol_reviews_current_user_review(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
     response = await async_client.get(
-        '/reviews/6288e32dd5ab6070dde8db9b?limit=10&offset=0'
+        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0', headers=user_token_headers
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response['my_review'] == ALCOHOL_REVIEWS_FIXTURE[0]
+
+
+@mark.asyncio
+async def test_get_alcohol_reviews_without_existing_alcohol(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/reviews/6288e32dd5ab6070dde8db9b?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 404
     response = response.json()
