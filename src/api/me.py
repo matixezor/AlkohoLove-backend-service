@@ -7,6 +7,7 @@ from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
+from src.domain.user.me_user_info import MeUserInfo
 from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
 from src.domain.user_tag.user_tag_create import UserTagCreate
@@ -42,7 +43,7 @@ router = APIRouter(prefix='/me', tags=['me'])
 
 @router.get(
     path='',
-    response_model=User,
+    response_model=MeUserInfo,
     status_code=status.HTTP_200_OK,
     summary='Read information about your account',
     response_model_by_alias=False
