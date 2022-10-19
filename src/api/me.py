@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from bson import ObjectId
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
@@ -10,6 +12,7 @@ from src.domain.review import ReviewCreate, Review
 from src.domain.user.me_user_info import MeUserInfo
 from src.domain.user_list import SearchHistoryEntry
 from src.domain.review.review_update import ReviewUpdate
+from src.domain.user.user_migration import UserMigration
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_list.list_belonging import ListsBelonging
@@ -23,6 +26,7 @@ from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
+from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException, UserExistsException
@@ -31,8 +35,6 @@ from src.infrastructure.database.models.user_list.favourites_database_handler im
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
-from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler as DatabaseHandler, \
-    UserDatabaseHandler
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
@@ -63,7 +65,7 @@ async def update_self(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
-    if await DatabaseHandler.check_if_user_exists(db.users, email=update_payload.email):
+    if await UserDatabaseHandler.check_if_user_exists(db.users, email=update_payload.email):
         raise UserExistsException()
 
     if (
@@ -76,7 +78,7 @@ async def update_self(
         )
 
     elif update_payload.password:
-        password_verified = DatabaseHandler.verify_password(
+        password_verified = UserDatabaseHandler.verify_password(
             current_user['password_salt'] + update_payload.password,
             current_user['password']
         )
@@ -86,13 +88,13 @@ async def update_self(
                 detail='Old password is invalid'
             )
 
-        update_payload.password = DatabaseHandler.get_password_hash(
+        update_payload.password = UserDatabaseHandler.get_password_hash(
             password=update_payload.new_password,
             salt=current_user['password_salt']
         )
         update_payload.new_password = None
 
-    return await DatabaseHandler.update_user(
+    return await UserDatabaseHandler.update_user(
         db.users,
         current_user['_id'],
         update_payload
@@ -109,7 +111,7 @@ async def delete_self(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
-    await DatabaseHandler.delete_user(db.users, current_user['_id'])
+    await UserDatabaseHandler.delete_user(db.users, current_user['_id'])
 
 
 @router.get(
@@ -847,3 +849,56 @@ async def report_review(
         await ReviewDatabaseHandler.increase_review_report_count(db.reviews, review_id)
     else:
         raise ReviewAlreadyReportedExcepiton()
+
+
+@router.post(
+    path='/migrate',
+    status_code=status.HTTP_200_OK,
+    summary='Migrate data',
+    response_class=Response,
+)
+async def migrate_user(
+        user_migration: UserMigration,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+) -> None:
+    """
+    Migrate user alcohol related data
+    """
+    user_id = current_user['_id']
+    for alcohol_id in user_migration.wishlist:
+        if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, ObjectId(alcohol_id)):
+            await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, ObjectId(alcohol_id))
+
+    for alcohol_id in user_migration.favourites:
+        if not await UserFavouritesHandler\
+                .check_if_alcohol_in_favourites(db.user_favourites, user_id, ObjectId(alcohol_id)):
+            await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, ObjectId(alcohol_id))
+
+    for alcohol_history in user_migration.search_history:
+        await SearchHistoryHandler.add_alcohol_to_search_history(
+            db.user_search_history,
+            user_id,
+            ObjectId(alcohol_history.alcohol_id),
+            alcohol_history.date
+        )
+
+    for alcohol_tag in user_migration.tags:
+        if not await UserTagDatabaseHandler.check_if_user_tag_exists(
+                db.user_tags,
+                alcohol_tag.tag_name,
+                current_user['_id']
+        ):
+            await UserTagDatabaseHandler.create_user_tag_with_alcohols(
+                db.user_tags,
+                current_user['_id'],
+                alcohol_tag.tag_name,
+                [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
+            )
+        else:
+            await UserTagDatabaseHandler.add_alcohols(
+                db.user_tags,
+                current_user['_id'],
+                alcohol_tag.tag_name,
+                [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
+            )

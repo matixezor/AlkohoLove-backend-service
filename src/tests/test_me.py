@@ -1,4 +1,5 @@
 from pytest import mark
+from datetime import datetime
 from httpx import AsyncClient
 
 from src.tests.response_fixtures.followers_fixtures import FOLLOWERS_FIXTURE, FOLLOWING_FIXTURE
@@ -353,3 +354,18 @@ async def test_delete_non_existing_user_from_following(
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == 'User not found'
+
+
+@mark.asyncio
+async def test_migrate(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    data = {
+        'wishlist': ['6288e32dd5ab6070dde8db8a'],
+        'favourites': [],
+        'search_history': [{'alcohol_id': '6288e32dd5ab6070dde8db8b', 'date': str(datetime.now())}],
+        'tags': [{'tag_name': 'test_tag', 'alcohols': ['6288e32dd5ab6070dde8db8a', '6288e32dd5ab6070dde8db8b']}]
+    }
+    response = await async_client.post('/me/migrate', headers=user_token_headers, json=data)
+    assert response.status_code == 200
