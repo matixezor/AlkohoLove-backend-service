@@ -14,7 +14,9 @@
     "rating": 5,
     "date": "2022-04-14T11:11:23Z",
     "report_count": 0,
-    "reporters": []
+    "reporters": [],
+    "helpful_count": 0,
+    "helpful_reporters": []
   },
   {
     "_id": {
@@ -31,7 +33,13 @@
     "rating": 5,
     "date": "2022-05-13T15:22:32Z",
     "report_count": 0,
-    "reporters": []
+    "reporters": [],
+    "helpful_count": 1,
+    "helpful_reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
   },
   {
     "_id": {
@@ -55,6 +63,12 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8b"
       }
+    ],
+    "helpful_count": 1,
+    "helpful_reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      }
     ]
   },
   {
@@ -76,6 +90,8 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8b"
       }
-    ]
+    ],
+    "helpful_count": 0,
+    "helpful_reporters": []
   }
 ]

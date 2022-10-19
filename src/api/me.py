@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from bson import ObjectId
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
@@ -37,7 +36,8 @@ from src.infrastructure.database.models.user_list.search_history_database_handle
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
-    ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton
+    ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
+    OwnReviewAsHelpfulException
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -482,7 +482,7 @@ async def get_search_history(
     response_class=Response,
     summary='Delete alcohol from wishlist'
 )
-async def delete_alcohol_form_wishlist(
+async def delete_alcohol_from_wishlist(
         alcohol_id: str,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
@@ -501,7 +501,7 @@ async def delete_alcohol_form_wishlist(
     response_class=Response,
     summary='Delete alcohol from favourites'
 )
-async def delete_alcohol_form_favourites(
+async def delete_alcohol_from_favourites(
         alcohol_id: str,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
@@ -520,7 +520,7 @@ async def delete_alcohol_form_favourites(
     response_class=Response,
     summary='Delete alcohol from search history'
 )
-async def delete_alcohol_form_search_history(
+async def delete_alcohol_from_search_history(
         alcohol_id: str,
         date: datetime,
         current_user: UserDb = Depends(get_valid_user),
@@ -723,7 +723,8 @@ async def create_review(
     if await ReviewDatabaseHandler.check_if_review_exists(
             db.reviews,
             alcohol_id,
-            current_user['_id']):
+            current_user['_id']
+    ):
         raise ReviewAlreadyExistsException()
 
     if await ReviewDatabaseHandler.create_review(
@@ -793,7 +794,8 @@ async def update_review(
     if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
             db.reviews,
             review_id,
-            current_user['_id']):
+            current_user['_id']
+    ):
         raise ReviewDoesNotBelongToUserException()
 
     rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
@@ -830,6 +832,33 @@ async def report_review(
         await ReviewDatabaseHandler.increase_review_report_count(db.reviews, review_id)
     else:
         raise ReviewAlreadyReportedExcepiton()
+
+
+@router.put(
+    path='/reviews/{review_id}',
+    response_model=Review,
+    status_code=status.HTTP_200_OK,
+    summary='Mark/Unmark review as helpful'
+)
+async def mark_unmark_review_as_helpful(
+        review_id: str,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    review_id = validate_object_id(review_id)
+    user_id = current_user['_id']
+
+    if review := await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id):
+        if review.get('user_id') == user_id:
+            raise OwnReviewAsHelpfulException()
+        elif user_id in review.get('helpful_reporters'):
+            db_review = await ReviewDatabaseHandler.remove_from_helpful_reporters(db.reviews, review_id, user_id)
+            return Review(**db_review, helpful=False)
+        else:
+            db_review = await ReviewDatabaseHandler.add_to_helpful_reporters(db.reviews, review_id, user_id)
+            return Review(**db_review, helpful=True)
+    else:
+        raise ReviewNotFoundException()
 
 
 @router.post(

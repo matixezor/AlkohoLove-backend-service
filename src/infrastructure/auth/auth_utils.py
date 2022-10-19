@@ -4,7 +4,7 @@ from async_fastapi_jwt_auth import AuthJWT
 from fastapi import Depends, HTTPException, status, Header
 
 from src.infrastructure.database.database_config import get_db
-from src.infrastructure.config.app_config import get_settings, ApplicationSettings
+from src.infrastructure.config.app_config import ApplicationSettings
 from src.infrastructure.database.models.user import UserDatabaseHandler as DatabaseHandler, User
 from src.infrastructure.database.models.token.token_database_handler import TokenBlacklistDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
@@ -36,6 +36,18 @@ async def generate_tokens(subject: str, authorize: AuthJWT, settings: Applicatio
             algorithm=settings.ALGORITHM
         )
     }
+
+
+async def get_optional_user(
+        authorization: str | None = Header(default=None),
+        authorize: AuthJWT = Depends(),
+        db: Database = Depends(get_db)
+) -> User | None:
+    return await get_valid_user(
+        await get_valid_token(authorization, authorize, db),
+        authorize,
+        db
+    ) if authorization else None
 
 
 async def get_valid_user(

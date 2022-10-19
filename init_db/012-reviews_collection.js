@@ -37,7 +37,11 @@ let alcohol_review = {
                 items: {
                     bsonType: 'objectId'
                 }
-            }
+            },
+            helpful_count: {
+                bsonType: 'int',
+                description: 'must be an integer'
+            },
         }
     }
 }
@@ -62,7 +66,9 @@ db.reviews.insertMany(
             rating: NumberInt(5),
             date: new ISODate('2022-04-14T11:11:23Z'),
             report_count: NumberInt(0),
-            reporters: []
+            reporters: [],
+            helpful_count: NumberInt(0),
+            helpful_reporters: [],
         },
         {
             _id: ObjectId('62964f8f12ce37ef94d3cbab'),
@@ -73,7 +79,9 @@ db.reviews.insertMany(
             rating: NumberInt(5),
             date: new ISODate('2022-05-13T15:22:32Z'),
             report_count: NumberInt(0),
-            reporters: []
+            reporters: [],
+            helpful_count: NumberInt(0),
+            helpful_reporters: [],
         },
         {
             _id: ObjectId('6296768d872c15947e569b97'),
@@ -83,8 +91,10 @@ db.reviews.insertMany(
             review: 'DO DU**Y',
             rating: NumberInt(1),
             date: new ISODate('2022-05-15T12:42:32Z'),
-            report_count: NumberInt(2),
-            reporters: [ObjectId('6288e2fdd5ab6070dde8db8c'), ObjectId('6288e2fdd5ab6070dde8db8b')]
+            report_count: NumberInt(1),
+            reporters: [ObjectId('6288e2fdd5ab6070dde8db8b')],
+            helpful_count: NumberInt(1),
+            helpful_reporters: [ObjectId('6288e2fdd5ab6070dde8db8c')],
         }
     ]
 )
