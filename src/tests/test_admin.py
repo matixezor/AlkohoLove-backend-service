@@ -223,15 +223,6 @@ async def test_delete_alcohol(
 
 
 @mark.asyncio
-async def test_create_alcohol(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=ALCOHOL_FIXTURE)
-    assert response.status_code == 201
-
-
-@mark.asyncio
 async def test_create_alcohol_without_data(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
@@ -252,71 +243,12 @@ async def test_create_alcohol_without_barcode(
 
 
 @mark.asyncio
-async def test_create_alcohol_with_existing_name(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    data = ALCOHOL_FIXTURE.copy()
-    data['name'] = 'Jameson'
-    response = await async_client.post('/admin/alcohols', headers=admin_token_headers, json=data)
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Alcohol exists'
-
-
-@mark.asyncio
-async def test_update_alcohol_with_existing_name(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    data = ALCOHOL_FIXTURE
-    data['name'] = 'Jameson'
-    response = await async_client.put(f'/admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Alcohol exists'
-
-
-@mark.asyncio
-async def test_update_alcohol_with_existing_barcode(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    data = ALCOHOL_FIXTURE
-    data['barcode'] = ['5011007003234']
-    response = await async_client.put(f'/admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Alcohol exists'
-
-
-@mark.asyncio
 async def test_update_alcohol_without_required_data(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.put(f'admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers)
     assert response.status_code == 422
-
-
-@mark.asyncio
-async def test_update_alcohol(
-        async_client: AsyncClient,
-        admin_token_headers: dict[str, str]
-):
-    data = {
-        'age': 25,
-        'food': ['test_food'],
-        'color': 'czarny'
-    }
-    response = await async_client.put(f'admin/alcohols/{ALCOHOL_ID_FIXTURE}', headers=admin_token_headers, json=data)
-    assert response.status_code == 200
-    response = response.json()
-    assert response['id'] == '6288e32dd5ab6070dde8db8f'
-    assert response['name'] == 'Havana Cub Anejo 3 Anos Blanco'
-    assert response['additional_properties'] == [{'name': 'age', 'display_name': 'wiek', 'value': 25}]
-    assert response['food'] == ['test_food']
-    assert response['color'] == 'czarny'
 
 
 # --------------------------------------------alcohol_suggestions---------------------------------------------
