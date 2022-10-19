@@ -23,8 +23,11 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def count_suggestions(
             suggestions_collection: Collection[AlcoholSuggestion],
+            phrase: str
     ) -> int:
-        return suggestions_collection.count_documents({})
+        return suggestions_collection.count_documents(
+            filter={'$or': [{'name': {'$regex': phrase, '$options': 'i'}},
+                            {'kind': {'$regex': phrase, '$options': 'i'}}]})
 
     @staticmethod
     async def get_suggestion_by_id(
@@ -43,12 +46,11 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def append_to_suggestion(
             alcohol_collection: Collection[AlcoholSuggestion],
-            user_collection: Collection[User],
             user_id: ObjectId,
             description: str | None,
-            suggestion: AlcoholSuggestion
+            suggestion: AlcoholSuggestion,
+            username: str
     ) -> None:
-        username = user_collection.find_one({'_id': user_id})
         if suggestion['descriptions']:
             if description is not None:
                 alcohol_collection.update_one({'_id': suggestion['_id']},
@@ -65,15 +67,14 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def create_suggestion(
             suggestions_collection: Collection[AlcoholSuggestion],
-            user_collection: Collection[User],
             user_id: ObjectId,
-            payload: AlcoholSuggestionCreate
+            payload: AlcoholSuggestionCreate,
+            username: str
     ) -> None:
         if payload.description:
             descriptions = [payload.description]
         else:
             descriptions = None
-        username = user_collection.find_one({'_id': user_id})
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
             descriptions=descriptions,
@@ -81,3 +82,14 @@ class AlcoholSuggestionDatabaseHandler:
             user_ids=[user_id]
         )
         suggestions_collection.insert_one(db_suggestions)
+
+    @staticmethod
+    async def search_suggestions_by_phrase(
+            suggestions_collection: Collection[AlcoholSuggestion],
+            limit: int, offset: int,
+            phrase: str
+    ) -> list[dict]:
+        return list(suggestions_collection.find(
+            {'$or': [{'name': {'$regex': phrase, '$options': 'i'}},
+                     {'kind': {'$regex': phrase, '$options': 'i'}}]}).skip(
+            offset).limit(limit))

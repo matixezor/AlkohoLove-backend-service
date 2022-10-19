@@ -45,11 +45,10 @@ class ReportedErrorDatabaseHandler:
     @staticmethod
     async def create_reported_error(
             error_collection: Collection[ReportedError],
-            user_collection: Collection[User],
             user_id: ObjectId,
-            payload: ReportedErrorCreate
+            username: str,
+            payload: ReportedErrorCreate,
     ) -> None:
-        username = user_collection.find_one({'_id': user_id})
         db_reported_error = ReportedError(
             **payload.dict(),
             user_id=user_id,

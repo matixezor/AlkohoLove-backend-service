@@ -18,7 +18,7 @@
     "helpful_count": 0,
     "helpful_reporters": []
   },
-    {
+  {
     "_id": {
       "$oid": "62964f8f12ce37ef94d3cbab"
     },
@@ -63,6 +63,29 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8c"
       },
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ],
+    "helpful_count": 0,
+    "helpful_reporters": []
+  },
+  {
+    "review": "BARDZO DO DU**Y",
+    "rating": 1,
+    "date": "2022-05-15T12:42:32+00:00",
+    "report_count": 1,
+    "_id": {
+      "$oid": "6344648faa4450e6942b2965"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "username": "admin",
+    "alcohol_id": {
+      "$oid": "6288e32dd5ab6070dde8db8c"
+    },
+    "reporters": [
       {
         "$oid": "6288e2fdd5ab6070dde8db8b"
       }
