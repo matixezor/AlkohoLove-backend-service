@@ -42,10 +42,11 @@ async def create_suggestion(
             raise SuggestionAlreadyMadeException()
         else:
             await DatabaseHandler.append_to_suggestion(
-                db.alcohol_suggestion, db.user, current_user['_id'], payload.description, suggestion)
+                db.alcohol_suggestion, current_user['_id'], payload.description, suggestion,
+                current_user['username'])
     else:
         await DatabaseHandler.create_suggestion(
-            db.alcohol_suggestion, db.user, current_user['_id'], payload
+            db.alcohol_suggestion, current_user['_id'], payload, current_user['username']
         )
 
 
