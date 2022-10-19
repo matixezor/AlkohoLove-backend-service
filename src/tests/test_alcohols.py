@@ -216,6 +216,32 @@ async def test_get_schemas(
 
 
 @mark.asyncio
+async def test_get_categories_by_phrase(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get('admin/alcohols/metadata/categories/search?limit=10&offset=0&phrase=piwo',
+                                      headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['total'] == 1
+    assert response['categories'][0]['id'] == ALCOHOL_CATEGORY_FIXTURE['id']
+    assert response['categories'][0]['title'] == ALCOHOL_CATEGORY_FIXTURE['title']
+    assert response['categories'][0]['required'] == ALCOHOL_CATEGORY_FIXTURE['required']
+    assert response['categories'][0]['properties'] == [
+        {'name': 'kind', 'metadata': {'enum': ['piwo']}},
+        {'name': 'ibu', 'metadata': {'title': 'ibu', 'bsonType': ['int', 'null'], 'description': '4'}},
+        {'name': 'srm', 'metadata': {'title': 'srm', 'bsonType': ['double', 'null'], 'description': '4'}},
+        {'name': 'extract', 'metadata': {'title': 'ekstrakt', 'bsonType': ['double', 'null'], 'description': '11.6'}},
+        {'name': 'fermentation', 'metadata': {'title': 'fermentacja', 'bsonType': ['string'], 'description': 'górna'}},
+        {'name': 'is_filtered', 'metadata': {'title': 'filtrowane', 'bsonType': ['bool'], 'description': 'true'}},
+        {'name': 'is_pasteurized', 'metadata': {'title': 'pasteryzowane', 'bsonType': ['bool'], 'description': 'true'}}
+    ]
+
+
+@mark.asyncio
 async def test_get_alcohols_created_by_user(
         async_client: AsyncClient,
         admin_token_headers: dict[str, str]

@@ -46,3 +46,57 @@ SUGGESTIONS_RESPONSE_FIXTURE = {
         "admin"
     ]
 }
+
+SUGGESTIONS_SEARCH_RESPONSE_FIXTURE = \
+    {
+        "suggestions": [
+            {
+                "barcode": "5900699104827",
+                "kind": "piwo",
+                "name": "Żywiec białe",
+                "id": "6299e8c94105e843197376fd",
+                "user_ids": [
+                    "6288e2fdd5ab6070dde8db8c",
+                    "6288e2fdd5ab6070dde8db8b"
+                ],
+                "descriptions": [
+                    "Białe piwo pszeniczne żywiec.",
+                    "Dobre piwo o aromacie kolendry."
+                ],
+                'usernames': ['Adam_Skorupa', 'admin']
+            }
+        ],
+        "page_info": {
+            "offset": 0,
+            "limit": 10,
+            "total": 1
+        }
+    }
+
+ALL_SUGGESTIONS_RESPONSE_FIXTURE = \
+    {'page_info': {'limit': 10, 'offset': 0, 'total': 3},
+     'suggestions': [{'barcode': '5900699104827',
+                      'descriptions': ['Białe piwo pszeniczne żywiec.',
+                                       'Dobre piwo o aromacie kolendry.'],
+                      'id': '6299e8c94105e843197376fd',
+                      'kind': 'piwo',
+                      'name': 'Żywiec białe',
+                      'user_ids': ['6288e2fdd5ab6070dde8db8c',
+                                   '6288e2fdd5ab6070dde8db8b'],
+                      'usernames': ['Adam_Skorupa', 'admin']},
+                     {'barcode': '3800006901502',
+                      'descriptions': ['Czerwone wino deserowe słodkie.'],
+                      'id': '6299eb5a894d907992ecbd7e',
+                      'kind': 'wino',
+                      'name': 'Witosha premium sweet red',
+                      'user_ids': ['6288e2fdd5ab6070dde8db8d'],
+                      'usernames': ['DariuszGołąbski'],
+                      },
+                     {'barcode': '1111111111111',
+                      'descriptions': ['Dobry likier ziołowy.', 'Bardzo dobry'],
+                      'id': '6299eb5f31a05c42142ea55c',
+                      'kind': 'likier',
+                      'name': 'Jagermeister',
+                      'user_ids': ['6288e2fdd5ab6070dde8db8c',
+                                   '6288e2fdd5ab6070dde8db8d'],
+                      'usernames': ['Adam_Skorupa', 'DariuszGołąbski']}]}

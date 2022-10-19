@@ -23,8 +23,11 @@ class AlcoholSuggestionDatabaseHandler:
     @staticmethod
     async def count_suggestions(
             suggestions_collection: Collection[AlcoholSuggestion],
+            phrase: str
     ) -> int:
-        return suggestions_collection.count_documents({})
+        return suggestions_collection.count_documents(
+            filter={'$or': [{'name': {'$regex': phrase, '$options': 'i'}},
+                            {'kind': {'$regex': phrase, '$options': 'i'}}]})
 
     @staticmethod
     async def get_suggestion_by_id(
@@ -81,3 +84,14 @@ class AlcoholSuggestionDatabaseHandler:
             user_ids=[user_id]
         )
         suggestions_collection.insert_one(db_suggestions)
+
+    @staticmethod
+    async def search_suggestions_by_phrase(
+            suggestions_collection: Collection[AlcoholSuggestion],
+            limit: int, offset: int,
+            phrase: str
+    ) -> list[dict]:
+        return list(suggestions_collection.find(
+            {'$or': [{'name': {'$regex': phrase, '$options': 'i'}},
+                     {'kind': {'$regex': phrase, '$options': 'i'}}]}).skip(
+            offset).limit(limit))
