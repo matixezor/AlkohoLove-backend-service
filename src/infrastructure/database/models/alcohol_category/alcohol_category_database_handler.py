@@ -36,6 +36,26 @@ class AlcoholCategoryDatabaseHandler:
         return collection.find_one({'_id': category_id})
 
     @staticmethod
+    async def search_categories_by_phrase(
+            collection: Collection,
+            limit: int, offset: int,
+            phrase: str
+    ) -> list[dict]:
+        return list(collection.find({'title': {'$regex': phrase, '$options': 'i'}}).skip(offset).limit(limit))
+
+    @staticmethod
+    async def count_categories_by_phrase(
+            collection: Collection,
+            phrase: str
+    ) -> int:
+        return (
+            collection.count_documents(
+                filter={'title': {'$regex': phrase, '$options': 'i'}})
+            if phrase
+            else collection.estimated_document_count()
+        )
+
+    @staticmethod
     async def update_category(
             collection: Collection[AlcoholCategory],
             existing: AlcoholCategory,
