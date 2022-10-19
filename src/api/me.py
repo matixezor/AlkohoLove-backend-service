@@ -36,7 +36,8 @@ from src.infrastructure.database.models.user_list.search_history_database_handle
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
-    ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton
+    ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
+    OwnReviewAsHelpfulException
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -848,7 +849,9 @@ async def mark_unmark_review_as_helpful(
     user_id = current_user['_id']
 
     if review := await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id):
-        if user_id in review.get('helpful_reporters'):
+        if review.get('user_id') == user_id:
+            raise OwnReviewAsHelpfulException()
+        elif user_id in review.get('helpful_reporters'):
             db_review = await ReviewDatabaseHandler.remove_from_helpful_reporters(db.reviews, review_id, user_id)
             return Review(**db_review, helpful=False)
         else:

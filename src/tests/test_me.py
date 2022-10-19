@@ -374,9 +374,9 @@ async def test_migrate(
 @mark.asyncio
 async def test_mark_review_as_helpful(
         async_client: AsyncClient,
-        user_token_headers: dict[str, str]
+        admin_token_headers: dict[str, str]
 ):
-    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=user_token_headers)
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=admin_token_headers)
     assert response.status_code == 200
     response = response.json()
     assert response['review'] == 'Pyszniutkie polecam'
@@ -387,11 +387,33 @@ async def test_mark_review_as_helpful(
 @mark.asyncio
 async def test_mark_review_as_unhelpful(
         async_client: AsyncClient,
-        user_token_headers: dict[str, str]
+        admin_token_headers: dict[str, str]
 ):
-    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=user_token_headers)
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=admin_token_headers)
     assert response.status_code == 200
     response = response.json()
     assert response['review'] == 'ok'
-    assert response['helpful_count'] == 1
+    assert response['helpful_count'] == 0
     assert response['helpful'] is False
+
+
+@mark.asyncio
+async def test_mark__own_review_as_unhelpful(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=user_token_headers)
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'
+
+
+@mark.asyncio
+async def test_mark_own_review_as_helpful(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=user_token_headers)
+    assert response.status_code == 400
+    response = response.json()
+    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'

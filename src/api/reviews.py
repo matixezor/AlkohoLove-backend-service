@@ -1,14 +1,12 @@
+from bson import ObjectId
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status
 
-from src.domain.review import Review
 from src.domain.common import PageInfo
-from src.infrastructure.database.models.user import User
-from src.infrastructure.auth.auth_utils import get_valid_user
+from src.domain.review import Review
 from src.infrastructure.database.database_config import get_db
 from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.auth.auth_utils import get_optional_user
-from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -18,6 +16,10 @@ from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 
 router = APIRouter(prefix='/reviews', tags=['reviews'])
+
+
+def handle_helpful_review(reporters: list[ObjectId], user_id: ObjectId, review_user_id: ObjectId) -> bool | None:
+    return None if user_id == review_user_id else user_id in reporters
 
 
 @router.get(
@@ -50,7 +52,11 @@ async def get_reviews(
         reviews=[
             Review(
                 **review,
-                helpful=True if user_id and user_id in review['helpful_reporters'] else False
+                helpful=handle_helpful_review(
+                    review['helpful_reporters'],
+                    user_id,
+                    review['user_id']
+                ) if user_id else False
             ) for review in reviews
         ],
         my_review=my_review,
@@ -92,7 +98,11 @@ async def get_user_reviews(
         reviews=[
             Review(
                 **review,
-                helpful=True if current_user_id and current_user_id in review['helpful_reporters'] else False
+                helpful=handle_helpful_review(
+                    review['helpful_reporters'],
+                    current_user_id,
+                    review['user_id']
+                ) if current_user_id else False
             ) for review in reviews
         ],
         page_info=PageInfo(
