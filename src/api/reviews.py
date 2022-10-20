@@ -50,7 +50,7 @@ async def get_reviews(
         db.reviews, limit, offset, alcohol_id
     )
     total = await ReviewDatabaseHandler.count_alcohol_reviews(db.reviews, alcohol_id)
-    my_review = next((review for review in reviews if review['user_id'] == current_user['_id']), None)
+    my_review = next((review for review in reviews if review['user_id'] == user_id), None) if user_id else None
     return PaginatedAlcoholReview(
         reviews=[
             Review(
