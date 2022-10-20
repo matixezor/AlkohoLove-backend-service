@@ -4,9 +4,6 @@ import cloudinary.uploader
 from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
-from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form, Query
-
-
 from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
@@ -41,6 +38,7 @@ from src.infrastructure.database.models.alcohol_category import AlcoholCategoryD
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
 from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Body, Query
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate, PaginatedAlcoholCategories
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
@@ -204,7 +202,7 @@ async def delete_alcohol(
     alcohol_id = validate_object_id(alcohol_id)
     alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     await AlcoholDatabaseHandler.delete_alcohol(db.alcohols, alcohol_id)
-    image_name = alcohol['name'].lower().replace(' ', '_')
+    image_name = alcohol['_id']
     image_path = f'{settings.ALCOHOL_IMAGES_DIR}/{image_name}'
     cloudinary.uploader.destroy(f'{image_path}_md', invalidate=True)
     cloudinary.uploader.destroy(f'{image_path}_sm', invalidate=True)
@@ -219,15 +217,16 @@ async def delete_alcohol(
 )
 async def update_alcohol(
         alcohol_id: str,
-        payload: AlcoholUpdate,
+        payload: AlcoholUpdate = Body(...),
         db: Database = Depends(get_db),
-        settings: ApplicationSettings = Depends(get_settings)
+        settings: ApplicationSettings = Depends(get_settings),
+        sm: UploadFile | None = None,
+        md: UploadFile | None = None
 ):
     """
     Update alcohol by id
     """
     alcohol_id = validate_object_id(alcohol_id)
-    old_alcohol = await AlcoholDatabaseHandler.get_alcohol_by_id(db.alcohols, alcohol_id)
     if (
             payload.barcode
             and (alcohol := await AlcoholDatabaseHandler.get_alcohol_by_barcode(db.alcohols, payload.barcode))
@@ -241,19 +240,30 @@ async def update_alcohol(
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
     )
-    if payload.name and payload.name != old_alcohol['name']:
-        new_image_name = payload.name.lower().replace(' ', '_')
-        old_image_name = old_alcohol['name'].lower().replace(' ', '_')
-        cloudinary.uploader.rename(
-            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_sm',
-            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_sm',
-            invalidate=True
-        )
-        cloudinary.uploader.rename(
-            f'{settings.ALCOHOL_IMAGES_DIR}/{old_image_name}_md',
-            f'{settings.ALCOHOL_IMAGES_DIR}/{new_image_name}_md',
-            invalidate=True
-        )
+
+    if sm and md:
+        try:
+            sm_name = f'{alcohol_id}_sm'
+            md_name = f'{alcohol_id}_md'
+            cloudinary.uploader.upload(
+                sm.file,
+                folder=settings.ALCOHOL_IMAGES_DIR,
+                public_id=sm_name,
+                resource_type='image',
+                overwrite=True,
+                invalidate=True
+            )
+            cloudinary.uploader.upload(
+                md.file,
+                folder=settings.ALCOHOL_IMAGES_DIR,
+                public_id=md_name,
+                resource_type='image',
+                overwrite=True,
+                invalidate=True
+            )
+        except Exception as error:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+
     return map_alcohol(db_alcohol, db.alcohol_categories)
 
 
@@ -264,9 +274,12 @@ async def update_alcohol(
     summary='Create alcohol'
 )
 async def create_alcohol(
-        payload: AlcoholCreate,
+        payload: AlcoholCreate = Body(...),
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        sm: UploadFile = File(...),
+        md: UploadFile = File(...),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     Create alcohol
@@ -282,13 +295,47 @@ async def create_alcohol(
             detail='Alcohol category does not exist. Create one first!'
         )
 
+    if sm.content_type != 'image/png' and md.content_type != 'image/png':
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
+
     payload = AlcoholCreate(
         **payload.dict(),
         username=current_user["username"],
         date=datetime.now()
     )
 
-    await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
+    alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
+    if image_size(sm.file) > 1000000 and image_size(md.file) > 1000000:
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='File size too large. Maximum is 1 mb'
+        )
+
+    try:
+        sm_name = f'{alcohol.inserted_id}_sm'
+        md_name = f'{alcohol.inserted_id}_md'
+        cloudinary.uploader.upload(
+            sm.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=sm_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+        cloudinary.uploader.upload(
+            md.file,
+            folder=settings.ALCOHOL_IMAGES_DIR,
+            public_id=md_name,
+            resource_type='image',
+            overwrite=False,
+            invalidate=True
+        )
+    except Exception as error:
+        await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+
     await AlcoholFilterDatabaseHandler.update_filters(
         db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
     )
@@ -421,46 +468,6 @@ async def search_alcohol_categories_by_phrase(
             total=total
         )
     )
-
-
-@router.post(
-    '/image',
-    response_class=Response,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(admin_permission)],
-    summary='[For admin] Upload image'
-)
-async def upload_image(
-        image_name: str = Form(...),
-        file: UploadFile = File(...),
-        settings: ApplicationSettings = Depends(get_settings)
-):
-    """
-    Upload file with:
-    *image_name* - name for the image, it should contain `_sm` or `_md` to
-    specify size if multiple variants are to be uploaded
-    *file*: - image
-    """
-    if file.content_type != 'image/png':
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
-
-    if image_size(file.file) > 400000:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='File size too large. Maximum is 400 kb'
-        )
-
-    try:
-        cloudinary.uploader.upload(
-            file.file,
-            folder=settings.ALCOHOL_IMAGES_DIR,
-            public_id=image_name,
-            resource_type='image',
-            overwrite=False,
-            invalidate=True
-        )
-    except Exception as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.post(
