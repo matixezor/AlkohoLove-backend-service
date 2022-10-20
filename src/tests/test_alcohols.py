@@ -1,7 +1,7 @@
 from pytest import mark
 from httpx import AsyncClient
 
-from src.tests.response_fixtures.alcohol_filters_fixtures import ALCOHOL_FILTER_FIXTURE
+from src.tests.response_fixtures.alcohol_filters_fixtures import ALCOHOL_FILTER_FIXTURE, ALCOHOL_FILTER_FIXTURE_KIND_ALL
 
 ALCOHOL_FIXTURE = {
     'name': 'Jameson',
@@ -177,8 +177,17 @@ async def test_get_alcohol_filters(async_client: AsyncClient):
     response = await async_client.get('/alcohols/filters')
     assert response.status_code == 200
     response = response.json()
-    assert len(response['filters']) == 4
+    assert len(response['filters']) == 5
     assert response['filters'][0] == ALCOHOL_FILTER_FIXTURE
+
+
+@mark.asyncio
+async def test_get_alcohol_filters_kind_all(async_client: AsyncClient):
+    response = await async_client.get('/alcohols/filters')
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['filters']) == 5
+    assert response['filters'][-1] == ALCOHOL_FILTER_FIXTURE_KIND_ALL
 
 
 @mark.asyncio

@@ -13,3 +13,5 @@ class Review(TypedDict):
     date: datetime
     report_count: int
     reporters: list[ObjectId]
+    helpful_count: int
+    helpful_reporters: list[ObjectId]
