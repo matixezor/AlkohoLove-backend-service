@@ -10,6 +10,8 @@ class UserReview(MongoBaseModel, ReviewBase):
     username: str
     date: datetime
     alcohol_id: PyObjectId = Field(default_factory=PyObjectId, alias="alcohol_id")
+    helpful_count: int
+    helpful: bool | None
     alcohol_name: str
     kind: str
 

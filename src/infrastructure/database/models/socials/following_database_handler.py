@@ -44,14 +44,15 @@ class FollowingDatabaseHandler:
 
     @staticmethod
     async def decrease_following_counter(collection: Collection, current_user_id: ObjectId) -> None:
-        user = collection.find_one({'_id': current_user_id})
-        if user['following_count'] > 0:
-            collection.update_one(
-                {'_id': {'$eq': ObjectId(current_user_id)}},
-                {
-                    '$inc': {'following_count': -1}
-                }
-            )
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(current_user_id)},
+                'following_count': {'$gt': 0}
+            },
+            {
+                '$set': {'following_count': {'$inc': -1}}
+            }
+        )
 
     @staticmethod
     async def check_if_user_in_following(collection: Collection[Following], user_id: ObjectId,

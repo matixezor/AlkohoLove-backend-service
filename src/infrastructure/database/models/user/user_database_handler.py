@@ -183,6 +183,12 @@ class UserDatabaseHandler:
             collection: Collection,
             user_id: ObjectId
     ):
-        user = collection.find_one({'_id': user_id})
-        if user["favourites_count"] > 0:
-            collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': -1}})
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(user_id)},
+                'favourites_count': {'$gt': 0}
+            },
+            {
+                '$set': {'favourites_count': {'$inc': -1}}
+            }
+        )

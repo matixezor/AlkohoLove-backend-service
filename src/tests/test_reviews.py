@@ -30,8 +30,9 @@ USER_REVIEWS_FIXTURE = [
         'rating': 5,
         'id': '62964f8f12ce37ef94d3cbaa',
         'username': 'Adam_Skorupa',
+        'date': '2022-04-14T11:11:23+00:00',
         'helpful_count': 0,
-        'helpful': False
+        'helpful': False,
         'alcohol_id': '6288e32dd5ab6070dde8db8a',
         'alcohol_name': 'Jameson',
         'kind': 'whisky'

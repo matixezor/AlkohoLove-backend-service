@@ -339,9 +339,7 @@ class ReviewDatabaseHandler:
             alcohol = alcohol_collection.find_one({'_id': review["alcohol_id"]})
             review['alcohol_name'] = alcohol['name']
             review['kind'] = alcohol['kind']
-        return (
-            reviews
-        )
+        return reviews
 
     @staticmethod
     async def count_user_reviews(
