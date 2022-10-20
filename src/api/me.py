@@ -512,7 +512,6 @@ async def delete_alcohol_from_favourites(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    print('test 1')
     if await UserFavouritesHandler.delete_alcohol_from_favourites(db.user_favourites, user_id, alcohol_id):
         await UserDatabaseHandler.remove_from_favourite_counter(db.users, user_id)
 
