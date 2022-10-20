@@ -31,9 +31,11 @@ USER_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbaa',
         'username': 'Adam_Skorupa',
         'date': '2022-04-14T11:11:23+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8a',
         'helpful_count': 0,
-        'helpful': False
+        'helpful': False,
+        'alcohol_id': '6288e32dd5ab6070dde8db8a',
+        'alcohol_name': 'Jameson',
+        'kind': 'whisky'
     },
     {
         'review': 'ok',
@@ -42,6 +44,8 @@ USER_REVIEWS_FIXTURE = [
         'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
+        'alcohol_name': 'Jameson Caskmates Stout Edition',
+        'kind': 'whisky',
         'helpful_count': 1,
         'helpful': False
     }
@@ -347,7 +351,7 @@ async def test_admin_delete_review(
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbab/alcohol/6288e32dd5ab6070dde8db8b',
+        '/admin/reviews/62964f8f12ce37ef94d3cbaa/alcohol/6288e32dd5ab6070dde8db8a',
         headers=admin_token_headers
     )
     assert response.status_code == 204

@@ -321,7 +321,7 @@ async def test_add_user_to_following(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.post('/me/following/6288e32dd5ab6070dde8db8f', headers=user_token_headers)
+    response = await async_client.post('/me/following/6288e2fdd5ab6070dde8db8e', headers=user_token_headers)
     assert response.status_code == 201
 
 

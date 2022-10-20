@@ -24,13 +24,35 @@ class FollowingDatabaseHandler:
 
     @staticmethod
     async def delete_user_from_following(collection: Collection[Following], user_id: ObjectId,
-                                         following_user_id: ObjectId) -> None:
-        collection.update_one({'_id': user_id}, {'$pull': {'following': following_user_id}})
+                                         following_user_id: ObjectId) -> int:
+        update = collection.update_one({'_id': user_id}, {'$pull': {'following': following_user_id}})
+        return update.modified_count
 
     @staticmethod
     async def add_user_to_following(collection: Collection[Following], user_id: ObjectId,
                                     following_user_id: ObjectId) -> None:
         collection.update_one({'_id': user_id}, {'$push': {'following': following_user_id}})
+
+    @staticmethod
+    async def increase_following_counter(collection: Collection, current_user_id: ObjectId) -> None:
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(current_user_id)}},
+            {
+                '$inc': {'following_count': 1}
+            }
+        )
+
+    @staticmethod
+    async def decrease_following_counter(collection: Collection, current_user_id: ObjectId) -> None:
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(current_user_id)},
+                'following_count': {'$gt': 0}
+            },
+            {
+                '$set': {'following_count': {'$inc': -1}}
+            }
+        )
 
     @staticmethod
     async def check_if_user_in_following(collection: Collection[Following], user_id: ObjectId,

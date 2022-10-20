@@ -1,6 +1,6 @@
-from bson import ObjectId
 from bcrypt import gensalt
 from datetime import datetime
+from bson import ObjectId, Int64
 from passlib.context import CryptContext
 from pymongo.collection import Collection, ReturnDocument
 
@@ -101,7 +101,13 @@ class UserDatabaseHandler:
             password_salt=password_salt,
             is_banned=False,
             is_admin=False,
-            last_login=None
+            last_login=None,
+            avg_rating=float(0),
+            rate_count=Int64(0),
+            followers_count=0,
+            following_count=0,
+            favourites_count=0,
+            rate_value=Int64(0)
         )
 
         collection.insert_one(db_user)
@@ -164,3 +170,25 @@ class UserDatabaseHandler:
             {'username': {'$regex': phrase, '$options': 'i', '$ne': current_user['username']}}).skip(offset).limit(
             limit))
         return result
+
+    @staticmethod
+    async def add_to_favourite_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': 1}})
+
+    @staticmethod
+    async def remove_from_favourite_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(user_id)},
+                'favourites_count': {'$gt': 0}
+            },
+            {
+                '$set': {'favourites_count': {'$inc': -1}}
+            }
+        )
