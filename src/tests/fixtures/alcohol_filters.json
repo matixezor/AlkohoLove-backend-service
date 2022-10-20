@@ -22,5 +22,11 @@
     "color": ["pomarańczowy"],
     "country": ["Polska"],
     "type": ["owocowy"]
+  },
+  {
+    "_id": "all",
+    "color": ["bezbarwny","biały","karmel","bursztyn","pomarańczowy"],
+    "country": ["Szwecja","Kuba","Irlandia","Polska"],
+    "type": ["czysta","biały","blended","owocowy"]
   }
 ]

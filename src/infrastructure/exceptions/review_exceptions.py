@@ -31,3 +31,11 @@ class ReviewAlreadyReportedExcepiton(HTTPException):
             status.HTTP_400_BAD_REQUEST,
             'User already reported review'
         )
+
+
+class OwnReviewAsHelpfulException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            'Can\'t mark/unmark own review as helpful'
+        )

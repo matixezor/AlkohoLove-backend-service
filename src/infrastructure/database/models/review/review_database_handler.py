@@ -1,10 +1,10 @@
-from bson import ObjectId, Int64
 from datetime import datetime
-
 from pymongo import DESCENDING
+from bson import ObjectId, Int64
+from pymongo.collection import Collection, ReturnDocument
+
 from src.domain.review import ReviewCreate
 from src.domain.review.review_update import ReviewUpdate
-from pymongo.collection import Collection, ReturnDocument
 from src.infrastructure.database.models.review import Review
 from src.infrastructure.database.models.review.banned_review import BannedReview
 
@@ -44,11 +44,36 @@ class ReviewDatabaseHandler:
         )
 
     @staticmethod
+    async def get_reported_reviews_by_phrase(
+            collection: Collection[Review],
+            phrase: str,
+            limit: int,
+            offset: int,
+    ) -> list[Review]:
+        return (
+            list(collection.find(
+                {'$and': [{'report_count': {'$gt': 0}}, {'username': {'$regex': phrase, '$options': 'i'}}]})
+                 .skip(offset)
+                 .limit(limit)
+                 .sort("report_count", DESCENDING))
+        )
+
+    @staticmethod
     async def count_reported_reviews(
             collection: Collection[Review]
     ) -> int:
         return (
             collection.count_documents(filter={'report_count': {'$gt': 0}})
+        )
+
+    @staticmethod
+    async def count_reported_reviews_by_phrase(
+            collection: Collection[Review],
+            phrase: str
+    ) -> int:
+        return (
+            collection.count_documents(
+                filter={'$and': [{'report_count': {'$gt': 0}}, {'username': {'$regex': phrase, '$options': 'i'}}]})
         )
 
     @staticmethod
@@ -72,7 +97,7 @@ class ReviewDatabaseHandler:
 
         rate_count = alcohol['rate_count'] + 1
         rate_value = alcohol['rate_value'] + rating
-        avg_rating = rate_value/rate_count
+        avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
@@ -94,7 +119,7 @@ class ReviewDatabaseHandler:
         if rate_count < 1:
             avg_rating = 0
         else:
-            avg_rating = rate_value/rate_count
+            avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
@@ -137,7 +162,9 @@ class ReviewDatabaseHandler:
             username=username,
             date=datetime.now(),
             report_count=0,
-            reporters=[]
+            reporters=[],
+            helpful_count=0,
+            helpful_reporters=[]
         )
         return collection.insert_one(db_review)
 
@@ -186,6 +213,30 @@ class ReviewDatabaseHandler:
         return collection.find_one_and_update(
             {'_id': review_id},
             {'$set': payload.dict(exclude_none=True)},
+            return_document=ReturnDocument.AFTER
+        )
+
+    @staticmethod
+    async def add_to_helpful_reporters(
+            collection: Collection[Review],
+            review_id: ObjectId,
+            user_id: ObjectId
+    ):
+        return collection.find_one_and_update(
+            {'_id': review_id},
+            {'$inc': {'helpful_count': 1}, '$push': {'helpful_reporters': user_id}},
+            return_document=ReturnDocument.AFTER
+        )
+
+    @staticmethod
+    async def remove_from_helpful_reporters(
+            collection: Collection[Review],
+            review_id: ObjectId,
+            user_id: ObjectId
+    ):
+        return collection.find_one_and_update(
+            {'_id': review_id},
+            {"$inc": {'helpful_count': -1}, '$pull': {'helpful_reporters': user_id}},
             return_document=ReturnDocument.AFTER
         )
 

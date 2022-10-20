@@ -2,7 +2,7 @@ from pytest import mark
 from httpx import AsyncClient
 
 from src.tests.response_fixtures.alcohol_suggestions import SUGGESTION_ID_FIXTURE, SUGGESTIONS_RESPONSE_FIXTURE, \
-    NON_EXISTING_ID_FIXTURE
+    NON_EXISTING_ID_FIXTURE, ALL_SUGGESTIONS_RESPONSE_FIXTURE, SUGGESTIONS_SEARCH_RESPONSE_FIXTURE
 
 REPORTED_ERROR_ID_FIXTURE = '507f191e810c19729de860ea'
 REPORTED_DESCRIPTION_FIXTURE = 'This app sucks'
@@ -329,3 +329,39 @@ async def test_get_suggestion_by_id_that_doesnt_exist(
     assert response.status_code == 404
     response = response.json()
     assert response['detail'] == "Suggestion not found"
+
+
+@mark.asyncio
+async def test_search_suggestions_by_name(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/search?limit=10&offset=0&phrase=Żywiec',
+                                      headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == SUGGESTIONS_SEARCH_RESPONSE_FIXTURE
+
+
+@mark.asyncio
+async def test_search_suggestions_by_kind(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/search?limit=10&offset=0&phrase=piwo',
+                                      headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == SUGGESTIONS_SEARCH_RESPONSE_FIXTURE
+
+
+@mark.asyncio
+async def test_search_suggestions_empty_phrase(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(f'/admin/suggestions/search?limit=10&offset=0',
+                                      headers=admin_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response == ALL_SUGGESTIONS_RESPONSE_FIXTURE

@@ -14,9 +14,11 @@
     "rating": 5,
     "date": "2022-04-14T11:11:23Z",
     "report_count": 0,
-    "reporters": []
+    "reporters": [],
+    "helpful_count": 0,
+    "helpful_reporters": []
   },
-    {
+  {
     "_id": {
       "$oid": "62964f8f12ce37ef94d3cbab"
     },
@@ -31,7 +33,13 @@
     "rating": 5,
     "date": "2022-05-13T15:22:32Z",
     "report_count": 0,
-    "reporters": []
+    "reporters": [],
+    "helpful_count": 1,
+    "helpful_reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ]
   },
   {
     "_id": {
@@ -55,6 +63,35 @@
       {
         "$oid": "6288e2fdd5ab6070dde8db8b"
       }
+    ],
+    "helpful_count": 1,
+    "helpful_reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8c"
+      }
     ]
+  },
+  {
+    "review": "BARDZO DO DU**Y",
+    "rating": 1,
+    "date": "2022-05-15T12:42:32+00:00",
+    "report_count": 1,
+    "_id": {
+      "$oid": "6344648faa4450e6942b2965"
+    },
+    "user_id": {
+      "$oid": "6288e2fdd5ab6070dde8db8b"
+    },
+    "username": "admin",
+    "alcohol_id": {
+      "$oid": "6288e32dd5ab6070dde8db8c"
+    },
+    "reporters": [
+      {
+        "$oid": "6288e2fdd5ab6070dde8db8b"
+      }
+    ],
+    "helpful_count": 0,
+    "helpful_reporters": []
   }
 ]

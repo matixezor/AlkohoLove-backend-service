@@ -8,7 +8,9 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbab',
         'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8b'
+        'alcohol_id': '6288e32dd5ab6070dde8db8b',
+        'helpful_count': 1,
+        'helpful': True
     },
     {
         'review': 'DO DU**Y',
@@ -16,7 +18,9 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'id': '6296768d872c15947e569b97',
         'username': 'DariuszGołąbski',
         'date': '2022-05-15T12:42:32+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8b'
+        'alcohol_id': '6288e32dd5ab6070dde8db8b',
+        'helpful_count': 1,
+        'helpful': False
     }
 ]
 
@@ -27,7 +31,9 @@ USER_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbaa',
         'username': 'Adam_Skorupa',
         'date': '2022-04-14T11:11:23+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8a'
+        'alcohol_id': '6288e32dd5ab6070dde8db8a',
+        'helpful_count': 0,
+        'helpful': False
     },
     {
         'review': 'ok',
@@ -35,7 +41,9 @@ USER_REVIEWS_FIXTURE = [
         'id': '62964f8f12ce37ef94d3cbab',
         'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
-        'alcohol_id': '6288e32dd5ab6070dde8db8b'
+        'alcohol_id': '6288e32dd5ab6070dde8db8b',
+        'helpful_count': 1,
+        'helpful': False
     }
 ]
 
@@ -51,6 +59,19 @@ REPORTED_REVIEWS_FIXTURE = [
         "report_count": 2,
         "reporters": [
             "6288e2fdd5ab6070dde8db8c",
+            "6288e2fdd5ab6070dde8db8b"
+        ]
+    },
+    {
+        "review": "BARDZO DO DU**Y",
+        "rating": 1,
+        "id": "6344648faa4450e6942b2965",
+        "user_id": "6288e2fdd5ab6070dde8db8b",
+        "username": "admin",
+        "date": "2022-05-15T12:42:32+00:00",
+        "alcohol_id": "6288e32dd5ab6070dde8db8c",
+        "report_count": 1,
+        "reporters": [
             "6288e2fdd5ab6070dde8db8b"
         ]
     }
@@ -77,9 +98,12 @@ BANNED_REVIEWS_FIXTURE = [
 
 
 @mark.asyncio
-async def test_get_alcohol_reviews(async_client: AsyncClient):
+async def test_get_alcohol_reviews(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
     response = await async_client.get(
-        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0'
+        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0', headers=admin_token_headers
     )
     assert response.status_code == 200
     response = response.json()
@@ -91,9 +115,27 @@ async def test_get_alcohol_reviews(async_client: AsyncClient):
 
 
 @mark.asyncio
-async def test_get_alcohol_reviews_without_existing_alcohol(async_client: AsyncClient):
+async def test_get_alcohol_reviews_current_user_review(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
     response = await async_client.get(
-        '/reviews/6288e32dd5ab6070dde8db9b?limit=10&offset=0'
+        '/reviews/6288e32dd5ab6070dde8db8b?limit=10&offset=0', headers=user_token_headers
+    )
+    fixture = ALCOHOL_REVIEWS_FIXTURE[0]
+    fixture['helpful'] = None
+    assert response.status_code == 200
+    response = response.json()
+    assert response['my_review'] == fixture
+
+
+@mark.asyncio
+async def test_get_alcohol_reviews_without_existing_alcohol(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/reviews/6288e32dd5ab6070dde8db9b?limit=10&offset=0', headers=user_token_headers
     )
     assert response.status_code == 404
     response = response.json()
@@ -112,6 +154,26 @@ async def test_get_user_reviews(async_client: AsyncClient):
     assert response['page_info']['limit'] == 10
     assert response['page_info']['total'] == 2
     assert response['reviews'] == USER_REVIEWS_FIXTURE
+
+
+@mark.asyncio
+async def test_get_user_reviews_with_one_marked_as_helpful_by_me(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        '/reviews/user/6288e2fdd5ab6070dde8db8c?limit=10&offset=0',
+        headers=admin_token_headers
+    )
+    fixture = USER_REVIEWS_FIXTURE
+    fixture[1]['helpful'] = True
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['reviews']) == 2
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['total'] == 2
+    assert response['reviews'] == fixture
 
 
 @mark.asyncio
@@ -316,10 +378,46 @@ async def test_admin_get_reported_reviews(
     )
     assert response.status_code == 200
     response = response.json()
+    assert len(response['reviews']) == 2
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['total'] == 2
+    assert response['reviews'] == REPORTED_REVIEWS_FIXTURE
+
+
+@mark.asyncio
+async def test_get_reported_reviews_by_phrase(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        'admin/reviews/search?limit=10&offset=0&phrase=admi',
+        headers=admin_token_headers
+    )
+    assert response.status_code == 200
+    response = response.json()
     assert len(response['reviews']) == 1
     assert response['page_info']['offset'] == 0
     assert response['page_info']['limit'] == 10
     assert response['page_info']['total'] == 1
+    assert response['reviews'] == [REPORTED_REVIEWS_FIXTURE[1]]
+
+
+@mark.asyncio
+async def test_get_reported_reviews_by_empty_phrase(
+        async_client: AsyncClient,
+        admin_token_headers: dict[str, str]
+):
+    response = await async_client.get(
+        'admin/reviews/search?limit=10&offset=0',
+        headers=admin_token_headers
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['reviews']) == 2
+    assert response['page_info']['offset'] == 0
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['total'] == 2
     assert response['reviews'] == REPORTED_REVIEWS_FIXTURE
 
 

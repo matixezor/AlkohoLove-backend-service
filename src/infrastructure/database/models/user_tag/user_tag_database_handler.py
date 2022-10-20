@@ -69,12 +69,36 @@ class UserTagDatabaseHandler:
         collection.insert_one(db_user_tag)
 
     @staticmethod
+    async def create_user_tag_with_alcohols(
+            collection: Collection[UserTag],
+            user_id: ObjectId,
+            tag_name: str,
+            alcohols: list[ObjectId],
+    ) -> None:
+        db_user_tag = UserTag(
+            _id=ObjectId(),
+            user_id=user_id,
+            tag_name=tag_name,
+            alcohols=alcohols
+        )
+        collection.insert_one(db_user_tag)
+
+    @staticmethod
     async def add_alcohol(
             collection: Collection[UserTag],
             tag_id: ObjectId,
             alcohol_id: ObjectId,
     ) -> None:
         collection.update_one({'_id': tag_id}, {'$push': {'alcohols': alcohol_id}})
+
+    @staticmethod
+    async def add_alcohols(
+            collection: Collection[UserTag],
+            user_id: ObjectId,
+            tag_name: str,
+            alcohols: list[ObjectId],
+    ) -> None:
+        collection.update_one({'user_id': user_id, 'tag_name': tag_name}, {'$push': {'alcohols': {'$each': alcohols}}})
 
     @staticmethod
     async def remove_alcohol(
