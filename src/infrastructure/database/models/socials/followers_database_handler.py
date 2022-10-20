@@ -23,13 +23,35 @@ class FollowersDatabaseHandler:
 
     @staticmethod
     async def delete_user_from_followers(collection: Collection[Followers], user_id: ObjectId,
-                                         follower_user_id: ObjectId) -> None:
-        collection.update_one({'_id': user_id}, {'$pull': {'followers': follower_user_id}})
+                                         follower_user_id: ObjectId) -> int:
+        update = collection.update_one({'_id': user_id}, {'$pull': {'followers': follower_user_id}})
+        return update.modified_count
 
     @staticmethod
     async def add_user_to_followers(collection: Collection[Followers], user_id: ObjectId,
                                     follower_user_id: ObjectId) -> None:
         collection.update_one({'_id': user_id}, {'$push': {'followers': follower_user_id}})
+
+    @staticmethod
+    async def increase_followers_counter(collection: Collection, other_user_id: ObjectId) -> None:
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(other_user_id)}},
+            {
+                '$inc': {'followers_count': 1}
+            }
+        )
+
+    @staticmethod
+    async def decrease_followers_counter(collection: Collection, other_user_id: ObjectId) -> None:
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(other_user_id)},
+                'followers_count': {'$gt': 0}
+            },
+            {
+                '$set': {'followers_count': {'$inc': -1}}
+            }
+        )
 
     @staticmethod
     async def check_if_user_in_followers(collection: Collection[Followers], user_id: ObjectId,

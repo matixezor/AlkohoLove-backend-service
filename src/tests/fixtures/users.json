@@ -10,7 +10,13 @@
     "last_login": "2022-03-22T19:13:25Z",
     "is_admin": true,
     "is_banned": false,
-    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO",
+    "avg_rating": 0,
+    "favourites_count": 0,
+    "followers_count": 0,
+    "following_count": 0,
+    "rate_count": 0,
+    "rate_value": 0
   },
   {
     "_id": {
@@ -23,7 +29,13 @@
     "last_login": "2022-04-22T16:24:21Z",
     "is_admin": false,
     "is_banned": false,
-    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO",
+    "avg_rating": 5,
+    "favourites_count": 0,
+    "followers_count": 0,
+    "following_count": 0,
+    "rate_count": 2,
+    "rate_value": 10
   },
   {
     "_id": {
@@ -36,7 +48,13 @@
     "last_login": "2022-04-21T12:32:43Z",
     "is_admin": false,
     "is_banned": false,
-    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO",
+    "avg_rating": 0,
+    "favourites_count": 0,
+    "followers_count": 0,
+    "following_count": 0,
+    "rate_count": 0,
+    "rate_value": 0
   },
   {
     "_id": {
@@ -49,6 +67,12 @@
     "last_login": "2022-04-21T12:32:43Z",
     "is_admin": false,
     "is_banned": true,
-    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO"
+    "password_salt": "$2b$12$9z2iZlb2xzIOsZC0ws1pEO",
+    "avg_rating": 0,
+    "favourites_count": 0,
+    "followers_count": 0,
+    "following_count": 0,
+    "rate_count": 0,
+    "rate_value": 0
   }
 ]

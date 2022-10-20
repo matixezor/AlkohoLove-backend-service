@@ -623,10 +623,11 @@ async def delete_review(
     """
     review_id = validate_object_id(review_id)
     alcohol_id = validate_object_id(alcohol_id)
-    rating = await ReviewDatabaseHandler.get_rating(db.reviews, review_id)
+    review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
 
-    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id):
-        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, rating)
+    if await ReviewDatabaseHandler.delete_review(db.reviews, review_id, alcohol_id):
+        await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, review['rating'])
+        await ReviewDatabaseHandler.remove_rating_from_user(db.users, review['user_id'], review['rating'])
 
 
 @router.get(
@@ -719,7 +720,13 @@ async def ban_review(
             review_id,
             reason_payload.reason
         )
-        await ReviewDatabaseHandler.delete_review(db.reviews, review_id)
+        if await ReviewDatabaseHandler.delete_review(db.reviews, review_id, db_review['alcohol_id']):
+            await ReviewDatabaseHandler.remove_rating_from_alcohol(
+                db.alcohols,
+                db_review['alcohol_id'],
+                db_review['rating']
+            )
+            await ReviewDatabaseHandler.remove_rating_from_user(db.users, db_review['user_id'], db_review['rating'])
     else:
         raise ReviewNotFoundException()
     return db_banned_review

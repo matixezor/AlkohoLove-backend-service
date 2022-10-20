@@ -107,6 +107,29 @@ class ReviewDatabaseHandler:
         )
 
     @staticmethod
+    async def add_rating_to_user(
+            collection: Collection,
+            user_id: ObjectId,
+            rating: int,
+    ):
+        user = collection.find_one({'_id': user_id})
+
+        rate_count = user['rate_count'] + 1
+        rate_value = user['rate_value'] + rating
+        avg_rating = rate_value/rate_count
+
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(user_id)}},
+            {
+                '$set': {
+                    'rate_count': Int64(rate_count),
+                    'avg_rating': float(avg_rating),
+                    'rate_value': Int64(rate_value)
+                }
+            }
+        )
+
+    @staticmethod
     async def remove_rating_from_alcohol(
             collection: Collection,
             alcohol_id: ObjectId,
@@ -124,7 +147,37 @@ class ReviewDatabaseHandler:
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
+                '$set': {
+                    'rate_count': Int64(rate_count),
+                    'avg_rating': float(avg_rating),
+                    'rate_value': Int64(rate_value)
+                }
+            }
+        )
+
+    @staticmethod
+    async def remove_rating_from_user(
+            collection: Collection,
+            user_id: ObjectId,
+            rating: int,
+    ):
+        user = collection.find_one({'_id': user_id})
+
+        rate_count = user['rate_count'] - 1
+        rate_value = user['rate_value'] - rating
+        if rate_count < 1:
+            avg_rating = 0
+        else:
+            avg_rating = rate_value/rate_count
+
+        collection.update_one(
+            {'_id': {'$eq': ObjectId(user_id)}},
+            {
+                '$set': {
+                    'rate_count': Int64(rate_count),
+                    'avg_rating': float(avg_rating),
+                    'rate_value': Int64(rate_value)
+                }
             }
         )
 
@@ -143,7 +196,31 @@ class ReviewDatabaseHandler:
         collection.update_one(
             {'_id': {'$eq': alcohol_id}},
             {
-                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
+                '$set': {
+                    'rate_count': Int64(rate_count),
+                    'avg_rating': float(avg_rating),
+                    'rate_value': Int64(rate_value)
+                }
+            }
+        )
+
+    @staticmethod
+    async def update_user_rating(
+            collection: Collection,
+            user_id: ObjectId,
+            rating_old: int,
+            rating_new: int
+    ):
+        user = collection.find_one({'_id': user_id})
+        rate_count = user['rate_count']
+        rate_value = user['rate_value'] - rating_old + rating_new
+        avg_rating = rate_value / rate_count
+
+        collection.update_one(
+            {'_id': {'$eq': user_id}},
+            {
+                '$set': {'rate_count': Int64(rate_count), 'avg_rating': float(avg_rating),
+                         'rate_value': Int64(rate_value)}
             }
         )
 
@@ -182,9 +259,11 @@ class ReviewDatabaseHandler:
     @staticmethod
     async def delete_review(
             collection: Collection[Review],
-            review_id: ObjectId
-    ):
-        return collection.delete_one({'_id': review_id})
+            review_id: ObjectId,
+            alcohol_id: ObjectId
+    ) -> int:
+        delete = collection.delete_one({'_id': review_id, 'alcohol_id': alcohol_id})
+        return delete.deleted_count
 
     @staticmethod
     async def get_rating(
@@ -249,14 +328,18 @@ class ReviewDatabaseHandler:
 
     @staticmethod
     async def get_user_reviews(
-            collection: Collection[Review],
+            review_collection: Collection[Review],
+            alcohol_collection: Collection,
             limit: int,
             offset: int,
             user_id: ObjectId
     ) -> list[Review]:
-        return (
-            list(collection.find({'user_id': user_id}).skip(offset).limit(limit))
-        )
+        reviews = list(review_collection.find({'user_id': user_id}).skip(offset).limit(limit))
+        for review in reviews:
+            alcohol = alcohol_collection.find_one({'_id': review["alcohol_id"]})
+            review['alcohol_name'] = alcohol['name']
+            review['kind'] = alcohol['kind']
+        return reviews
 
     @staticmethod
     async def count_user_reviews(

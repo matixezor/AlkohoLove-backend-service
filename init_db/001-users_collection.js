@@ -55,6 +55,30 @@ let users = {
             is_banned: {
                 bsonType: 'bool',
                 description: 'must be a boolean'
+            },
+            rate_count: {
+                bsonType: 'long',
+                description: '10'
+            },
+            rate_value: {
+                bsonType: 'long',
+                description: '50'
+            },
+            avg_rating: {
+                bsonType: 'double',
+                description: '5.0'
+            },
+            following_count: {
+                bsonType: 'int',
+                description: '5'
+            },
+            followers_count: {
+                bsonType: 'int',
+                description: '5'
+            },
+            favourites_count: {
+                bsonType: 'int',
+                description: '5'
             }
         }
     }
@@ -81,7 +105,13 @@ db.users.insertMany(
             last_login: new ISODate('2022-03-22T19:13:25Z'),
             is_admin: true,
             is_banned: false,
-            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO'
+            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
+            avg_rating: 0.0,
+            favourites_count: NumberInt(1),
+            followers_count: NumberInt(2),
+            following_count: NumberInt(2),
+            rate_count: NumberLong(0),
+            rate_value: NumberLong(0)
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8c'),
@@ -92,7 +122,13 @@ db.users.insertMany(
             last_login: new ISODate('2022-04-22T16:24:21Z'),
             is_admin: false,
             is_banned: false,
-            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO'
+            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
+            avg_rating: 5.0,
+            favourites_count: NumberInt(2),
+            followers_count: NumberInt(2),
+            following_count: NumberInt(2),
+            rate_count: NumberLong(2),
+            rate_value: NumberLong(10)
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8d'),
@@ -103,7 +139,13 @@ db.users.insertMany(
             last_login: new ISODate('2022-04-21T12:32:43Z'),
             is_admin: false,
             is_banned: false,
-            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO'
+            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
+            avg_rating: 1.0,
+            favourites_count: NumberInt(4),
+            followers_count: NumberInt(2),
+            following_count: NumberInt(2),
+            rate_count: NumberLong(1),
+            rate_value: NumberLong(1)
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8e'),
@@ -114,7 +156,13 @@ db.users.insertMany(
             last_login: new ISODate('2022-04-21T12:32:43Z'),
             is_admin: false,
             is_banned: true,
-            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO'
-        },
+            password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
+            avg_rating: 0.0,
+            favourites_count: NumberInt(0),
+            followers_count: NumberInt(0),
+            following_count: NumberInt(1),
+            rate_count: NumberLong(0),
+            rate_value: NumberLong(0)
+        }
     ]
 )
