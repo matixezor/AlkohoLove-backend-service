@@ -302,7 +302,7 @@ async def test_admin_delete_review(
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbab/alcohol/6288e32dd5ab6070dde8db8b',
+        '/admin/reviews/62964f8f12ce37ef94d3cbaa/alcohol/6288e32dd5ab6070dde8db8a',
         headers=admin_token_headers
     )
     assert response.status_code == 204

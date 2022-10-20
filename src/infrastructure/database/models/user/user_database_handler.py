@@ -176,9 +176,7 @@ class UserDatabaseHandler:
             collection: Collection,
             user_id: ObjectId
     ):
-        user = collection.find_one({'_id': user_id})
-        favourites_count = user['favourites_count'] + 1
-        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$set': {'favourites_count': favourites_count}})
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': 1}})
 
     @staticmethod
     async def remove_from_favourite_counter(
@@ -187,5 +185,4 @@ class UserDatabaseHandler:
     ):
         user = collection.find_one({'_id': user_id})
         if user["favourites_count"] > 0:
-            favourites_count = user['favourites_count'] - 1
-            collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$set': {'favourites_count': favourites_count}})
+            collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': -1}})

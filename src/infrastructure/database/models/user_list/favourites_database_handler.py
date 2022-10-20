@@ -21,8 +21,9 @@ class UserFavouritesHandler:
 
     @staticmethod
     async def delete_alcohol_from_favourites(collection: Collection[Favourites], user_id: ObjectId,
-                                             alcohol_id: ObjectId) -> None:
-        collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': alcohol_id}})
+                                             alcohol_id: ObjectId) -> int:
+        update = collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': alcohol_id}})
+        return update.modified_count
 
     @staticmethod
     async def add_alcohol_to_favourites(collection: Collection[Favourites], user_id: ObjectId,

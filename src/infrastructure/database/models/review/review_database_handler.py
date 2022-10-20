@@ -257,9 +257,11 @@ class ReviewDatabaseHandler:
     @staticmethod
     async def delete_review(
             collection: Collection[Review],
-            review_id: ObjectId
-    ):
-        return collection.delete_one({'_id': review_id})
+            review_id: ObjectId,
+            alcohol_id: ObjectId
+    ) -> int:
+        delete = collection.delete_one({'_id': review_id, 'alcohol_id': alcohol_id})
+        return delete.deleted_count
 
     @staticmethod
     async def get_rating(
