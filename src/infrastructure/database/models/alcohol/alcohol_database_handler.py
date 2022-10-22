@@ -72,7 +72,16 @@ class AlcoholDatabaseHandler:
 
     @staticmethod
     async def add_alcohol(collection: Collection, payload: AlcoholCreate):
-        payload = payload.dict() | {'avg_rating': float(0), 'rate_count': Int64(0), 'rate_value': Int64(0)}
+        payload = payload.dict() | {
+            'avg_rating': float(0),
+            'rate_count': Int64(0),
+            'rate_value': Int64(0),
+            'rate_1_count': Int64(0),
+            'rate_2_count': Int64(0),
+            'rate_3_count': Int64(0),
+            'rate_4_count': Int64(0),
+            'rate_5_count': Int64(0)
+        }
         try:
             return collection.insert_one(payload)
         except WriteError as ex:
