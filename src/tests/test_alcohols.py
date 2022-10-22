@@ -29,7 +29,12 @@ ALCOHOL_FIXTURE = {
         'name': 'age',
         'display_name': 'wiek',
         'value': 4
-    }]
+    }],
+    "rate_1_count": 0,
+    "rate_2_count": 0,
+    "rate_3_count": 0,
+    "rate_4_count": 0,
+    "rate_5_count": 1
 }
 
 ALCOHOL_CATEGORY_FIXTURE = {
@@ -90,6 +95,11 @@ MY_ALCOHOLS_FIXTURE = [
         'date': '2022-08-15T18:46:11.900000',
         'username': 'admin',
         'keywords': ['wódka', 'pigwowa', 'pigwowy'],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     }
 ]
 
@@ -115,7 +125,12 @@ ALCOHOL_FIXTURE_2 = {
     'rate_value': 0,
     'username': None,
     'date': None,
-    'additional_properties': []
+    'additional_properties': [],
+    "rate_1_count": 0,
+    "rate_2_count": 0,
+    "rate_3_count": 0,
+    "rate_4_count": 0,
+    "rate_5_count": 0
 }
 
 

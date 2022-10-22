@@ -10,3 +10,8 @@ class Alcohol(MongoBaseModel, AlcoholBase):
     rate_value: int
     username: str | None
     date: datetime | None
+    rate_1_count: int
+    rate_2_count: int
+    rate_3_count: int
+    rate_4_count: int
+    rate_5_count: int

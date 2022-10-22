@@ -128,6 +128,31 @@ let core = {
             items: {
                 bsonType: 'string'
             }
+        },
+        rate_1_count: {
+            title: 'ilość ocen 1',
+            bsonType: 'long',
+            description: '0'
+        },
+        rate_2_count: {
+            title: 'ilość ocen 2',
+            bsonType: 'long',
+            description: '0'
+        },
+        rate_3_count: {
+            title: 'ilość ocen 3',
+            bsonType: 'long',
+            description: '0'
+        },
+        rate_4_count: {
+            title: 'ilość ocen 4',
+            bsonType: 'long',
+            description: '0'
+        },
+        rate_5_count: {
+            title: 'ilość ocen 5',
+            bsonType: 'long',
+            description: '0'
         }
     }
 }
@@ -333,7 +358,12 @@ db.alcohols.insertMany(
             rate_value: NumberLong(5),
             avg_rating: 5.0,
             age: NumberInt(4),
-            keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend']
+            keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend'],
+            rate_1_count: NumberLong(0),
+            rate_2_count: NumberLong(0),
+            rate_3_count: NumberLong(0),
+            rate_4_count: NumberLong(0),
+            rate_5_count: NumberLong(1)
         },
         {
             _id: ObjectId('6288e32dd5ab6070dde8db8b'),
@@ -355,7 +385,12 @@ db.alcohols.insertMany(
             rate_value: NumberLong(6),
             avg_rating: 3.0,
             age: NumberInt(4),
-            keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend', 'piwo']
+            keywords: ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend', 'piwo'],
+            rate_1_count: NumberLong(0),
+            rate_2_count: NumberLong(0),
+            rate_3_count: NumberLong(2),
+            rate_4_count: NumberLong(0),
+            rate_5_count: NumberLong(0)
         },
         {
             _id: ObjectId('6288e32dd5ab6070dde8db8c'),
@@ -376,7 +411,12 @@ db.alcohols.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             avg_rating: 0.0,
-            keywords: ['szwedzka']
+            keywords: ['szwedzka'],
+            rate_1_count: NumberLong(0),
+            rate_2_count: NumberLong(0),
+            rate_3_count: NumberLong(0),
+            rate_4_count: NumberLong(0),
+            rate_5_count: NumberLong(0)
         },
         {
             _id: ObjectId('6288e32dd5ab6070dde8db8e'),
@@ -397,7 +437,12 @@ db.alcohols.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             avg_rating: 0.0,
-            keywords: ['wódka', 'pigwowa', 'pigwowy']
+            keywords: ['wódka', 'pigwowa', 'pigwowy'],
+            rate_1_count: NumberLong(0),
+            rate_2_count: NumberLong(0),
+            rate_3_count: NumberLong(0),
+            rate_4_count: NumberLong(0),
+            rate_5_count: NumberLong(0)
         },
         {
             _id: ObjectId('6288e32dd5ab6070dde8db8f'),
@@ -419,7 +464,12 @@ db.alcohols.insertMany(
             rate_value: NumberLong(0),
             avg_rating: 0.0,
             age: NumberInt(3),
-            keywords: ['kubański']
+            keywords: ['kubański'],
+            rate_1_count: NumberLong(0),
+            rate_2_count: NumberLong(0),
+            rate_3_count: NumberLong(0),
+            rate_4_count: NumberLong(0),
+            rate_5_count: NumberLong(0)
         },
     ]
 )

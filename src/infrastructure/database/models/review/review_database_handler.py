@@ -88,6 +88,16 @@ class ReviewDatabaseHandler:
             return False
 
     @staticmethod
+    def rate_count_field_name(rating: int) -> str:
+        return {
+            1: 'rate_1_count',
+            2: 'rate_2_count',
+            3: 'rate_3_count',
+            4: 'rate_4_count',
+            5: 'rate_5_count'
+        }[rating]
+
+    @staticmethod
     async def add_rating_to_alcohol(
             collection: Collection,
             alcohol_id: ObjectId,
@@ -99,10 +109,16 @@ class ReviewDatabaseHandler:
         rate_value = alcohol['rate_value'] + rating
         avg_rating = rate_value / rate_count
 
+        rate_count_field_name = ReviewDatabaseHandler.rate_count_field_name(rating)
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
-                '$set': {'rate_count': Int64(rate_count), 'avg_rating': avg_rating, 'rate_value': Int64(rate_value)}
+                '$set': {
+                    'rate_count': Int64(rate_count),
+                    'avg_rating': avg_rating,
+                    'rate_value': Int64(rate_value),
+                },
+                '$inc': {rate_count_field_name: 1}
             }
         )
 
@@ -144,6 +160,8 @@ class ReviewDatabaseHandler:
         else:
             avg_rating = rate_value / rate_count
 
+        rate_count_field_name = ReviewDatabaseHandler.rate_count_field_name(rating)
+
         collection.update_one(
             {'_id': {'$eq': ObjectId(alcohol_id)}},
             {
@@ -151,7 +169,8 @@ class ReviewDatabaseHandler:
                     'rate_count': Int64(rate_count),
                     'avg_rating': float(avg_rating),
                     'rate_value': Int64(rate_value)
-                }
+                },
+                '$inc': {rate_count_field_name: -1}
             }
         )
 
@@ -193,6 +212,9 @@ class ReviewDatabaseHandler:
         rate_value = alcohol['rate_value'] - rating_old + rating_new
         avg_rating = rate_value / rate_count
 
+        old_rate_count_field_name = ReviewDatabaseHandler.rate_count_field_name(rating_old)
+        new_rate_count_field_name = ReviewDatabaseHandler.rate_count_field_name(rating_new)
+
         collection.update_one(
             {'_id': {'$eq': alcohol_id}},
             {
@@ -200,7 +222,8 @@ class ReviewDatabaseHandler:
                     'rate_count': Int64(rate_count),
                     'avg_rating': float(avg_rating),
                     'rate_value': Int64(rate_value)
-                }
+                },
+                '$inc': {old_rate_count_field_name: -1, new_rate_count_field_name: 1}
             }
         )
 

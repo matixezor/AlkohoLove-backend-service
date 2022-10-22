@@ -25,7 +25,12 @@ WISHLIST_FIXTURE = [
             'name': 'age',
             'display_name': 'wiek',
             'value': 4
-        }]
+        }],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 1
     },
     {
         'name': 'Jameson Caskmates Stout Edition',
@@ -53,7 +58,12 @@ WISHLIST_FIXTURE = [
             'name': 'age',
             'display_name': 'wiek',
             'value': 4
-        }]
+        }],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 2,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     },
     {
         "name": "Absolut Vodka",
@@ -77,7 +87,12 @@ WISHLIST_FIXTURE = [
         "rate_value": 0,
         'date': None,
         'username': None,
-        'additional_properties': []
+        'additional_properties': [],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     }
 ]
 
@@ -104,7 +119,12 @@ FAVOURITES_FIXTURE = [
         'date': None,
         'username': None,
         "keywords": ['szwedzka'],
-        'additional_properties': []
+        'additional_properties': [],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     },
     {
         "id": '6288e32dd5ab6070dde8db8e',
@@ -128,7 +148,12 @@ FAVOURITES_FIXTURE = [
         'date': "2022-08-15T18:46:11.900000",
         'username': "admin",
         "keywords": ['wódka', 'pigwowa', 'pigwowy'],
-        'additional_properties': []
+        'additional_properties': [],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     }
 ]
 
@@ -166,7 +191,11 @@ SEARCH_HISTORY_FIXTURE = [
                           'słodkie sherry',
                           'łagodny'],
                 'type': 'blended',
-
+                "rate_1_count": 0,
+                "rate_2_count": 0,
+                "rate_3_count": 0,
+                "rate_4_count": 0,
+                "rate_5_count": 1
             },
         'date': '2022-04-25T19:13:25+00:00'
     },
@@ -207,7 +236,12 @@ SEARCH_HISTORY_FIXTURE = [
                 'username': None,
                 'region': 'Cork',
                 'taste': ['mleczna czekolada', 'chmiel', 'kakao', 'marcepan'],
-                'type': 'blended'
+                'type': 'blended',
+                "rate_1_count": 0,
+                "rate_2_count": 0,
+                "rate_3_count": 2,
+                "rate_4_count": 0,
+                "rate_5_count": 0
             },
         'date': '2022-07-21T19:13:25+00:00'
     }
