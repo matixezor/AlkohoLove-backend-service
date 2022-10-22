@@ -28,7 +28,12 @@ TAG_ALCOHOLS_FIXTURE = [
             'name': 'age',
             'display_name': 'wiek',
             'value': 4
-        }]
+        }],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 1
     },
     {
         "id": '6288e32dd5ab6070dde8db8c',
@@ -52,7 +57,12 @@ TAG_ALCOHOLS_FIXTURE = [
         'date': None,
         'username': None,
         "keywords": ['szwedzka'],
-        'additional_properties': []
+        'additional_properties': [],
+        "rate_1_count": 0,
+        "rate_2_count": 0,
+        "rate_3_count": 0,
+        "rate_4_count": 0,
+        "rate_5_count": 0
     }
 
 ]

@@ -6,9 +6,7 @@ from src.domain.review import Review
 from src.domain.common import PageInfo
 from src.domain.review.user_review import UserReview
 from src.infrastructure.database.database_config import get_db
-from src.domain.review.paginated_review import PaginatedReview
 from src.infrastructure.auth.auth_utils import get_optional_user
-from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.domain.review.paginated_user_reviews import PaginatedUserReview
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
