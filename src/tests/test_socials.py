@@ -77,3 +77,32 @@ async def test_search_users_by_phrase_no_current_user(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['users'] == []
+
+
+@mark.asyncio
+async def test_get_user_info(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('socials/user_info/6288e2fdd5ab6070dde8db8c', headers=user_token_headers)
+    assert response.status_code == 200
+    response = response.json()
+    assert response['id'] == '6288e2fdd5ab6070dde8db8c'
+    assert response['username'] == 'Adam_Skorupa'
+    assert response['created_on'] == "2022-04-12T06:11:15+00:00"
+    assert response['rate_count'] == 2
+    assert response['avg_rating'] == 5
+    assert response['followers_count'] == 0
+    assert response['following_count'] == 0
+    assert response['favourites_count'] == 0
+
+
+@mark.asyncio
+async def test_get_user_info_that_not_exists(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.get('socials/user_info/6288e2fdd5ab6070dde8db8f', headers=user_token_headers)
+    assert response.status_code == 404
+    response = response.json()
+    assert response['detail'] == 'User not found'

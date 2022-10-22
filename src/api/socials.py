@@ -123,7 +123,7 @@ async def get_user_info(
         db: Database = Depends(get_db)
 ):
     user_id = validate_object_id(user_id)
-    if not await UserDatabaseHandler.check_if_user_exists(db.users, user_id):
+    if not await UserDatabaseHandler.check_if_user_exists(db.users, user_id=user_id):
         raise UserNotFoundException()
     user = await UserDatabaseHandler.get_user_by_id(db.users, user_id)
     return user
