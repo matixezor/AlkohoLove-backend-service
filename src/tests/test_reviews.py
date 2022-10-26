@@ -34,8 +34,41 @@ USER_REVIEWS_FIXTURE = [
         'helpful_count': 0,
         'helpful': False,
         'alcohol_id': '6288e32dd5ab6070dde8db8a',
-        'alcohol_name': 'Jameson',
-        'kind': 'whisky'
+        'alcohol': {
+            'age': 4,
+            'alcohol_by_volume': 40.0,
+            'aroma': ['kwiaty', 'owoce', 'nuty korzenne', 'drewno'],
+            'avg_rating': 5.0,
+            'barcode': ['5011007003234', '5011007015534', '5011007003005'],
+            'color': 'bursztyn',
+            'country': 'Irlandia',
+            'date': None,
+            'description': 'Lorem ipsum',
+            'finish': ['gładki', 'słodki', 'pikantny'],
+            'food': ['czekoladowy mus'],
+            'id': '6288e32dd5ab6070dde8db8a',
+            'keywords': ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend'],
+            'kind': 'whisky',
+            'manufacturer': 'Irish Distillers',
+            'name': 'Jameson',
+            'rate_1_count': 0,
+            'rate_2_count': 0,
+            'rate_3_count': 0,
+            'rate_4_count': 0,
+            'rate_5_count': 1,
+            'rate_count': 1,
+            'rate_value': 5,
+            'region': 'Cork',
+            'taste': [
+                'nuty korzenne',
+                'orzechy',
+                'wanilia',
+                'słodkie sherry',
+                'łagodny'
+            ],
+            'type': 'blended',
+            'username': None
+        },
     },
     {
         'review': 'ok',
@@ -44,8 +77,44 @@ USER_REVIEWS_FIXTURE = [
         'username': 'Adam_Skorupa',
         'date': '2022-05-13T15:22:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
-        'alcohol_name': 'Jameson Caskmates Stout Edition',
-        'kind': 'whisky',
+        'alcohol': {
+            'age': 4,
+            'alcohol_by_volume': 40.0,
+            'aroma': ['owoce',
+                      'jabłko',
+                      'gruszka',
+                      'nuty korzenne',
+                      'orzechy',
+                      'skórka limonki'],
+            'avg_rating': 3.0,
+            'barcode': ['5011007025427'],
+            'color': 'karmel',
+            'country': 'Irlandia',
+            'date': None,
+            'description': 'Lorem ipsum',
+            'finish': ['długi', 'słodki', 'mleczna czekolada', 'karmel'],
+            'food': ['ser'],
+            'id': '6288e32dd5ab6070dde8db8b',
+            'keywords': ['czteroletnia',
+                         'irlandzka',
+                         'irlandzkie',
+                         'blend',
+                         'piwo'],
+            'kind': 'whisky',
+            'manufacturer': 'Irish Distillers',
+            'name': 'Jameson Caskmates Stout Edition',
+            'rate_1_count': 0,
+            'rate_2_count': 0,
+            'rate_3_count': 2,
+            'rate_4_count': 0,
+            'rate_5_count': 0,
+            'rate_count': 2,
+            'rate_value': 6,
+            'region': 'Cork',
+            'taste': ['mleczna czekolada', 'chmiel', 'kakao', 'marcepan'],
+            'type': 'blended',
+            'username': None
+        },
         'helpful_count': 1,
         'helpful': False
     }
@@ -351,7 +420,7 @@ async def test_admin_delete_review(
         admin_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbaa/alcohol/6288e32dd5ab6070dde8db8a',
+        '/admin/reviews/62964f8f12ce37ef94d3cbaa',
         headers=admin_token_headers
     )
     assert response.status_code == 204
@@ -363,7 +432,7 @@ async def test_admin_delete_review_without_permissions(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.delete(
-        '/admin/reviews/62964f8f12ce37ef94d3cbab/alcohol/6288e32dd5ab6070dde8db8b',
+        '/admin/reviews/62964f8f12ce37ef94d3cbab',
         headers=user_token_headers
     )
     assert response.status_code == 403

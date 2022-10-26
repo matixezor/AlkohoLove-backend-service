@@ -614,7 +614,7 @@ async def delete_suggestion(
 
 
 @router.delete(
-    path='/reviews/{review_id}/alcohol/{alcohol_id}',
+    path='/reviews/{review_id}',
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     summary='[For admin] Delete review',
@@ -622,15 +622,14 @@ async def delete_suggestion(
 )
 async def delete_review(
         review_id: str,
-        alcohol_id: str,
         db: Database = Depends(get_db)
 ) -> None:
     """
     Delete review by id
     """
     review_id = validate_object_id(review_id)
-    alcohol_id = validate_object_id(alcohol_id)
     review = await ReviewDatabaseHandler.get_review_by_id(db.reviews, review_id)
+    alcohol_id = review['alcohol_id']
 
     if await ReviewDatabaseHandler.delete_review(db.reviews, review_id, alcohol_id):
         await ReviewDatabaseHandler.remove_rating_from_alcohol(db.alcohols, alcohol_id, review['rating'])

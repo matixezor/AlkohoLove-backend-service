@@ -360,8 +360,7 @@ class ReviewDatabaseHandler:
         reviews = list(review_collection.find({'user_id': user_id}).skip(offset).limit(limit))
         for review in reviews:
             alcohol = alcohol_collection.find_one({'_id': review["alcohol_id"]})
-            review['alcohol_name'] = alcohol['name']
-            review['kind'] = alcohol['kind']
+            review['alcohol'] = alcohol
         return reviews
 
     @staticmethod
