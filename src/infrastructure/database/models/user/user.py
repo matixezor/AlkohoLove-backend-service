@@ -19,3 +19,6 @@ class User(TypedDict):
     following_count: int
     favourites_count: int
     rate_value: int
+    is_verified: bool
+    updated_at: datetime
+    verification_code: str | None

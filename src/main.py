@@ -18,6 +18,11 @@ from src.infrastructure.config.app_config import \
 
 app = FastAPI(title='AlkohoLove-backend-service')
 
+
+
+
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,

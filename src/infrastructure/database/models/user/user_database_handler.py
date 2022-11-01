@@ -1,8 +1,15 @@
+import hashlib
+from random import randbytes
+
 from bcrypt import gensalt
 from datetime import datetime
 from bson import ObjectId, Int64
+from fastapi import HTTPException
 from passlib.context import CryptContext
+from pydantic import EmailStr
 from pymongo.collection import Collection, ReturnDocument
+from starlette import status
+from starlette.requests import Request
 
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
@@ -11,6 +18,7 @@ from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException
+from src.utils.email.email_handler import Email
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -88,7 +96,7 @@ class UserDatabaseHandler:
         return collection.find_one({'username': username})
 
     @staticmethod
-    async def create_user(collection: Collection[User], payload: UserCreate) -> None:
+    async def create_user(collection: Collection[User], payload: UserCreate, request: Request):
         password_salt = gensalt().decode('utf-8')
         payload.password = UserDatabaseHandler.get_password_hash(
             payload.password,
@@ -107,10 +115,29 @@ class UserDatabaseHandler:
             followers_count=0,
             following_count=0,
             favourites_count=0,
-            rate_value=Int64(0)
-        )
+            rate_value=Int64(0),
+            updated_at=datetime.now(),
+            is_verified=False,
+            verification_code=None)
 
-        collection.insert_one(db_user)
+        result = collection.insert_one(db_user)
+        new_user = collection.find_one({'_id': result.inserted_id})
+        try:
+            token = randbytes(10)
+            hashed_code = hashlib.sha256()
+            hashed_code.update(token)
+            verification_code = hashed_code.hexdigest()
+            collection.find_one_and_update({"_id": str(result.inserted_id)}, {
+                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}})
+
+            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/api/auth/verifyemail/{token.hex()}"
+            await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
+        except Exception as error:
+            collection.find_one_and_update({"_id": result.inserted_id}, {
+                "$set": {"verification_code": None, "updated_at": datetime.utcnow()}})
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail='There was an error sending email')
+        return {'status': 'success', 'message': 'Verification token successfully sent to your email'}
 
     @staticmethod
     async def authenticate_user(

@@ -1,9 +1,10 @@
+import hashlib
 from datetime import datetime
 from operator import itemgetter
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, status, Response, Header, HTTPException
+from fastapi import APIRouter, Depends, status, Response, Header, HTTPException, Request
 
 from src.domain.token import Token
 from src.domain.user import UserCreate
@@ -88,6 +89,7 @@ async def refresh(
 )
 async def register(
         user_create_payload: UserCreate,
+        request: Request,
         db: Database = Depends(get_db)
 ) -> None:
     """
@@ -99,13 +101,13 @@ async def register(
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
     if await UserDatabaseHandler.check_if_user_exists(
-        db.users,
-        user_create_payload.email,
-        user_create_payload.username
+            db.users,
+            user_create_payload.email,
+            user_create_payload.username
     ):
         raise UserExistsException()
 
-    await UserDatabaseHandler.create_user(db.users, user_create_payload)
+    await UserDatabaseHandler.create_user(db.users, user_create_payload, request)
     await UserDatabaseHandler.create_user_lists(db.users, user_create_payload.username, db.user_wishlist,
                                                 db.user_favourites, db.user_search_history)
     await FollowersDatabaseHandler.create_followers_and_following_lists(db.users, user_create_payload.username,
@@ -154,3 +156,21 @@ async def logout(
     await TokenBlacklistDatabaseHandler.add_token_to_blacklist(
         db.tokens_blacklist, token_jti=refresh_token_jti, expiration_date=datetime.fromtimestamp(refresh_token_exp)
     )
+
+
+@router.get('/verifyemail/{token}',
+            status_code=status.HTTP_204_NO_CONTENT)
+async def verify_me(token: str, db: Database = Depends(get_db)
+                    ):
+    hashed_code = hashlib.sha256()
+    hashed_code.update(bytes.fromhex(token))
+    verification_code = hashed_code.hexdigest()
+    result = db.users.find_one_and_update({"verification_code": verification_code}, {
+        "$set": {"verification_code": None, "verified": True, "updated_at": datetime.utcnow()}}, new=True)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail='Invalid verification code or account already verified')
+    return {
+        "status": "success",
+        "message": "Account verified successfully"
+    }
