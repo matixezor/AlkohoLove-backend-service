@@ -125,7 +125,7 @@ db.users.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             is_verified: true,
-            verification_code: ObjectId('56f9668b579d4aed3f43'),
+            verification_code: '6288e2fdd5ab6070dde8db8b',
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -146,7 +146,7 @@ db.users.insertMany(
             rate_count: NumberLong(2),
             rate_value: NumberLong(10),
             is_verified: false,
-            verification_code: ObjectId('56f9668b579d4aed3f40'),
+            verification_code: '56f9668b579d4aed3f40',
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -167,7 +167,7 @@ db.users.insertMany(
             rate_count: NumberLong(1),
             rate_value: NumberLong(1),
             is_verified: true,
-            verification_code: ObjectId('56f9668b579d4aed3f41'),
+            verification_code: '56f9668b579d4aed3f41',
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -188,7 +188,7 @@ db.users.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             is_verified: true,
-            verification_code: ObjectId('56f9668b579d4aed3f42'),
+            verification_code: '56f9668b579d4aed3f42',
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
 

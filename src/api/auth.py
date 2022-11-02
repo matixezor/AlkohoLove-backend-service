@@ -1,6 +1,8 @@
 import hashlib
 from datetime import datetime
 from operator import itemgetter
+
+from pymongo import ReturnDocument
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
 from fastapi.security import OAuth2PasswordRequestForm
@@ -166,7 +168,8 @@ async def verify_me(token: str, db: Database = Depends(get_db)
     hashed_code.update(bytes.fromhex(token))
     verification_code = hashed_code.hexdigest()
     result = db.users.find_one_and_update({"verification_code": verification_code}, {
-        "$set": {"verification_code": None, "verified": True, "updated_at": datetime.utcnow()}}, new=True)
+        "$set": {"verification_code": None, "is_verified": True, "updated_at": datetime.utcnow()}}, new=True,
+                                          return_document=ReturnDocument.AFTER)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail='Invalid verification code or account already verified')

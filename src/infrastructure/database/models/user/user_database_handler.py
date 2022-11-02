@@ -121,16 +121,14 @@ class UserDatabaseHandler:
             verification_code=None)
 
         result = collection.insert_one(db_user)
-        new_user = collection.find_one({'_id': result.inserted_id})
         try:
             token = randbytes(10)
             hashed_code = hashlib.sha256()
             hashed_code.update(token)
             verification_code = hashed_code.hexdigest()
-            collection.find_one_and_update({"_id": str(result.inserted_id)}, {
-                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}})
-
-            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/api/auth/verifyemail/{token.hex()}"
+            new_user = collection.find_one_and_update({"_id": result.inserted_id}, {
+                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}}, return_document = ReturnDocument.AFTER)
+            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verifyemail/{token.hex()}"
             await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
         except Exception as error:
             collection.find_one_and_update({"_id": result.inserted_id}, {
