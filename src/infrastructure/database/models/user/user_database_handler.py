@@ -189,6 +189,6 @@ class UserDatabaseHandler:
                 'favourites_count': {'$gt': 0}
             },
             {
-                '$set': {'favourites_count': {'$inc': -1}}
+                '$inc': {'favourites_count': -1}
             }
         )
