@@ -1,7 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
@@ -34,7 +34,7 @@ from src.infrastructure.database.models.user_list.favourites_database_handler im
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
+from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException, \
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
     ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
@@ -101,17 +101,30 @@ async def update_self(
     )
 
 
-@router.delete(
-    path='',
+@router.post(
+    path='/send_delete_request',
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
+    summary='Send delete request to email'
+)
+async def send_delete_request(
+        request: Request,
+        current_user: UserDb = Depends(get_valid_user),
+        db: Database = Depends(get_db)
+):
+    await UserDatabaseHandler.send_deletion_request(current_user, request, db.users)
+
+
+@router.delete(
+    path='/delete_account/{token}',
+    status_code=status.HTTP_204_NO_CONTENT,
     summary='Delete your account'
 )
 async def delete_self(
-        current_user: UserDb = Depends(get_valid_user),
+        token: str,
         db: Database = Depends(get_db)
 ) -> None:
-    await UserDatabaseHandler.delete_user(db.users, current_user['_id'])
+    await UserDatabaseHandler.delete_user(token, db.users)
 
 
 @router.get(
@@ -405,7 +418,7 @@ async def get_belonging_to_lists(
                                                                                     user_id, alcohol_id),
         is_in_wishlist=await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id),
         alcohol_tags=await UserTagDatabaseHandler.get_alcohol_tags(db.user_tags, alcohol_id, user_id)
-        )
+    )
 
 
 @router.get(
@@ -896,7 +909,7 @@ async def migrate_user(
             await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, ObjectId(alcohol_id))
 
     for alcohol_id in user_migration.favourites:
-        if not await UserFavouritesHandler\
+        if not await UserFavouritesHandler \
                 .check_if_alcohol_in_favourites(db.user_favourites, user_id, ObjectId(alcohol_id)):
             await UserFavouritesHandler.add_alcohol_to_favourites(db.user_favourites, user_id, ObjectId(alcohol_id))
 

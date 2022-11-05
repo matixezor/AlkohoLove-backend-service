@@ -1,4 +1,3 @@
-import hashlib
 from datetime import datetime
 from operator import itemgetter
 
@@ -14,6 +13,7 @@ from src.domain.user.user_change_password import UserChangePassword
 from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
+from src.infrastructure.email.email_utils import hash_token
 from src.infrastructure.exceptions.users_exceptions import UserExistsException, UserNotFoundException
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.config.app_config import ApplicationSettings, get_settings
@@ -167,32 +167,21 @@ async def logout(
     '/verifyemail/{token}',
     status_code=status.HTTP_204_NO_CONTENT
 )
-async def verify_me(token: str, db: Database = Depends(get_db)
-                    ):
-    hashed_code = hashlib.sha256()
-    hashed_code.update(bytes.fromhex(token))
-    verification_code = hashed_code.hexdigest()
-    result = db.users.find_one_and_update({"verification_code": verification_code}, {
-        "$set": {"verification_code": None, "is_verified": True, "updated_at": datetime.utcnow()}}, new=True,
-                                          return_document=ReturnDocument.AFTER)
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail='Invalid verification code or account already verified')
-    return {
-        "status": "success",
-        "message": "Account verified successfully"
-    }
+async def verify_me(
+        token: str,
+        db: Database = Depends(get_db)
+):
+    await UserDatabaseHandler.verify_email(token, db.users)
 
 
 @router.post(
-    path='/request_password_change',
+    path='/request_password_reset',
     response_class=Response,
     status_code=status.HTTP_200_OK,
-    summary='Send email to change password'
+    summary='Send email to reset password'
 )
-async def request_password_change(
+async def request_password_reset(
         payload: UserEmail,
-        request: Request,
         db: Database = Depends(get_db)
 ) -> None:
     if not await UserDatabaseHandler.check_if_user_exists(db.users, email=payload.email):
@@ -201,15 +190,15 @@ async def request_password_change(
     db_user = await UserDatabaseHandler.get_user_by_email(db.users, payload.email)
     if not db_user['is_verified']:
         raise EmailNotVerifiedException()
-    await UserDatabaseHandler.change_password_with_email(payload, db.users, db_user, request)
+    await UserDatabaseHandler.change_password_with_email(payload, db.users, db_user)
 
 
 @router.post(
-    '/change_password',
+    '/reset_password',
     status_code=status.HTTP_204_NO_CONTENT,
-    summary='Change password'
+    summary='Reset password'
 )
-async def change_password(
+async def reset_password(
         payload: UserChangePassword,
         db: Database = Depends(get_db)
 ):

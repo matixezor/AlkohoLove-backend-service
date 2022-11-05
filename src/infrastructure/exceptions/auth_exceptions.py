@@ -42,6 +42,14 @@ class EmailNotVerifiedException(HTTPException):
         )
 
 
+class InvalidVerificationCode(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_403_FORBIDDEN,
+            detail=f'Invalid verification code or account already verified'
+        )
+
+
 class InvalidChangePasswordCode(HTTPException):
     def __init__(self):
         super().__init__(
