@@ -86,7 +86,11 @@ let users = {
             },
             verification_code: {
                 bsonType: ['string', 'null'],
-                description: 'must be a str'
+                description: 'must be a str or null'
+            },
+            change_password_code: {
+                bsonType: ['string', 'null'],
+                description: 'must be a str or null'
             },
             updated_at: {
                 bsonType: 'date',
@@ -125,7 +129,7 @@ db.users.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             is_verified: true,
-            verification_code: '6288e2fdd5ab6070dde8db8b',
+            verification_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -145,8 +149,8 @@ db.users.insertMany(
             following_count: NumberInt(2),
             rate_count: NumberLong(2),
             rate_value: NumberLong(10),
-            is_verified: false,
-            verification_code: '56f9668b579d4aed3f40',
+            is_verified: true,
+            verification_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -167,7 +171,7 @@ db.users.insertMany(
             rate_count: NumberLong(1),
             rate_value: NumberLong(1),
             is_verified: true,
-            verification_code: '56f9668b579d4aed3f41',
+            verification_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
         },
@@ -188,7 +192,7 @@ db.users.insertMany(
             rate_count: NumberLong(0),
             rate_value: NumberLong(0),
             is_verified: true,
-            verification_code: '56f9668b579d4aed3f42',
+            verification_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
 

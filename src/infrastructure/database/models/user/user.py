@@ -22,3 +22,4 @@ class User(TypedDict):
     is_verified: bool
     updated_at: datetime
     verification_code: str | None
+    change_password_code: str | None

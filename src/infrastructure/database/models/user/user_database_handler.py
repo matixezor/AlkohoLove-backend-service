@@ -11,14 +11,19 @@ from pymongo.collection import Collection, ReturnDocument
 from starlette import status
 from starlette.requests import Request
 
-from src.domain.user import UserUpdate
+from src.domain.user import UserUpdate, UserBase
 from src.domain.user import UserCreate
+from src.domain.user.user_change_password import UserChangePassword
+from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.models.user import User
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
-from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException
-from src.utils.email.email_handler import Email
+from src.infrastructure.email.email_handler import Email
+from src.infrastructure.email.email_utils import hash_token
+from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException, \
+    EmailNotVerifiedException, SendingEmailError
+
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -127,10 +132,11 @@ class UserDatabaseHandler:
             hashed_code.update(token)
             verification_code = hashed_code.hexdigest()
             new_user = collection.find_one_and_update({"_id": result.inserted_id}, {
-                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}}, return_document = ReturnDocument.AFTER)
+                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}},
+                                                      return_document=ReturnDocument.AFTER)
             url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verifyemail/{token.hex()}"
             await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
-        except Exception as error:
+        except Exception:
             collection.find_one_and_update({"_id": result.inserted_id}, {
                 "$set": {"verification_code": None, "updated_at": datetime.utcnow()}})
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -145,6 +151,8 @@ class UserDatabaseHandler:
             update_last_login: bool = False
     ) -> User:
         user = await UserDatabaseHandler.get_user_by_username(collection, username)
+        if not user['is_verified']:
+            raise EmailNotVerifiedException()
         if not user:
             raise InvalidCredentialsException()
         raw_password = user['password_salt'] + password
@@ -217,3 +225,50 @@ class UserDatabaseHandler:
                 '$set': {'favourites_count': {'$inc': -1}}
             }
         )
+
+    @staticmethod
+    async def change_password_with_email(
+            payload: UserEmail,
+            collection: Collection[User],
+            user: User,
+            request: Request
+    ):
+        try:
+            token = randbytes(10)
+            hashed_code = hashlib.sha256()
+            hashed_code.update(token)
+            change_password_code = hashed_code.hexdigest()
+
+            collection.find_one_and_update({"_id": user['_id']}, {
+                "$set": {"change_password_code": change_password_code, "updated_at": datetime.utcnow()}},
+                                           return_document=ReturnDocument.AFTER)
+            #TODO zmienić na link do webowki
+            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/change_password/{token.hex()}"
+            await Email(user, url, [EmailStr(payload.email)]).send_verification_code()
+        except Exception:
+            collection.find_one_and_update({"_id": user['_id']},
+                                           {"$set": {"change_password_code": None, "updated_at": datetime.utcnow()}},
+                                           return_document=ReturnDocument.AFTER)
+            raise SendingEmailError()
+        return {'status': 'success', 'message': 'Verification token successfully sent to your email'}
+
+    @staticmethod
+    async def check_reset_token(
+            token: str,
+            collection: Collection[User]
+    ):
+        change_password_code = hash_token(token)
+        return collection.find_one({"change_password_code": change_password_code})
+
+    @staticmethod
+    async def change_password(
+            new_password: str,
+            token: str,
+            collection: Collection[User]
+    ):
+        change_password_code = hash_token(token)
+        password_salt = gensalt().decode('utf-8')
+        new_password = UserDatabaseHandler.get_password_hash(new_password, password_salt)
+        collection.find_one_and_update({"change_password_code": change_password_code},
+                                       {"$set": {"password": new_password, "password_salt": password_salt,
+                                                 "change_password_code": None, "updated_at": datetime.utcnow()}})

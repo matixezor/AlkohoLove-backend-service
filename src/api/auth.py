@@ -9,16 +9,19 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status, Response, Header, HTTPException, Request
 
 from src.domain.token import Token
-from src.domain.user import UserCreate
+from src.domain.user import UserCreate, UserBase
+from src.domain.user.user_change_password import UserChangePassword
+from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.database.models.user import UserDatabaseHandler
-from src.infrastructure.exceptions.users_exceptions import UserExistsException
+from src.infrastructure.exceptions.users_exceptions import UserExistsException, UserNotFoundException
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
 from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
-    import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException
+    import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException, \
+    EmailNotVerifiedException, InvalidChangePasswordCode
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -160,8 +163,10 @@ async def logout(
     )
 
 
-@router.get('/verifyemail/{token}',
-            status_code=status.HTTP_204_NO_CONTENT)
+@router.get(
+    '/verifyemail/{token}',
+    status_code=status.HTTP_204_NO_CONTENT
+)
 async def verify_me(token: str, db: Database = Depends(get_db)
                     ):
     hashed_code = hashlib.sha256()
@@ -176,4 +181,42 @@ async def verify_me(token: str, db: Database = Depends(get_db)
     return {
         "status": "success",
         "message": "Account verified successfully"
+    }
+
+
+@router.post(
+    path='/request_password_change',
+    response_class=Response,
+    status_code=status.HTTP_200_OK,
+    summary='Send email to change password'
+)
+async def request_password_change(
+        payload: UserEmail,
+        request: Request,
+        db: Database = Depends(get_db)
+) -> None:
+    if not await UserDatabaseHandler.check_if_user_exists(db.users, email=payload.email):
+        raise UserNotFoundException()
+
+    db_user = await UserDatabaseHandler.get_user_by_email(db.users, payload.email)
+    if not db_user['is_verified']:
+        raise EmailNotVerifiedException()
+    await UserDatabaseHandler.change_password_with_email(payload, db.users, db_user, request)
+
+
+@router.post(
+    '/change_password',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Change password'
+)
+async def change_password(
+        payload: UserChangePassword,
+        db: Database = Depends(get_db)
+):
+    if not UserDatabaseHandler.check_reset_token(payload.token, db.users):
+        raise InvalidChangePasswordCode()
+    await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
+    return {
+        "status": "success",
+        "message": "Password changed successfully"
     }

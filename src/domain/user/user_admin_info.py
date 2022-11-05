@@ -10,4 +10,5 @@ class UserAdminInfo(User):
     created_on: datetime
     is_verified: bool
     verification_code: str | None = None
+    change_password_code: str | None = None
 

@@ -1,4 +1,3 @@
-from os import getenv
 from typing import List
 
 from fastapi import Depends
@@ -9,7 +8,7 @@ from jinja2 import Environment, select_autoescape, PackageLoader
 from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 
 env = Environment(
-    loader=PackageLoader('src', 'utils/email/templates'),
+    loader=PackageLoader('src', 'infrastructure/email/templates'),
     autoescape=select_autoescape(['html', 'xml'])
 )
 
@@ -62,4 +61,4 @@ class Email:
         await fm.send_message(message)
 
     async def send_verification_code(self):
-        await self.send_mail('Your verification code (Valid for 10min)', 'verification')
+        await self.send_mail('AlkohoLove password reset request', 'reset_password')

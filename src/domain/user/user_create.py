@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydantic import validator
 
 from src.domain.user import UserBase
