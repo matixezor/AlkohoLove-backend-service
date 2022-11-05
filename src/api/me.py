@@ -117,14 +117,18 @@ async def send_delete_request(
 
 @router.delete(
     path='/delete_account/{token}',
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary='Delete your account'
+    status_code=status.HTTP_200_OK,
+    summary='Delete your account',
 )
 async def delete_self(
         token: str,
         db: Database = Depends(get_db)
-) -> None:
+):
     await UserDatabaseHandler.delete_user(token, db.users)
+    return {
+        "code": 200,
+        "message": "Account deleted successfully."
+    }
 
 
 @router.get(

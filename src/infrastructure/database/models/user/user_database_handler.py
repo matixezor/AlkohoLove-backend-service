@@ -299,6 +299,6 @@ class UserDatabaseHandler:
             raise SendingEmailError
 
     @staticmethod
-    async def delete_user(token: str, collection: Collection[User]) -> None:
+    async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
         collection.find_one_and_delete({"delete_account_code": delete_account_code})

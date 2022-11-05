@@ -165,13 +165,17 @@ async def logout(
 
 @router.get(
     '/verifyemail/{token}',
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_200_OK
 )
 async def verify_me(
         token: str,
         db: Database = Depends(get_db)
 ):
     await UserDatabaseHandler.verify_email(token, db.users)
+    return {
+        "status": "success",
+        "message": "Account verified successfully"
+    }
 
 
 @router.post(
