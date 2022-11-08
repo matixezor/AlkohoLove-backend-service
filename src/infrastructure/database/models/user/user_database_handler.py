@@ -1,25 +1,24 @@
 import hashlib
-from random import randbytes
-
 from bcrypt import gensalt
+from starlette import status
+from random import randbytes
+from pydantic import EmailStr
 from datetime import datetime
 from bson import ObjectId, Int64
 from fastapi import HTTPException
-from passlib.context import CryptContext
-from pydantic import EmailStr
-from pymongo.collection import Collection, ReturnDocument
-from starlette import status
 from starlette.requests import Request
+from passlib.context import CryptContext
+from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.models.user import User
-from src.infrastructure.database.models.user_list.favourites import Favourites
-from src.infrastructure.database.models.user_list.wishlist import UserWishlist
-from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.email.email_handler import Email
 from src.infrastructure.email.email_utils import hash_token
+from src.infrastructure.database.models.user_list.wishlist import UserWishlist
+from src.infrastructure.database.models.user_list.favourites import Favourites
+from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException, \
     EmailNotVerifiedException, SendingEmailError, InvalidVerificationCode
 
@@ -128,7 +127,7 @@ class UserDatabaseHandler:
             new_user = collection.find_one_and_update({"_id": result.inserted_id}, {
                 "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}},
                                                       return_document=ReturnDocument.AFTER)
-            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verifyemail/{token.hex()}"
+            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}"
             await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
         except Exception:
             collection.find_one_and_update({"_id": result.inserted_id}, {
@@ -171,14 +170,15 @@ class UserDatabaseHandler:
         return user
 
     @staticmethod
-    async def update_user(
+    async def change_email(
             collection: Collection[User],
-            user_id: ObjectId,
-            user_update_payload: UserUpdate
-    ) -> User:
+            token: str,
+            new_email: str
+    ):
+        email_change_code = hash_token(token)
         return collection.find_one_and_update(
-            {'_id': user_id},
-            {'$set': user_update_payload.dict(exclude_none=True)},
+            {'email_change_code': email_change_code},
+            {"$set": {"email": new_email}},
             return_document=ReturnDocument.AFTER
         )
 
@@ -255,6 +255,7 @@ class UserDatabaseHandler:
                                            {"$set": {"reset_password_code": None, "updated_at": datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
             raise SendingEmailError()
+        # TODO zmienić to
         return {'status': 'success', 'message': 'Password reset request successfully sent to your email'}
 
     @staticmethod
@@ -289,16 +290,42 @@ class UserDatabaseHandler:
             hashed_code = hashlib.sha256()
             hashed_code.update(token)
             delete_account_code = hashed_code.hexdigest()
-            new_user = collection.find_one_and_update({"_id": current_user['_id']},
-                                                      {"$set": {"delete_account_code": delete_account_code}},
-                                                      return_document=ReturnDocument.AFTER)
+            user = collection.find_one_and_update({"_id": current_user['_id']},
+                                                  {"$set": {"delete_account_code": delete_account_code}},
+                                                  return_document=ReturnDocument.AFTER)
             url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/me/delete_account/{token.hex()}"
-            await Email(new_user, url, [EmailStr(current_user['email'])]).send_delete_account_code()
+            await Email(user, url, [EmailStr(current_user['email'])]).send_delete_account_code()
         except Exception:
             collection.find_one_and_update({"_id": current_user['_id']}, {"$set": {"delete_account_code": None}})
             raise SendingEmailError
 
     @staticmethod
+    async def find_user_by_deletion_code(token: str, collection: Collection[User]):
+        delete_account_code = hash_token(token)
+        return collection.find_one({"delete_account_code": delete_account_code})
+
+    @staticmethod
     async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
-        collection.find_one_and_delete({"delete_account_code": delete_account_code})
+        return collection.find_one_and_delete({"delete_account_code": delete_account_code})
+
+    @staticmethod
+    async def send_email_change_request(
+            payload: UserUpdate,
+            current_user: User,
+            request: Request,
+            collection: Collection[User]
+    ):
+        try:
+            token = randbytes(10)
+            hashed_code = hashlib.sha256()
+            hashed_code.update(token)
+            email_change_code = hashed_code.hexdigest()
+            user = collection.find_one_and_update({"_id": current_user['_id']},
+                                                  {"$set": {"email_change_code": email_change_code}},
+                                                  return_document=ReturnDocument.AFTER)
+            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/me/change_email/{token.hex()}/{payload.email}"
+            await Email(user, url, [EmailStr(current_user['email'])]).send_email_change_code(payload.email)
+        except Exception:
+            collection.find_one_and_update({"_id": current_user['_id']}, {"$set": {"email_change_code": None}})
+            raise SendingEmailError

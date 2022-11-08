@@ -1,7 +1,7 @@
-from datetime import datetime
 from bson import ObjectId
+from datetime import datetime
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
+from fastapi import APIRouter, Depends, status, Response, Request
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
@@ -54,51 +54,40 @@ async def get_self(current_user: UserDb = Depends(get_valid_user)):
     return current_user
 
 
-@router.put(
-    path='',
-    response_model=User,
+@router.post(
+    path='/send_change_email_request',
+    response_class=Response,
     status_code=status.HTTP_200_OK,
-    summary='Update your account data'
+    summary='Send email change request'
 )
 async def update_self(
         update_payload: UserUpdate,
+        request: Request,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
     if await UserDatabaseHandler.check_if_user_exists(db.users, email=update_payload.email):
         raise UserExistsException()
+    await UserDatabaseHandler.send_email_change_request(update_payload, current_user, request, db.users)
 
-    if (
-            (update_payload.password and not update_payload.new_password)
-            or (not update_payload.password and update_payload.new_password)
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Both passwords must be provided'
-        )
 
-    elif update_payload.password:
-        password_verified = UserDatabaseHandler.verify_password(
-            current_user['password_salt'] + update_payload.password,
-            current_user['password']
-        )
-        if not password_verified:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Old password is invalid'
-            )
-
-        update_payload.password = UserDatabaseHandler.get_password_hash(
-            password=update_payload.new_password,
-            salt=current_user['password_salt']
-        )
-        update_payload.new_password = None
-
-    return await UserDatabaseHandler.update_user(
-        db.users,
-        current_user['_id'],
-        update_payload
-    )
+@router.get(
+    path='/change_email/{token}/{new_email}',
+    status_code=status.HTTP_200_OK,
+    summary='Update account email address'
+)
+async def update_self(
+        token: str,
+        new_email: str,
+        db: Database = Depends(get_db)
+):
+    if await UserDatabaseHandler.check_if_user_exists(db.users, email=new_email):
+        raise UserExistsException()
+    await UserDatabaseHandler.change_email(db.users, token, new_email)
+    return {
+        "status": "success",
+        "message": "Email address changed successfully"
+    }
 
 
 @router.post(
@@ -115,20 +104,23 @@ async def send_delete_request(
     await UserDatabaseHandler.send_deletion_request(current_user, request, db.users)
 
 
-@router.delete(
+@router.get(
     path='/delete_account/{token}',
     status_code=status.HTTP_200_OK,
-    summary='Delete your account',
+    summary='Delete your account'
 )
 async def delete_self(
         token: str,
         db: Database = Depends(get_db)
 ):
-    await UserDatabaseHandler.delete_user(token, db.users)
-    return {
-        "code": 200,
-        "message": "Account deleted successfully."
-    }
+    if not await UserDatabaseHandler.find_user_by_deletion_code(token, db.users):
+        raise UserNotFoundException()
+    else:
+        await UserDatabaseHandler.delete_user(token, db.users)
+        return {
+            "status": "success",
+            "message": "Account deleted successfully"
+        }
 
 
 @router.get(

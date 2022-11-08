@@ -1,23 +1,20 @@
 from datetime import datetime
 from operator import itemgetter
-
-from pymongo import ReturnDocument
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status, Response, Header, HTTPException, Request
 
 from src.domain.token import Token
-from src.domain.user import UserCreate, UserBase
-from src.domain.user.user_change_password import UserChangePassword
+from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.database_config import get_db
+from src.domain.user.user_change_password import UserChangePassword
 from src.infrastructure.database.models.user import UserDatabaseHandler
-from src.infrastructure.email.email_utils import hash_token
-from src.infrastructure.exceptions.users_exceptions import UserExistsException, UserNotFoundException
 from src.infrastructure.auth.auth_utils import generate_tokens, get_valid_token
-from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.database.models.token import TokenBlacklistDatabaseHandler
+from src.infrastructure.config.app_config import ApplicationSettings, get_settings
+from src.infrastructure.exceptions.users_exceptions import UserExistsException, UserNotFoundException
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException, \
@@ -164,7 +161,7 @@ async def logout(
 
 
 @router.get(
-    '/verifyemail/{token}',
+    '/verify_email/{token}',
     status_code=status.HTTP_200_OK
 )
 async def verify_me(
@@ -200,6 +197,7 @@ async def request_password_reset(
 @router.post(
     '/reset_password',
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary='Reset password'
 )
 async def reset_password(
@@ -209,7 +207,3 @@ async def reset_password(
     if not UserDatabaseHandler.check_reset_token(payload.token, db.users):
         raise InvalidChangePasswordCode()
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
-    return {
-        "status": "success",
-        "message": "Password changed successfully"
-    }
