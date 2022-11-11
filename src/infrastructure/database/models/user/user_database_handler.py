@@ -306,24 +306,3 @@ class UserDatabaseHandler:
     async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
         return collection.find_one_and_delete({"delete_account_code": delete_account_code})
-
-    @staticmethod
-    async def send_email_change_request(
-            payload: UserUpdate,
-            current_user: User,
-            request: Request,
-            collection: Collection[User]
-    ):
-        try:
-            token = randbytes(10)
-            hashed_code = hashlib.sha256()
-            hashed_code.update(token)
-            email_change_code = hashed_code.hexdigest()
-            user = collection.find_one_and_update({"_id": current_user['_id']},
-                                                  {"$set": {"email_change_code": email_change_code}},
-                                                  return_document=ReturnDocument.AFTER)
-            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/me/change_email/{token.hex()}/{payload.email}"
-            await Email(user, url, [EmailStr(current_user['email'])]).send_email_change_code(payload.email)
-        except Exception:
-            collection.find_one_and_update({"_id": current_user['_id']}, {"$set": {"email_change_code": None}})
-            raise SendingEmailError

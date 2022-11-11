@@ -55,42 +55,6 @@ async def get_self(current_user: UserDb = Depends(get_valid_user)):
 
 
 @router.post(
-    path='/send_change_email_request',
-    response_class=Response,
-    status_code=status.HTTP_200_OK,
-    summary='Send email change request'
-)
-async def update_self(
-        update_payload: UserUpdate,
-        request: Request,
-        current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
-):
-    if await UserDatabaseHandler.check_if_user_exists(db.users, email=update_payload.email):
-        raise UserExistsException()
-    await UserDatabaseHandler.send_email_change_request(update_payload, current_user, request, db.users)
-
-
-@router.get(
-    path='/change_email/{token}/{new_email}',
-    status_code=status.HTTP_200_OK,
-    summary='Update account email address'
-)
-async def update_email(
-        token: str,
-        new_email: str,
-        db: Database = Depends(get_db)
-):
-    if await UserDatabaseHandler.check_if_user_exists(db.users, email=new_email):
-        raise UserExistsException()
-    await UserDatabaseHandler.change_email(db.users, token, new_email)
-    return {
-        "status": "success",
-        "message": "Email address changed successfully"
-    }
-
-
-@router.post(
     path='/send_delete_request',
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
