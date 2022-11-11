@@ -1,16 +1,13 @@
 import hashlib
 from bcrypt import gensalt
-from starlette import status
 from random import randbytes
 from pydantic import EmailStr
 from datetime import datetime
 from bson import ObjectId, Int64
-from fastapi import HTTPException
 from starlette.requests import Request
 from passlib.context import CryptContext
 from pymongo.collection import Collection, ReturnDocument
 
-from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.models.user import User
@@ -124,15 +121,14 @@ class UserDatabaseHandler:
             hashed_code = hashlib.sha256()
             hashed_code.update(token)
             verification_code = hashed_code.hexdigest()
-            new_user = collection.find_one_and_update({"_id": result.inserted_id}, {
-                "$set": {"verification_code": verification_code, "updated_at": datetime.utcnow()}},
+            new_user = collection.find_one_and_update({'_id': result.inserted_id}, {
+                '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                       return_document=ReturnDocument.AFTER)
-            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}"
+            url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
             await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
         except Exception:
-            collection.find_one_and_delete({"_id": result.inserted_id})
+            collection.find_one_and_delete({'_id': result.inserted_id})
             raise SendingEmailError()
-        return {'status': 'success', 'message': 'Verification token successfully sent to your email'}
 
     @staticmethod
     async def verify_email(
@@ -140,8 +136,8 @@ class UserDatabaseHandler:
             collection: Collection[User]
     ):
         verification_code = hash_token(token)
-        result = collection.find_one_and_update({"verification_code": verification_code}, {
-            "$set": {"verification_code": None, "is_verified": True, "updated_at": datetime.utcnow()}}, new=True,
+        result = collection.find_one_and_update({'verification_code': verification_code}, {
+            '$set': {'verification_code': None, 'is_verified': True, 'updated_at': datetime.utcnow()}}, new=True,
                                                 return_document=ReturnDocument.AFTER)
         if not result:
             raise InvalidVerificationCode()
@@ -176,7 +172,7 @@ class UserDatabaseHandler:
         email_change_code = hash_token(token)
         return collection.find_one_and_update(
             {'email_change_code': email_change_code},
-            {"$set": {"email": new_email}},
+            {'$set': {'email': new_email}},
             return_document=ReturnDocument.AFTER
         )
 
@@ -231,7 +227,7 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def change_password_with_email(
+    async def send_password_reset_request(
             payload: UserEmail,
             collection: Collection[User],
             user: User
@@ -242,19 +238,16 @@ class UserDatabaseHandler:
             hashed_code.update(token)
             change_password_code = hashed_code.hexdigest()
 
-            collection.find_one_and_update({"_id": user['_id']}, {
-                "$set": {"change_password_code": change_password_code, "updated_at": datetime.utcnow()}},
+            collection.find_one_and_update({'_id': user['_id']}, {
+                '$set': {'change_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
-            # TODO zmienić na link do webowki i zaimplementować webowke
-            url = f"https://alkoholove.com.pl/reset_password/{token.hex()}"
+            url = f'https://alkoholove.com.pl/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
         except Exception:
-            collection.find_one_and_update({"_id": user['_id']},
-                                           {"$set": {"reset_password_code": None, "updated_at": datetime.utcnow()}},
+            collection.find_one_and_update({'_id': user['_id']},
+                                           {'$set': {'reset_password_code': None, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
             raise SendingEmailError()
-        # TODO zmienić to
-        return {'status': 'success', 'message': 'Password reset request successfully sent to your email'}
 
     @staticmethod
     async def check_reset_token(
@@ -262,7 +255,7 @@ class UserDatabaseHandler:
             collection: Collection[User]
     ):
         change_password_code = hash_token(token)
-        return collection.find_one({"change_password_code": change_password_code})
+        return collection.find_one({'change_password_code': change_password_code})
 
     @staticmethod
     async def change_password(
@@ -273,9 +266,9 @@ class UserDatabaseHandler:
         change_password_code = hash_token(token)
         password_salt = gensalt().decode('utf-8')
         new_password = UserDatabaseHandler.get_password_hash(new_password, password_salt)
-        collection.find_one_and_update({"reset_password_code": change_password_code},
-                                       {"$set": {"password": new_password, "password_salt": password_salt,
-                                                 "change_password_code": None, "updated_at": datetime.utcnow()}})
+        collection.find_one_and_update({'reset_password_code': change_password_code},
+                                       {'$set': {'password': new_password, 'password_salt': password_salt,
+                                                 'change_password_code': None, 'updated_at': datetime.utcnow()}})
 
     @staticmethod
     async def send_deletion_request(
@@ -288,21 +281,21 @@ class UserDatabaseHandler:
             hashed_code = hashlib.sha256()
             hashed_code.update(token)
             delete_account_code = hashed_code.hexdigest()
-            user = collection.find_one_and_update({"_id": current_user['_id']},
-                                                  {"$set": {"delete_account_code": delete_account_code}},
+            user = collection.find_one_and_update({'_id': current_user['_id']},
+                                                  {'$set': {'delete_account_code': delete_account_code}},
                                                   return_document=ReturnDocument.AFTER)
-            url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/me/delete_account/{token.hex()}"
+            url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/me/delete_account/{token.hex()}'
             await Email(user, url, [EmailStr(current_user['email'])]).send_delete_account_code()
         except Exception:
-            collection.find_one_and_update({"_id": current_user['_id']}, {"$set": {"delete_account_code": None}})
+            collection.find_one_and_update({'_id': current_user['_id']}, {'$set': {'delete_account_code': None}})
             raise SendingEmailError
 
     @staticmethod
     async def find_user_by_deletion_code(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
-        return collection.find_one({"delete_account_code": delete_account_code})
+        return collection.find_one({'delete_account_code': delete_account_code})
 
     @staticmethod
     async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
-        return collection.find_one_and_delete({"delete_account_code": delete_account_code})
+        return collection.find_one_and_delete({'delete_account_code': delete_account_code})

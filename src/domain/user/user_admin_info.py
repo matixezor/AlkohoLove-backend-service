@@ -11,5 +11,4 @@ class UserAdminInfo(User):
     is_verified: bool
     verification_code: str | None = None
     reset_password_code: str | None = None
-    change_info_code: str | None = None
     delete_account_code: str | None = None

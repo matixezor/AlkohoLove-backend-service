@@ -23,6 +23,4 @@ class User(TypedDict):
     updated_at: datetime
     verification_code: str | None
     reset_password_code: str | None
-    email_change_code: str | None
     delete_account_code: str | None
-

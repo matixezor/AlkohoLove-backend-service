@@ -101,6 +101,7 @@ async def register(
     - **name**: required
     - **password**: required
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
+    Send verification email.
     """
     if await UserDatabaseHandler.check_if_user_exists(
             db.users,
@@ -164,7 +165,7 @@ async def logout(
     '/verify_email/{token}',
     status_code=status.HTTP_200_OK
 )
-async def verify_me(
+async def verify_email(
         token: str,
         db: Database = Depends(get_db)
 ):
@@ -191,7 +192,7 @@ async def request_password_reset(
     db_user = await UserDatabaseHandler.get_user_by_email(db.users, payload.email)
     if not db_user['is_verified']:
         raise EmailNotVerifiedException()
-    await UserDatabaseHandler.change_password_with_email(payload, db.users, db_user)
+    await UserDatabaseHandler.send_password_reset_request(payload, db.users, db_user)
 
 
 @router.post(
