@@ -76,7 +76,7 @@ async def update_self(
     status_code=status.HTTP_200_OK,
     summary='Update account email address'
 )
-async def update_self(
+async def update_email(
         token: str,
         new_email: str,
         db: Database = Depends(get_db)

@@ -132,8 +132,7 @@ class UserDatabaseHandler:
         except Exception:
             collection.find_one_and_update({"_id": result.inserted_id}, {
                 "$set": {"verification_code": None, "updated_at": datetime.utcnow()}})
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail='There was an error sending email')
+            raise SendingEmailError()
         return {'status': 'success', 'message': 'Verification token successfully sent to your email'}
 
     @staticmethod
