@@ -1,55 +1,83 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>{{subject}}</title>
     {% include '_styles.html' %}
-  </head>
-  <body>
+</head>
+<body>
 
-    <table
-      role="presentation"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      class="body"
-    >
-      <tr>
+<table
+        role="presentation"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        class="body"
+>
+
+    <tr>
         <td>&nbsp;</td>
         <td class="container">
-          <div class="content">
-            <!-- START CENTERED WHITE CONTAINER -->
-            <table role="presentation" class="main">
-
-              <!-- START MAIN CONTENT AREA -->
-              <tr>
-                <td class="wrapper">
-                  <table
-                    role="presentation"
-                    border="0"
-                    cellpadding="0"
-                    cellspacing="0"
-                  >
+            <div class="content">
+                <!-- START CENTERED WHITE CONTAINER -->
+                <table role="presentation" class="main">
+                    <!-- start logo -->
                     <tr>
-                      <td>{% block content %} {% endblock %}</td>
+                        <td align="center" bgcolor="#FFFFFF">
+                            <!--[if (gte mso 9)|(IE)]>
+                            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+                                <tr>
+                                    <td align="center" valign="top" width="600">
+                            <![endif]-->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                                <tr>
+                                    <td align="center" valign="top" style="padding: 36px 24px;">
+                                        <a href="https://alkoholove.com" target="_blank" style="display: inline-block;">
+                                            <img src="https://res.cloudinary.com/alkoholove/image/upload/v1668166834/other/Alkoholove_szaqkb.jpg"
+                                                 alt="Logo" border="0" width="48"
+                                                 style="display: block; width: 48px; max-width: 48px; min-width: 48px;">
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if (gte mso 9)|(IE)]>
+                            </td>
+                            </tr>
+                            </table>
+                            <![endif]-->
+                        </td>
                     </tr>
-                  </table>
-                </td>
-              </tr>
+                    <!-- end logo -->
+
+                    <!-- START MAIN CONTENT AREA -->
+                    <tr>
+                        <td class="wrapper">
+                            <table
+                                    role="presentation"
+                                    border="0"
+                                    cellpadding="0"
+                                    cellspacing="0"
+                            >
+                                <tr>
+                                    <td>{% block content %} {% endblock %}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
 
-              <!-- END MAIN CONTENT AREA -->
-            </table>
+                    <!-- END MAIN CONTENT AREA -->
+                </table>
 
 
-            <!-- END CENTERED WHITE CONTAINER -->
-          </div>
+                <!-- END CENTERED WHITE CONTAINER -->
+            </div>
         </td>
         <td>&nbsp;</td>
-      </tr>
-    </table>
-  </body>
+    </tr>
+</table>
+</body>
 </html>
 
 

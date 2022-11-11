@@ -61,7 +61,7 @@ class Email:
         await fm.send_message(message)
 
     async def send_verification_code(self):
-        await self.send_mail('AlkohoLove email verification', 'confirm_email', None)
+        await self.send_mail('AlkohoLove email verification', 'verification', None)
 
     async def send_reset_password_code(self):
         await self.send_mail('AlkohoLove password reset request', 'reset_password', None)

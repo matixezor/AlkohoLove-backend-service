@@ -130,8 +130,7 @@ class UserDatabaseHandler:
             url = f"{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}"
             await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
         except Exception:
-            collection.find_one_and_update({"_id": result.inserted_id}, {
-                "$set": {"verification_code": None, "updated_at": datetime.utcnow()}})
+            collection.find_one_and_delete({"_id": result.inserted_id})
             raise SendingEmailError()
         return {'status': 'success', 'message': 'Verification token successfully sent to your email'}
 
