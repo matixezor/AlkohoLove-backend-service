@@ -19,20 +19,19 @@ class EmailSchema(BaseModel):
 class Email:
     def __init__(self, user: dict, url: str, email: List[EmailStr]):
         self.name = user['username']
-        self.sender = 'AlkohoLove <admin@admin.com>'
+        self.sender = 'AlkohoLove <alkoholove.official@gmail.com>'
         self.email = email
         self.url = url
         pass
 
-    async def send_mail(self, subject, template, new_email, settings: ApplicationSettings = Depends(get_settings)):
-        # Define the config
-        # TODO use variables
+    async def send_mail(self, subject, template, new_email):
+        settings = get_settings()
         conf = ConnectionConfig(
-            MAIL_USERNAME='47e96bff33bbac',
-            MAIL_PASSWORD='a42af6529c988f',
-            MAIL_FROM=EmailStr('admin@admin.com'),
-            MAIL_PORT=2525,
-            MAIL_SERVER='smtp.mailtrap.io',
+            MAIL_USERNAME=settings.EMAIL_USERNAME,
+            MAIL_PASSWORD=settings.EMAIL_PASSWORD,
+            MAIL_FROM=EmailStr(settings.EMAIL_FROM),
+            MAIL_PORT=settings.EMAIL_PORT,
+            MAIL_SERVER=settings.EMAIL_HOST,
             MAIL_STARTTLS=True,
             MAIL_SSL_TLS=False,
             USE_CREDENTIALS=True,

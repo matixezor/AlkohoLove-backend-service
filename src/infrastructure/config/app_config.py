@@ -20,7 +20,7 @@ class ApplicationSettings(BaseSettings):
     EMAIL_HOST: str = getenv('EMAIL_HOST')
     EMAIL_PORT: int = getenv('EMAIL_PORT')
     EMAIL_PASSWORD: str = getenv('EMAIL_PASSWORD')
-    EMAIL_FROM: EmailStr = getenv('EMAIL_FROM')
+    EMAIL_FROM: str = getenv('EMAIL_FROM')
 
     @root_validator
     def set_authjwt_secret_key(cls, values):
@@ -52,10 +52,5 @@ ALLOW_CREDENTIALS = False
 config(
     cloud_name=get_settings().CLOUDINARY_CLOUD_NAME,
     api_key=get_settings().CLOUDINARY_API_KEY,
-    api_secret=get_settings().CLOUDINARY_API_SECRET,
-    email_username=get_settings().EMAIL_USERNAME,
-    email_password=get_settings().EMAIL_PASSWORD,
-    email_port=get_settings().EMAIL_PORT,
-    email_host=get_settings().EMAIL_HOST,
-    email_from=get_settings().EMAIL_FROM,
+    api_secret=get_settings().CLOUDINARY_API_SECRET
 )

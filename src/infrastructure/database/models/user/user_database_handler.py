@@ -4,6 +4,7 @@ from random import randbytes
 from pydantic import EmailStr
 from datetime import datetime
 from bson import ObjectId, Int64
+from pymongo.results import InsertOneResult
 from starlette.requests import Request
 from passlib.context import CryptContext
 from pymongo.collection import Collection, ReturnDocument
@@ -114,21 +115,26 @@ class UserDatabaseHandler:
             updated_at=datetime.now(),
             is_verified=False,
             verification_code=None)
-
         result = collection.insert_one(db_user)
-        try:
-            token = randbytes(10)
-            hashed_code = hashlib.sha256()
-            hashed_code.update(token)
-            verification_code = hashed_code.hexdigest()
-            new_user = collection.find_one_and_update({'_id': result.inserted_id}, {
-                '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
-                                                      return_document=ReturnDocument.AFTER)
-            url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
-            await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
-        except Exception:
-            collection.find_one_and_delete({'_id': result.inserted_id})
-            raise SendingEmailError()
+        await UserDatabaseHandler.send_verification_mail(collection, result, request, payload)
+
+
+    @staticmethod
+    async def send_verification_mail(
+            collection: Collection[User],
+            result: InsertOneResult,
+            request: Request,
+            payload: UserCreate
+    ):
+        token = randbytes(10)
+        hashed_code = hashlib.sha256()
+        hashed_code.update(token)
+        verification_code = hashed_code.hexdigest()
+        new_user = collection.find_one_and_update({'_id': result.inserted_id}, {
+            '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
+                                                  return_document=ReturnDocument.AFTER)
+        url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
+        await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
 
     @staticmethod
     async def verify_email(

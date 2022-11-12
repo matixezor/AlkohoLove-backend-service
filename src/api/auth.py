@@ -95,13 +95,13 @@ async def register(
         db: Database = Depends(get_db)
 ) -> None:
     """
+    Send verification email to given email address.
     Create user with request body:
     - **email**: required
     validated with regex `[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}`
     - **name**: required
     - **password**: required
     validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
-    Send verification email.
     """
     if await UserDatabaseHandler.check_if_user_exists(
             db.users,
