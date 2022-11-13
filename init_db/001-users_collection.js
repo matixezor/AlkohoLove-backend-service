@@ -72,6 +72,10 @@ let users = {
                 bsonType: 'int',
                 description: '5'
             },
+            wishlist_count: {
+                bsonType: 'int',
+                description: '5'
+            },
             followers_count: {
                 bsonType: 'int',
                 description: '5'
@@ -108,6 +112,7 @@ db.users.insertMany(
             password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
             avg_rating: 0.0,
             favourites_count: NumberInt(1),
+            wishlist_count: NumberInt(1),
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(0),
@@ -125,6 +130,7 @@ db.users.insertMany(
             password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
             avg_rating: 5.0,
             favourites_count: NumberInt(2),
+            wishlist_count: NumberInt(2),
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(2),
@@ -142,6 +148,7 @@ db.users.insertMany(
             password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
             avg_rating: 1.0,
             favourites_count: NumberInt(4),
+            wishlist_count: NumberInt(5),
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(1),
@@ -159,6 +166,7 @@ db.users.insertMany(
             password_salt: '$2b$12$9z2iZlb2xzIOsZC0ws1pEO',
             avg_rating: 0.0,
             favourites_count: NumberInt(0),
+            wishlist_count: NumberInt(0),
             followers_count: NumberInt(0),
             following_count: NumberInt(1),
             rate_count: NumberLong(0),
