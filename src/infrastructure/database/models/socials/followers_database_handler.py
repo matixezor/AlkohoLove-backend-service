@@ -49,7 +49,7 @@ class FollowersDatabaseHandler:
                 'followers_count': {'$gt': 0}
             },
             {
-                '$set': {'followers_count': {'$inc': -1}}
+                'followers_count': {'$inc': -1}
             }
         )
 

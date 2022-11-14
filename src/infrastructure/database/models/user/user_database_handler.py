@@ -107,6 +107,7 @@ class UserDatabaseHandler:
             followers_count=0,
             following_count=0,
             favourites_count=0,
+            wishlist_count=0,
             rate_value=Int64(0)
         )
 
