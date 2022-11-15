@@ -91,11 +91,7 @@ let users = {
             reset_password_code: {
                 bsonType: ['string', 'null'],
                 description: 'must be a str or null'
-            },
-            email_change_code: {
-                bsonType: ['string', 'null'],
-                description: 'must be a str or null'
-            },
+            }
             delete_account_code: {
                 bsonType: ['string', 'null'],
                 description: 'must be a str or null'
@@ -139,7 +135,6 @@ db.users.insertMany(
             is_verified: true,
             verification_code: null,
             reset_password_code: null,
-            email_change_code: null,
             delete_account_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
@@ -163,7 +158,6 @@ db.users.insertMany(
             is_verified: true,
             verification_code: null,
             reset_password_code: null,
-            email_change_code: null,
             delete_account_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
@@ -187,7 +181,6 @@ db.users.insertMany(
             is_verified: true,
             verification_code: null,
             reset_password_code: null,
-            email_change_code: null,
             delete_account_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 
@@ -211,7 +204,6 @@ db.users.insertMany(
             is_verified: true,
             verification_code: null,
             reset_password_code: null,
-            email_change_code: null,
             delete_account_code: null,
             updated_at: new ISODate('2022-03-22T19:10:25Z')
 

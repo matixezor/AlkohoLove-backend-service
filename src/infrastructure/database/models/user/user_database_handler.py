@@ -4,9 +4,9 @@ from random import randbytes
 from pydantic import EmailStr
 from datetime import datetime
 from bson import ObjectId, Int64
-from pymongo.results import InsertOneResult
 from starlette.requests import Request
 from passlib.context import CryptContext
+from pymongo.results import InsertOneResult
 from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserCreate
@@ -118,7 +118,6 @@ class UserDatabaseHandler:
         result = collection.insert_one(db_user)
         await UserDatabaseHandler.send_verification_mail(collection, result, request, payload)
 
-
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
@@ -168,19 +167,6 @@ class UserDatabaseHandler:
         if update_last_login:
             collection.update_one({'_id': user['_id']}, {'$set': {'last_login': datetime.now()}})
         return user
-
-    @staticmethod
-    async def change_email(
-            collection: Collection[User],
-            token: str,
-            new_email: str
-    ):
-        email_change_code = hash_token(token)
-        return collection.find_one_and_update(
-            {'email_change_code': email_change_code},
-            {'$set': {'email': new_email}},
-            return_document=ReturnDocument.AFTER
-        )
 
     @staticmethod
     async def create_user_lists(
