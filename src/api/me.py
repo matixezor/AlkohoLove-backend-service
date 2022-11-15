@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, status, Response, Request
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
-from src.domain.user import User, UserUpdate
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
 from src.domain.user.me_user_info import MeUserInfo
@@ -24,11 +23,11 @@ from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
-from src.infrastructure.exceptions.users_exceptions import UserNotFoundException, UserExistsException
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
