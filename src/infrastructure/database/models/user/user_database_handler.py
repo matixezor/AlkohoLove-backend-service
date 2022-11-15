@@ -115,26 +115,24 @@ class UserDatabaseHandler:
             updated_at=datetime.now(),
             is_verified=False,
             verification_code=None)
-        result = collection.insert_one(db_user)
-        await UserDatabaseHandler.send_verification_mail(collection, result, request, payload)
-
+        user = collection.insert_one(db_user)
+        return collection.find_one({'_id': user.inserted_id})
 
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
-            result: InsertOneResult,
-            request: Request,
-            payload: UserCreate
+            user: User,
+            request: Request
     ):
         token = randbytes(10)
         hashed_code = hashlib.sha256()
         hashed_code.update(token)
         verification_code = hashed_code.hexdigest()
-        new_user = collection.find_one_and_update({'_id': result.inserted_id}, {
+        new_user = collection.find_one_and_update({'_id': user['_id']}, {
             '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                   return_document=ReturnDocument.AFTER)
         url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
-        await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
+        return await Email(new_user, url, [EmailStr(user['email'])]).send_verification_code()
 
     @staticmethod
     async def verify_email(
@@ -305,3 +303,8 @@ class UserDatabaseHandler:
     async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
         return collection.find_one_and_delete({'delete_account_code': delete_account_code})
+
+
+    @staticmethod
+    async def delete_user_by_id(user_id: ObjectId, collection: Collection[User]):
+        return collection.find_one_and_delete({'_id': user_id})
