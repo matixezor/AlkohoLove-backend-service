@@ -7,7 +7,7 @@ from src.domain.alcohol_suggestion.alcohol_suggestion_base import AlcoholSuggest
 class AlcoholSuggestion(MongoBaseModel, AlcoholSuggestionBase):
     user_ids: list[PyObjectId] = Field(default_factory=PyObjectId, alias="user_ids")
     usernames: list[str]
-    descriptions: list[str] | None
+    descriptions: list[str | None]
 
     @validator('user_ids', always=True)
     def set_id(cls, v):

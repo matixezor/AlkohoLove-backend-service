@@ -1,7 +1,6 @@
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from src.domain.user import User
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion import AlcoholSuggestion
 
@@ -51,18 +50,9 @@ class AlcoholSuggestionDatabaseHandler:
             suggestion: AlcoholSuggestion,
             username: str
     ) -> None:
-        if suggestion['descriptions']:
-            if description is not None:
-                alcohol_collection.update_one({'_id': suggestion['_id']},
-                                              {'$push': {'user_ids': user_id, 'descriptions': description,
-                                                         'usernames': username}})
-            else:
-                alcohol_collection.update_one({'_id': suggestion['_id']},
-                                              {'$push': {'user_ids': user_id, 'descriptions': [description],
-                                                         'usernames': username}})
-        else:
-            alcohol_collection.update_one({'_id': suggestion['_id']},
-                                          {'$push': {'user_ids': user_id}, 'usernames': username})
+        alcohol_collection.update_one({'_id': suggestion['_id']},
+                                      {'$push': {'user_ids': user_id, 'descriptions': description,
+                                                 'usernames': username}})
 
     @staticmethod
     async def create_suggestion(
@@ -71,10 +61,7 @@ class AlcoholSuggestionDatabaseHandler:
             payload: AlcoholSuggestionCreate,
             username: str
     ) -> None:
-        if payload.description:
-            descriptions = [payload.description]
-        else:
-            descriptions = None
+        descriptions = [payload.description]
         db_suggestions = AlcoholSuggestion(
             **payload.dict(),
             descriptions=descriptions,
