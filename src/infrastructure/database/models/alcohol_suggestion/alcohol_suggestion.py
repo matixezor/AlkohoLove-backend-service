@@ -9,4 +9,4 @@ class AlcoholSuggestion(TypedDict):
     barcode: str
     kind: str
     name: str
-    descriptions: list[str] | None
+    descriptions: list[str | None]

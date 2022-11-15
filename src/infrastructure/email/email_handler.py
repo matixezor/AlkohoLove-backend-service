@@ -1,11 +1,10 @@
 from typing import List
-from fastapi import Depends
 from pydantic import EmailStr, BaseModel
 from jinja2 import Environment, select_autoescape, PackageLoader
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from starlette.responses import JSONResponse
 
-from src.infrastructure.config.app_config import ApplicationSettings, get_settings
+from src.infrastructure.config.app_config import get_settings
 
 env = Environment(
     loader=PackageLoader('src', 'infrastructure/email/templates'),
