@@ -64,6 +64,9 @@ async def send_delete_request(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
+    """
+        Sends email message with deletion link to address associated with account.
+    """
     await UserDatabaseHandler.send_deletion_request(current_user, request, db.users)
 
 

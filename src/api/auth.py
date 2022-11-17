@@ -191,6 +191,9 @@ async def request_password_reset(
         payload: UserEmail,
         db: Database = Depends(get_db)
 ) -> None:
+    """
+    Sends email message with link to web page where you can put new password.
+    """
     if not await UserDatabaseHandler.check_if_user_exists(db.users, email=payload.email):
         raise UserNotFoundException()
 
@@ -210,6 +213,10 @@ async def reset_password(
         payload: UserChangePassword,
         db: Database = Depends(get_db)
 ):
+    """
+    token: token sent to email
+    new_password: required validated with regex `^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
+    """
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
         raise InvalidChangePasswordCode()
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
