@@ -120,7 +120,6 @@ class UserDatabaseHandler:
         user = collection.insert_one(db_user)
         return collection.find_one({'_id': user.inserted_id})
 
-
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
@@ -299,7 +298,7 @@ class UserDatabaseHandler:
     @staticmethod
     async def delete_user_by_id(user_id: ObjectId, collection: Collection[User]):
         return collection.find_one_and_delete({'_id': user_id})
-    
+
     @staticmethod
     async def add_to_wishlist_counter(
             collection: Collection,
