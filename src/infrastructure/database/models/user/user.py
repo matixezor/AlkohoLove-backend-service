@@ -18,6 +18,7 @@ class User(TypedDict):
     followers_count: int
     following_count: int
     favourites_count: int
+    wishlist_count: int
     rate_value: int
     is_verified: bool
     updated_at: datetime

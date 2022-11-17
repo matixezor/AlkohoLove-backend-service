@@ -50,7 +50,7 @@ class FollowingDatabaseHandler:
                 'following_count': {'$gt': 0}
             },
             {
-                '$set': {'following_count': {'$inc': -1}}
+                '$inc': {'following_count': -1}
             }
         )
 
