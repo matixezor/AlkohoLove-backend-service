@@ -13,7 +13,7 @@ from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
 from src.infrastructure.database.models.user import User
 from src.infrastructure.email.email_handler import Email
-from src.infrastructure.email.email_utils import hash_token
+from src.infrastructure.email.email_utils import dehash_token, hash_token
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
@@ -127,9 +127,7 @@ class UserDatabaseHandler:
             request: Request
     ):
         token = randbytes(10)
-        hashed_code = hashlib.sha256()
-        hashed_code.update(token)
-        verification_code = hashed_code.hexdigest()
+        verification_code = hash_token(token)
         new_user = collection.find_one_and_update({'_id': user['_id']}, {
             '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                   return_document=ReturnDocument.AFTER)
@@ -141,7 +139,7 @@ class UserDatabaseHandler:
             token: str,
             collection: Collection[User]
     ):
-        verification_code = hash_token(token)
+        verification_code = dehash_token(token)
         result = collection.find_one_and_update({'verification_code': verification_code}, {
             '$set': {'verification_code': None, 'is_verified': True, 'updated_at': datetime.utcnow()}}, new=True,
                                                 return_document=ReturnDocument.AFTER)
@@ -229,10 +227,7 @@ class UserDatabaseHandler:
     ):
         try:
             token = randbytes(10)
-            hashed_code = hashlib.sha256()
-            hashed_code.update(token)
-            change_password_code = hashed_code.hexdigest()
-
+            change_password_code = hash_token(token)
             collection.find_one_and_update({'_id': user['_id']}, {
                 '$set': {'change_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
@@ -249,7 +244,7 @@ class UserDatabaseHandler:
             token: str,
             collection: Collection[User]
     ):
-        reset_password_code = hash_token(token)
+        reset_password_code = dehash_token(token)
         return collection.find_one({'reset_password_code': reset_password_code})
 
     @staticmethod
@@ -258,7 +253,7 @@ class UserDatabaseHandler:
             token: str,
             collection: Collection[User]
     ):
-        change_password_code = hash_token(token)
+        change_password_code = dehash_token(token)
         password_salt = gensalt().decode('utf-8')
         new_password = UserDatabaseHandler.get_password_hash(new_password, password_salt)
         collection.find_one_and_update({'reset_password_code': change_password_code},
@@ -273,9 +268,7 @@ class UserDatabaseHandler:
     ):
         try:
             token = randbytes(10)
-            hashed_code = hashlib.sha256()
-            hashed_code.update(token)
-            delete_account_code = hashed_code.hexdigest()
+            delete_account_code = hash_token(token)
             user = collection.find_one_and_update({'_id': current_user['_id']},
                                                   {'$set': {'delete_account_code': delete_account_code}},
                                                   return_document=ReturnDocument.AFTER)
@@ -287,12 +280,12 @@ class UserDatabaseHandler:
 
     @staticmethod
     async def find_user_by_deletion_code(token: str, collection: Collection[User]):
-        delete_account_code = hash_token(token)
+        delete_account_code = dehash_token(token)
         return collection.find_one({'delete_account_code': delete_account_code})
 
     @staticmethod
     async def delete_user(token: str, collection: Collection[User]):
-        delete_account_code = hash_token(token)
+        delete_account_code = dehash_token(token)
         return collection.find_one_and_delete({'delete_account_code': delete_account_code})
 
     @staticmethod

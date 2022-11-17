@@ -215,7 +215,7 @@ async def reset_password(
 ):
     """
     token: token sent to email
-    new_password: required validated with regex `^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
+    new_password: required validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
         raise InvalidChangePasswordCode()
