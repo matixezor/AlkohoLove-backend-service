@@ -493,7 +493,8 @@ async def delete_alcohol_from_wishlist(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
+    if await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id):
+        await UserDatabaseHandler.remove_from_wishlist_counter(db.users, user_id)
 
 
 @router.delete(
@@ -554,6 +555,7 @@ async def add_alcohol_to_wishlist(
     user_id = current_user['_id']
     if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id):
         await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
+        await UserDatabaseHandler.add_to_wishlist_counter(db.users, user_id)
     else:
         raise AlcoholAlreadyInListException()
 

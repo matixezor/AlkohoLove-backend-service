@@ -11,3 +11,4 @@ class MeUserInfo(MongoBaseModel, UserSocialBase):
     followers_count: int
     following_count: int
     favourites_count: int
+    wishlist_count: int

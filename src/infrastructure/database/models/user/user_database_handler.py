@@ -107,6 +107,7 @@ class UserDatabaseHandler:
             followers_count=0,
             following_count=0,
             favourites_count=0,
+            wishlist_count=0,
             rate_value=Int64(0)
         )
 
@@ -190,5 +191,27 @@ class UserDatabaseHandler:
             },
             {
                 '$inc': {'favourites_count': -1}
+            }
+        )
+
+    @staticmethod
+    async def add_to_wishlist_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'wishlist_count': 1}})
+
+    @staticmethod
+    async def remove_from_wishlist_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(user_id)},
+                'wishlist_count': {'$gt': 0}
+            },
+            {
+                '$inc': {'wishlist_count': -1}
             }
         )
