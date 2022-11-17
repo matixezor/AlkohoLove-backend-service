@@ -1,3 +1,4 @@
+import requests
 from datetime import datetime
 from bson import ObjectId
 from pymongo.database import Database
@@ -15,6 +16,7 @@ from src.domain.user.user_migration import UserMigration
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_list.list_belonging import ListsBelonging
+from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
@@ -38,7 +40,7 @@ from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongTo
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
     ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
-    OwnReviewAsHelpfulException
+    OwnReviewAsHelpfulException, ReviewIsInappropriateException
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -724,9 +726,18 @@ async def create_review(
         alcohol_id: str,
         review_create_payload: ReviewCreate,
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     alcohol_id = validate_object_id(alcohol_id)
+
+    try:
+        response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
+        if response.json():
+            raise ReviewIsInappropriateException()
+    except requests.exceptions.RequestException:
+        pass
+
     if await ReviewDatabaseHandler.check_if_review_exists(
             db.reviews,
             alcohol_id,

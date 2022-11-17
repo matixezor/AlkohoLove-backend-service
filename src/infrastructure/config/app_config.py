@@ -16,6 +16,7 @@ class ApplicationSettings(BaseSettings):
     ALGORITHM: str = getenv('ALGORITHM')
     SECRET_KEY: str = getenv('SECRET_KEY')
     authjwt_secret_key: str = ''
+    HATE_SPEECH_DETECTION_SERVICE_URL: str = getenv('HATE_SPEECH_DETECTION_SERVICE_URL')
 
     @root_validator
     def set_authjwt_secret_key(cls, values):
