@@ -18,7 +18,7 @@ from src.infrastructure.exceptions.users_exceptions import UserExistsException, 
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException, \
-    EmailNotVerifiedException, InvalidChangePasswordCode
+    EmailNotVerifiedException, InvalidChangePasswordCode, SendingEmailError
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -110,7 +110,12 @@ async def register(
     ):
         raise UserExistsException()
 
-    await UserDatabaseHandler.create_user(db.users, user_create_payload, request)
+    user = await UserDatabaseHandler.create_user(db.users, user_create_payload)
+    try:
+        await UserDatabaseHandler.send_verification_mail(db.users, user, request)
+    except Exception:
+        await UserDatabaseHandler.delete_user_by_id(user['_id'], db.users)
+        raise SendingEmailError()
     await UserDatabaseHandler.create_user_lists(db.users, user_create_payload.username, db.user_wishlist,
                                                 db.user_favourites, db.user_search_history)
     await FollowersDatabaseHandler.create_followers_and_following_lists(db.users, user_create_payload.username,
@@ -205,6 +210,6 @@ async def reset_password(
         payload: UserChangePassword,
         db: Database = Depends(get_db)
 ):
-    if not UserDatabaseHandler.check_reset_token(payload.token, db.users):
+    if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
         raise InvalidChangePasswordCode()
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)

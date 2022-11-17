@@ -91,7 +91,7 @@ let users = {
             reset_password_code: {
                 bsonType: ['string', 'null'],
                 description: 'must be a str or null'
-            }
+            },
             delete_account_code: {
                 bsonType: ['string', 'null'],
                 description: 'must be a str or null'

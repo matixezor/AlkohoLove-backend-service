@@ -18,7 +18,7 @@ class EmailSchema(BaseModel):
 class Email:
     def __init__(self, user: dict, url: str, email: List[EmailStr]):
         self.name = user['username']
-        self.sender = 'AlkohoLove <alkoholove.official@gmail.com>'
+        self.sender = 'AlkohoLove <info@serwer2254722.home.pl>'
         self.email = email
         self.url = url
         pass
@@ -65,4 +65,3 @@ class Email:
 
     async def send_delete_account_code(self):
         await self.send_mail('AlkohoLove account deletion request', 'delete_account')
-

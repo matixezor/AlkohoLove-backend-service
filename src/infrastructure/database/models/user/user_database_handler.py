@@ -19,6 +19,7 @@ from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException, \
     EmailNotVerifiedException, SendingEmailError, InvalidVerificationCode
+from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -92,7 +93,7 @@ class UserDatabaseHandler:
         return collection.find_one({'username': username})
 
     @staticmethod
-    async def create_user(collection: Collection[User], payload: UserCreate, request: Request):
+    async def create_user(collection: Collection[User], payload: UserCreate):
         password_salt = gensalt().decode('utf-8')
         payload.password = UserDatabaseHandler.get_password_hash(
             payload.password,
@@ -115,25 +116,24 @@ class UserDatabaseHandler:
             updated_at=datetime.now(),
             is_verified=False,
             verification_code=None)
-        result = collection.insert_one(db_user)
-        await UserDatabaseHandler.send_verification_mail(collection, result, request, payload)
+        user = collection.insert_one(db_user)
+        return collection.find_one({'_id': user.inserted_id})
 
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
-            result: InsertOneResult,
-            request: Request,
-            payload: UserCreate
+            user: User,
+            request: Request
     ):
         token = randbytes(10)
         hashed_code = hashlib.sha256()
         hashed_code.update(token)
         verification_code = hashed_code.hexdigest()
-        new_user = collection.find_one_and_update({'_id': result.inserted_id}, {
+        new_user = collection.find_one_and_update({'_id': user['_id']}, {
             '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                   return_document=ReturnDocument.AFTER)
         url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
-        await Email(new_user, url, [EmailStr(payload.email)]).send_verification_code()
+        await Email(new_user, url, [EmailStr(user['email'])]).send_verification_code()
 
     @staticmethod
     async def verify_email(
@@ -155,6 +155,8 @@ class UserDatabaseHandler:
             update_last_login: bool = False
     ) -> User:
         user = await UserDatabaseHandler.get_user_by_username(collection, username)
+        if not user:
+            raise UserNotFoundException()
         if not user['is_verified']:
             raise EmailNotVerifiedException()
         if not user:
@@ -246,8 +248,8 @@ class UserDatabaseHandler:
             token: str,
             collection: Collection[User]
     ):
-        change_password_code = hash_token(token)
-        return collection.find_one({'change_password_code': change_password_code})
+        reset_password_code = hash_token(token)
+        return collection.find_one({'reset_password_code': reset_password_code})
 
     @staticmethod
     async def change_password(
@@ -291,3 +293,7 @@ class UserDatabaseHandler:
     async def delete_user(token: str, collection: Collection[User]):
         delete_account_code = hash_token(token)
         return collection.find_one_and_delete({'delete_account_code': delete_account_code})
+
+    @staticmethod
+    async def delete_user_by_id(user_id: ObjectId, collection: Collection[User]):
+        return collection.find_one_and_delete({'_id': user_id})
