@@ -731,19 +731,19 @@ async def create_review(
 ):
     alcohol_id = validate_object_id(alcohol_id)
 
-    try:
-        response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
-        if response.json():
-            raise ReviewIsInappropriateException()
-    except requests.exceptions.RequestException:
-        pass
-
     if await ReviewDatabaseHandler.check_if_review_exists(
             db.reviews,
             alcohol_id,
             current_user['_id']
     ):
         raise ReviewAlreadyExistsException()
+
+    try:
+        response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
+        if response.json():
+            raise ReviewIsInappropriateException()
+    except requests.exceptions.RequestException:
+        pass
 
     if await ReviewDatabaseHandler.create_review(
             db.reviews,
@@ -806,7 +806,8 @@ async def update_review(
         alcohol_id: str,
         review_update_payload: ReviewUpdate,
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     review_id = validate_object_id(review_id)
     alcohol_id = validate_object_id(alcohol_id)
@@ -815,6 +816,14 @@ async def update_review(
             review_id,
     ):
         raise ReviewNotFoundException()
+
+    if review_update_payload.review:
+        try:
+            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review)
+            if response.json():
+                raise ReviewIsInappropriateException()
+        except requests.exceptions.RequestException:
+            pass
 
     if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
             db.reviews,
