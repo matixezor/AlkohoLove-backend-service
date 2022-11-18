@@ -158,8 +158,6 @@ class UserDatabaseHandler:
             raise UserNotFoundException()
         if not user['is_verified']:
             raise EmailNotVerifiedException()
-        if not user:
-            raise InvalidCredentialsException()
         raw_password = user['password_salt'] + password
         if not UserDatabaseHandler.verify_password(raw_password, user['password']):
             raise InvalidCredentialsException()
