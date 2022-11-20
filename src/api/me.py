@@ -460,7 +460,6 @@ async def get_search_history(
     alcohols_and_dates = await SearchHistoryHandler.get_user_search_history_user_id(
         limit, offset, db.user_search_history, db.alcohols, user_id
     )
-
     alcohols_and_dates = [
         SearchHistoryEntry(
             alcohol=map_alcohol(alcohol_and_date.alcohol.dict(), db.alcohol_categories),
