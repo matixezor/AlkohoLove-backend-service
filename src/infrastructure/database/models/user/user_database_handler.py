@@ -227,7 +227,7 @@ class UserDatabaseHandler:
             token = randbytes(10)
             change_password_code = hash_token(token)
             collection.find_one_and_update({'_id': user['_id']}, {
-                '$set': {'change_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
+                '$set': {'reset_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
             url = f'https://alkoholove.com.pl/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
