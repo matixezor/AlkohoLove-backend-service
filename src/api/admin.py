@@ -11,6 +11,7 @@ from src.domain.banned_review import BannedReview
 from src.domain.alcohol_filter import AlcoholFilters
 from src.domain.banned_review.review_ban import ReviewBan
 from src.domain.alcohol_suggestion import AlcoholSuggestion
+from src.infrastructure.common.file_utils import image_size
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.auth.auth_utils import admin_permission
@@ -30,7 +31,6 @@ from src.infrastructure.config.app_config import get_settings, ApplicationSettin
 from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
-from src.infrastructure.common.file_utils import image_size, get_suggestion_image_name
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
@@ -608,8 +608,8 @@ async def delete_suggestion(
     suggestion_id = validate_object_id(suggestion_id)
     suggestion = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion, suggestion_id)
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
-    image_name = get_suggestion_image_name(suggestion['name'], str(suggestion_id))
-    image_path = f'{settings.ALCOHOL_SUGGESTION_IMAGES_DIR}/{image_name}'
+    image_prefix = suggestion['barcode']
+    image_path = f'{settings.ALCOHOL_SUGGESTION_IMAGES_DIR}/{image_prefix}'
     cloudinary.api.delete_resources_by_prefix(prefix=f'{image_path}')
 
 
