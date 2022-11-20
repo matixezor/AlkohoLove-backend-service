@@ -608,7 +608,7 @@ async def delete_suggestion(
     suggestion_id = validate_object_id(suggestion_id)
     suggestion = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion, suggestion_id)
     await AlcoholSuggestionDatabaseHandler.delete_suggestion(db.alcohol_suggestion, suggestion_id)
-    image_prefix = suggestion['barcode']
+    image_prefix = suggestion['barcode'] + '_'
     image_path = f'{settings.ALCOHOL_SUGGESTION_IMAGES_DIR}/{image_prefix}'
     cloudinary.api.delete_resources_by_prefix(prefix=f'{image_path}')
 
