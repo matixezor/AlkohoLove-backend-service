@@ -183,7 +183,7 @@ async def verify_email(
     except InvalidVerificationCode:
         url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_email_verification'
         return RedirectResponse(url=url)
-    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/email_verified'
+    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_email_verification '
     return RedirectResponse(url=url)
 
 
@@ -225,8 +225,8 @@ async def reset_password(
     """
     settings = get_settings()
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change_code'
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change'
         return RedirectResponse(url=url)
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
-    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/password_changed'
+    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_password_change'
     return RedirectResponse(url=url)

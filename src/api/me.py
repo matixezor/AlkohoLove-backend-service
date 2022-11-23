@@ -84,11 +84,11 @@ async def delete_self(
 ):
     settings = get_settings()
     if not await UserDatabaseHandler.find_user_by_deletion_code(token, db.users):
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/user_not_found'
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_account_deletion'
         return RedirectResponse(url=url)
     else:
         await UserDatabaseHandler.delete_user(token, db.users)
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/account_deleted'
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_account_deletion'
     return RedirectResponse(url=url)
 
 
