@@ -15,6 +15,7 @@ from src.domain.user.user_migration import UserMigration
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_list.list_belonging import ListsBelonging
+from src.infrastructure.config.app_config import get_settings
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
@@ -81,11 +82,14 @@ async def delete_self(
         token: str,
         db: Database = Depends(get_db)
 ):
+    settings = get_settings()
     if not await UserDatabaseHandler.find_user_by_deletion_code(token, db.users):
-        return RedirectResponse(url='https://alkoholove.com.pl/user_not_found')
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/user_not_found'
+        return RedirectResponse(url=url)
     else:
         await UserDatabaseHandler.delete_user(token, db.users)
-    return RedirectResponse(url='https://alkoholove.com.pl/account_deleted')
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/account_deleted'
+    return RedirectResponse(url=url)
 
 
 @router.get(

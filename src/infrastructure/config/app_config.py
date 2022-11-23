@@ -21,6 +21,8 @@ class ApplicationSettings(BaseSettings):
     EMAIL_PORT: int = getenv('EMAIL_PORT')
     EMAIL_PASSWORD: str = getenv('EMAIL_PASSWORD')
     EMAIL_FROM: str = getenv('EMAIL_FROM')
+    WEB_PORT: str = getenv('WEB_PORT')
+    WEB_HOST: str = getenv('WEB_HOST')
 
     @root_validator
     def set_authjwt_secret_key(cls, values):

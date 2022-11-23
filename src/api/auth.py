@@ -177,11 +177,14 @@ async def verify_email(
         db: Database = Depends(get_db)
 
 ):
+    settings = get_settings()
     try:
         await UserDatabaseHandler.verify_email(token, db.users)
     except InvalidVerificationCode:
-        return RedirectResponse(url='https://alkoholove.com.pl/email_verified/invalid_email_verification')
-    return RedirectResponse(url='https://alkoholove.com.pl/email_verified')
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_email_verification'
+        return RedirectResponse(url=url)
+    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/email_verified'
+    return RedirectResponse(url=url)
 
 
 @router.post(
@@ -220,7 +223,10 @@ async def reset_password(
     token: token sent to email
     new_password: required validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
+    settings = get_settings()
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
-        return RedirectResponse(url='https://alkoholove.com.pl/invalid_password_change_code')
+        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change_code'
+        return RedirectResponse(url=url)
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
-    return RedirectResponse(url='https://alkoholove.com.pl/password_changed')
+    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/password_changed'
+    return RedirectResponse(url=url)
