@@ -53,7 +53,7 @@ async def test_delete_self(
         user_token_headers: dict[str, str]
 ):
     response = await async_client.get('/me/delete_account/f983e96fba88ce5523e9', headers=user_token_headers)
-    assert response.status_code == 200
+    assert response.status_code == 307
 
 
 @mark.asyncio
