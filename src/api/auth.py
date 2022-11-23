@@ -2,6 +2,7 @@ from datetime import datetime
 from operator import itemgetter
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
+from starlette.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status, Response, Header, HTTPException, Request
 
@@ -18,7 +19,7 @@ from src.infrastructure.exceptions.users_exceptions import UserExistsException, 
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
     import UserBannedException, TokenRevokedException, CredentialsException, InsufficientPermissionsException, \
-    EmailNotVerifiedException, InvalidChangePasswordCode, SendingEmailError
+    EmailNotVerifiedException, SendingEmailError, InvalidVerificationCode
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -168,17 +169,19 @@ async def logout(
 
 @router.get(
     '/verify_email/{token}',
-    status_code=status.HTTP_200_OK
+    response_class=RedirectResponse,
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT
 )
 async def verify_email(
         token: str,
         db: Database = Depends(get_db)
+
 ):
-    await UserDatabaseHandler.verify_email(token, db.users)
-    return {
-        "status": "success",
-        "message": "Account verified successfully"
-    }
+    try:
+        await UserDatabaseHandler.verify_email(token, db.users)
+    except InvalidVerificationCode:
+        return RedirectResponse(url='https://alkoholove.com.pl/email_verified/invalid_email_verification')
+    return RedirectResponse(url='https://alkoholove.com.pl/email_verified')
 
 
 @router.post(
@@ -205,8 +208,8 @@ async def request_password_reset(
 
 @router.post(
     '/reset_password',
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_class=Response,
+    response_class=RedirectResponse,
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
     summary='Reset password'
 )
 async def reset_password(
@@ -218,5 +221,6 @@ async def reset_password(
     new_password: required validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
-        raise InvalidChangePasswordCode()
+        return RedirectResponse(url='https://alkoholove.com.pl/invalid_password_change_code')
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
+    return RedirectResponse(url='https://alkoholove.com.pl/password_changed')

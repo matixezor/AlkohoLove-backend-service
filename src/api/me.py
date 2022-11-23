@@ -1,6 +1,7 @@
 from bson import ObjectId
 from datetime import datetime
 from pymongo.database import Database
+from starlette.responses import RedirectResponse
 from fastapi import APIRouter, Depends, status, Response, Request
 
 from src.domain.common import PageInfo
@@ -72,7 +73,8 @@ async def send_delete_request(
 
 @router.get(
     path='/delete_account/{token}',
-    status_code=status.HTTP_200_OK,
+    response_class=RedirectResponse,
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
     summary='Delete your account'
 )
 async def delete_self(
@@ -80,13 +82,10 @@ async def delete_self(
         db: Database = Depends(get_db)
 ):
     if not await UserDatabaseHandler.find_user_by_deletion_code(token, db.users):
-        raise UserNotFoundException()
+        return RedirectResponse(url='https://alkoholove.com.pl/user_not_found')
     else:
         await UserDatabaseHandler.delete_user(token, db.users)
-        return {
-            "status": "success",
-            "message": "Account deleted successfully"
-        }
+    return RedirectResponse(url='https://alkoholove.com.pl/account_deleted')
 
 
 @router.get(

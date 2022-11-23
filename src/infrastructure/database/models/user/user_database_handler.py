@@ -1,4 +1,3 @@
-import hashlib
 from bcrypt import gensalt
 from random import randbytes
 from pydantic import EmailStr
@@ -6,7 +5,6 @@ from datetime import datetime
 from bson import ObjectId, Int64
 from starlette.requests import Request
 from passlib.context import CryptContext
-from pymongo.results import InsertOneResult
 from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserCreate
@@ -16,10 +14,10 @@ from src.infrastructure.email.email_handler import Email
 from src.infrastructure.email.email_utils import dehash_token, hash_token
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.favourites import Favourites
+from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException, \
     EmailNotVerifiedException, SendingEmailError, InvalidVerificationCode
-from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
