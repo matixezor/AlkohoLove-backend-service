@@ -39,7 +39,7 @@ When running with docker create `.docker.env` file with env variables:
 `ALGORITHM` - get from heroku  
 To run `$ docker-compose up --build -d`  
 To stop `$ docker-compose down --volumes`  
-To run just the db `$ docker-compose run -d --service-ports mongodb`  
+To run just the db `$ docker-compose run -d --service-ports db`  
 Db is persisted between launches, to get a brand-new db delete `mongo-data` directory  
 Backend on docker will be under `http://localhost:8008/docs`   
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
