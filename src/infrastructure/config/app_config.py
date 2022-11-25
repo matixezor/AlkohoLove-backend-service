@@ -13,6 +13,9 @@ class ApplicationSettings(BaseSettings):
     CLOUDINARY_API_SECRET: str = getenv('CLOUDINARY_API_SECRET')
     ALCOHOL_IMAGES_DIR: str = getenv('ALCOHOL_IMAGES_DIR')
     ALCOHOL_SUGGESTION_IMAGES_DIR: str = getenv('ALCOHOL_SUGGESTION_IMAGES_DIR')
+    ALLOWED_ORIGINS: list[str] = getenv('ALLOWED_ORIGINS', '*').split(';')
+    DOCS_URL: str | None = getenv('DOCS_URL', None)
+    RECOMMENDER_URL: str = getenv('RECOMMENDER_URL')
     ALGORITHM: str = getenv('ALGORITHM')
     SECRET_KEY: str = getenv('SECRET_KEY')
     authjwt_secret_key: str = ''
@@ -39,7 +42,6 @@ def get_config():
     return get_settings()
 
 
-ALLOWED_ORIGINS = ['*']
 ALLOWED_METHODS = ['*']
 ALLOWED_HEADERS = ['*']
 ALLOW_CREDENTIALS = False

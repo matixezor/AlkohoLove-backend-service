@@ -33,6 +33,7 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           ALCOHOL_IMAGES_DIR: ${{ secrets.ALCOHOL_IMAGES_DIR }}
           ALGORITHM: ${{ secrets.ALGORITHM }}
+          RECOMMENDER_URL: "dummy_url"
         run: |
           cd src/tests/
           pytest

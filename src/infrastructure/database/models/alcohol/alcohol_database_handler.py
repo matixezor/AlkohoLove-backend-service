@@ -71,6 +71,10 @@ class AlcoholDatabaseHandler:
         return collection.find_one({'_id': ObjectId(alcohol_id)})
 
     @staticmethod
+    async def get_alcohols_by_ids(collection: Collection, alcohol_ids: list[ObjectId]) -> list[dict] | None:
+        return list(collection.find({'_id': {'$in': alcohol_ids}}))
+
+    @staticmethod
     async def add_alcohol(collection: Collection, payload: AlcoholCreate):
         payload = payload.dict() | {
             'avg_rating': float(0),
