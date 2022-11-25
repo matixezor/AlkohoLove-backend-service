@@ -19,7 +19,7 @@ app = FastAPI(title='AlkohoLove-backend-service', docs_url=get_settings().DOCS_U
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_settings().ALLOWED_ORIGINS,
+    allow_origins=get_settings().ALLOWED_ORIGINS.split(';'),
     allow_credentials=ALLOW_CREDENTIALS,
     allow_methods=ALLOWED_METHODS,
     allow_headers=ALLOWED_HEADERS,
