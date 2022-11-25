@@ -526,7 +526,6 @@ async def delete_alcohol_from_favourites(
 )
 async def delete_alcohol_from_search_history(
         alcohol_id: str,
-        date: datetime,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
@@ -535,7 +534,7 @@ async def delete_alcohol_from_search_history(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
+    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id)
 
 
 @router.post(
