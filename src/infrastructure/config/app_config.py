@@ -13,7 +13,7 @@ class ApplicationSettings(BaseSettings):
     CLOUDINARY_API_SECRET: str = getenv('CLOUDINARY_API_SECRET')
     ALCOHOL_IMAGES_DIR: str = getenv('ALCOHOL_IMAGES_DIR')
     ALCOHOL_SUGGESTION_IMAGES_DIR: str = getenv('ALCOHOL_SUGGESTION_IMAGES_DIR')
-    ALLOWED_ORIGINS: list[str] = getenv('ALLOWED_ORIGINS', '*').split(';')
+    ALLOWED_ORIGINS: str = getenv('ALLOWED_ORIGINS', '*')
     DOCS_URL: str | None = getenv('DOCS_URL', None)
     RECOMMENDER_URL: str = getenv('RECOMMENDER_URL')
     ALGORITHM: str = getenv('ALGORITHM')
