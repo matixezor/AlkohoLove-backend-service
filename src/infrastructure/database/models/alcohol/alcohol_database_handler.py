@@ -252,4 +252,4 @@ class AlcoholDatabaseHandler:
             offset: int,
             alcohol_list: list[str]
     ) -> list[dict]:
-        return list(collection.find(alcohol_list).skip(offset).limit(limit))
+        return list(collection.find({'_id': {'$in': alcohol_list}}).skip(offset).limit(limit))

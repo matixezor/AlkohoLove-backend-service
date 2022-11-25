@@ -47,3 +47,19 @@ async def test_get_search_history(
     assert response['page_info']['limit'] == 10
     assert response['page_info']['offset'] == 0
     assert response['alcohols'] == SEARCH_HISTORY_FIXTURE
+
+
+@mark.asyncio
+async def test_get_guest_list(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    data = ["6288e32dd5ab6070dde8db8e", "6288e32dd5ab6070dde8db8c"]
+    response = await async_client.post('/list/guest/?limit=10&offset=0', json=data)
+    assert response.status_code == 200
+    response = response.json()
+    assert len(response['alcohols']) == 2
+    assert response['page_info']['total'] == 2
+    assert response['page_info']['limit'] == 10
+    assert response['page_info']['offset'] == 0
+    assert response['alcohols'] == FAVOURITES_FIXTURE

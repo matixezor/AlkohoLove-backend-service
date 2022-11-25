@@ -118,27 +118,31 @@ async def get_search_history(
     )
 
 
-@router.get(
-    path='/favourites/guest/',
+@router.post(
+    path='/guest/',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
-    summary='Read guest favourite alcohol list with pagination',
+    summary='Read guest alcohol list with pagination',
     response_model_by_alias=False
 )
-async def get_guest_favourites(
+async def get_guest_list(
         limit: int = 10,
         offset: int = 0,
         alcohol_list: list[str] = Body(...),
         db: Database = Depends(get_db),
 ) -> PaginatedAlcohol:
     """
-    Show user favourite alcohol list with pagination
+    Show guest alcohol list with pagination
     """
+    for i in range(len(alcohol_list)):
+        alcohol_list[i] = validate_object_id(alcohol_list[i])
+
+    print(alcohol_list)
     alcohols = await AlcoholDatabaseHandler.get_guest_list(
-        db.alcohols, limit, offset,  alcohol_list
+        db.alcohols, limit, offset, alcohol_list
     )
     alcohols = map_alcohols(alcohols, db.alcohol_categories)
-    total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, db.alcohols, user_id)
+    total = len(alcohol_list)
     return PaginatedAlcohol(
         alcohols=alcohols,
         page_info=PageInfo(
