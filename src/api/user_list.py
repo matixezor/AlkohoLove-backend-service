@@ -137,7 +137,6 @@ async def get_guest_list(
     for i in range(len(alcohol_list)):
         alcohol_list[i] = validate_object_id(alcohol_list[i])
 
-    print(alcohol_list)
     alcohols = await AlcoholDatabaseHandler.get_guest_list(
         db.alcohols, limit, offset, alcohol_list
     )
