@@ -244,3 +244,12 @@ class AlcoholDatabaseHandler:
     @staticmethod
     async def revert_by_removal(collection: Collection, name: str) -> None:
         collection.find_one_and_delete({'name': name})
+
+    @staticmethod
+    async def get_guest_list(
+            collection: Collection,
+            limit: int,
+            offset: int,
+            alcohol_list: list[str]
+    ) -> list[dict]:
+        return list(collection.find(alcohol_list).skip(offset).limit(limit))

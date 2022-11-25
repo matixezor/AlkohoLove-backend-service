@@ -1,6 +1,6 @@
 from starlette import status
 from pymongo.database import Database
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 
 from src.domain.common import PageInfo
 from src.domain.alcohol import PaginatedAlcohol
@@ -9,6 +9,7 @@ from src.domain.user_list import PaginatedSearchHistory
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
+from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
@@ -109,6 +110,37 @@ async def get_search_history(
     total = await SearchHistoryHandler.count_alcohols_in_search_history(db.user_search_history, db.alcohols, user_id)
     return PaginatedSearchHistory(
         alcohols=alcohols_and_dates,
+        page_info=PageInfo(
+            limit=limit,
+            offset=offset,
+            total=total
+        )
+    )
+
+
+@router.get(
+    path='/favourites/guest/',
+    response_model=PaginatedAlcohol,
+    status_code=status.HTTP_200_OK,
+    summary='Read guest favourite alcohol list with pagination',
+    response_model_by_alias=False
+)
+async def get_guest_favourites(
+        limit: int = 10,
+        offset: int = 0,
+        alcohol_list: list[str] = Body(...),
+        db: Database = Depends(get_db),
+) -> PaginatedAlcohol:
+    """
+    Show user favourite alcohol list with pagination
+    """
+    alcohols = await AlcoholDatabaseHandler.get_guest_list(
+        db.alcohols, limit, offset,  alcohol_list
+    )
+    alcohols = map_alcohols(alcohols, db.alcohol_categories)
+    total = await UserFavouritesHandler.count_alcohols_in_favourites(db.user_favourites, db.alcohols, user_id)
+    return PaginatedAlcohol(
+        alcohols=alcohols,
         page_info=PageInfo(
             limit=limit,
             offset=offset,
