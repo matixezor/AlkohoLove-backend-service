@@ -1,12 +1,11 @@
-from datetime import datetime
 from bson import ObjectId
+from datetime import datetime
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
-from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
 from src.domain.user.me_user_info import MeUserInfo
 from src.domain.user_list import SearchHistoryEntry
@@ -18,6 +17,7 @@ from src.domain.user_list.list_belonging import ListsBelonging
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.domain.alcohol import PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -28,6 +28,7 @@ from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundExce
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
+from src.infrastructure.recommender.recommender_client import RecommenderClient, recommender_client
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException, UserExistsException
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
@@ -929,3 +930,25 @@ async def migrate_user(
                 alcohol_tag.tag_name,
                 [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
             )
+
+
+@router.get(
+    path='/recommendations',
+    response_model=AlcoholRecommendation,
+    status_code=status.HTTP_200_OK,
+    summary='Fetch recommendations',
+    response_model_by_alias=False,
+)
+async def get_recommendations(
+        current_user: UserDb = Depends(get_valid_user),
+        client: RecommenderClient = Depends(recommender_client),
+        db: Database = Depends(get_db)
+):
+    recommendations = [
+        ObjectId(alcohol_id) for alcohol_id in
+        client.fetch_recommendations(str(current_user.get('_id')))['recommendations']
+    ]
+    recommendations = await AlcoholDatabaseHandler.get_alcohols_by_ids(db.alcohols, recommendations)
+    return AlcoholRecommendation(
+        alcohols=recommendations
+    )
