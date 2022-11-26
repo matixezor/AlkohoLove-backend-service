@@ -7,6 +7,7 @@ from pymongo.collection import Collection, ReturnDocument
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
+from src.infrastructure.database.models.user_tag import UserTag
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
@@ -62,6 +63,19 @@ class UserDatabaseHandler:
     @staticmethod
     async def delete_user(collection: Collection[User], user_id: ObjectId) -> None:
         collection.delete_one({'_id': user_id})
+
+    @staticmethod
+    async def delete_user_lists(
+            favourites: Collection[Favourites],
+            wishlist: Collection[UserWishlist],
+            search_history: Collection[UserSearchHistory],
+            tags: Collection[UserTag],
+            user_id: ObjectId
+    ) -> None:
+        favourites.delete_one({'user_id': user_id})
+        wishlist.delete_one({'user_id': user_id})
+        search_history.delete_one({'user_id': user_id})
+        tags.delete_many({'user_id': user_id})
 
     @staticmethod
     async def check_if_user_exists(

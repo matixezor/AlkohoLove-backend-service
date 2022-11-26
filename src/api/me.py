@@ -1,5 +1,4 @@
 from bson import ObjectId
-from datetime import datetime
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
@@ -112,6 +111,11 @@ async def delete_self(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
+    await UserDatabaseHandler.delete_user_lists(db.user_favourites, db.user_wishlist, db.user_search_history,
+                                                db.user_tags, current_user['_id'])
+    await FollowingDatabaseHandler.delete_user_following(db.following, db.followers, db.users, current_user['_id'])
+    await FollowingDatabaseHandler.delete_user_followers(db.followers, db.following, db.users, current_user['_id'])
+    await ReviewDatabaseHandler.delete_reviews(db.reviews, db.alcohols, current_user['_id'])
     await UserDatabaseHandler.delete_user(db.users, current_user['_id'])
 
 
@@ -406,7 +410,7 @@ async def get_belonging_to_lists(
                                                                                     user_id, alcohol_id),
         is_in_wishlist=await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id),
         alcohol_tags=await UserTagDatabaseHandler.get_alcohol_tags(db.user_tags, alcohol_id, user_id)
-        )
+    )
 
 
 @router.get(
