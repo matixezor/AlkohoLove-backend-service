@@ -55,7 +55,7 @@ async def test_get_guest_list(
         user_token_headers: dict[str, str]
 ):
     data = ["6288e32dd5ab6070dde8db8e", "6288e32dd5ab6070dde8db8c"]
-    response = await async_client.post('/list/guest/?limit=10&offset=0', json=data)
+    response = await async_client.post('/list/guest?limit=10&offset=0', json=data)
     assert response.status_code == 200
     response = response.json()
     assert len(response['alcohols']) == 2

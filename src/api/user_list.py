@@ -119,7 +119,7 @@ async def get_search_history(
 
 
 @router.post(
-    path='/guest/',
+    path='/guest',
     response_model=PaginatedAlcohol,
     status_code=status.HTTP_200_OK,
     summary='Read guest alcohol list with pagination',
@@ -134,8 +134,7 @@ async def get_guest_list(
     """
     Show guest alcohol list with pagination
     """
-    for i in range(len(alcohol_list)):
-        alcohol_list[i] = validate_object_id(alcohol_list[i])
+    alcohol_list = [validate_object_id(alcohol_id) for alcohol_id in alcohol_list]
 
     alcohols = await AlcoholDatabaseHandler.get_guest_list(
         db.alcohols, limit, offset, alcohol_list
