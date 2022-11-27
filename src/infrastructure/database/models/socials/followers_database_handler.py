@@ -54,6 +54,18 @@ class FollowersDatabaseHandler:
         )
 
     @staticmethod
+    async def batch_decrease_followers_counter(collection: Collection[User], user_ids: [ObjectId]) -> None:
+        collection.update_many(
+            {
+                '_id': {'$in': user_ids},
+                'followers_count': {'$gt': 0}
+            },
+            {
+                '$inc': {'following_count': -1}
+            }
+        )
+
+    @staticmethod
     async def check_if_user_in_followers(collection: Collection[Followers], user_id: ObjectId,
                                          follower_user_id: ObjectId) -> bool:
         if collection.find_one({'_id': user_id, 'followers': follower_user_id}):
@@ -82,5 +94,12 @@ class FollowersDatabaseHandler:
     ) -> int:
         followers = followers_collection.find_one({'_id': user_id}, {'followers': 1})
         followers = followers['followers']
-
         return len(list(users_collection.find({'_id': {'$in': followers}})))
+
+    @staticmethod
+    async def delete_user_from_many_followers_list(
+            collection: Collection[Followers],
+            user_ids: list[ObjectId],
+            follower_user_id: ObjectId
+    ):
+        collection.update_many({'_id': {'$in': user_ids}}, {'$pull': {'followers': follower_user_id}})
