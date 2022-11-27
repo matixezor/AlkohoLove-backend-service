@@ -183,7 +183,7 @@ async def verify_email(
     except InvalidVerificationCode:
         url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_email_verification'
         return RedirectResponse(url=url)
-    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_email_verification '
+    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_email_verification'
     return RedirectResponse(url=url)
 
 

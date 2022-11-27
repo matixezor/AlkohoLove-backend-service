@@ -1,9 +1,9 @@
 {% extends 'base.html' %} {% block content %}
-<p>Hello {{first_name}},</p>
+<p>Cześć {{first_name}},</p>
 
 <p>
-    We've received a request to delete AlkohoLove account associated with your email address. No
-    changes have been made to your account yet. You can delete your account by clicking the link below:
+    Otrzymaliśmy prośbę usunięcia konta w aplikacji AlkohoLove powiązanego z twoim adresem email. Żadne zmiany nie
+    zostały jeszcze dokonane. Możesz usunąć swoje konto klikając w przycisk poniżej:
 </p>
 <table
         role="presentation"
@@ -19,7 +19,7 @@
                 <tbody>
                 <tr>
                     <td>
-                        <a href="{{url}}" target="_blank">Delete your account</a>
+                        <a href="{{url}}" target="_blank">Usuń konto</a>
                     </td>
                 </tr>
                 </tbody>
@@ -28,8 +28,7 @@
     </tr>
     </tbody>
 </table>
-<p>If you did not request an account deletion, you can safely ignore this email. Only a person with access to your email
-    can
-    delete your account.</p>
+<p>Jeśli nie prosiłeś o usunięcie konta możesz zignorować tę wiadomość. Tylko osoba z dostępem do twojego konta email
+    może usunąć konto.</p>
 
 {% endblock %}

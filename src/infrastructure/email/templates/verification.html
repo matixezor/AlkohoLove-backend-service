@@ -1,9 +1,8 @@
 {% extends 'base.html' %} {% block content %}
 
-<p>Hi {{first_name}},</p>
+<p>Cześć {{first_name}},</p>
 <p>
-  Thanks for creating an account with AlkohoLove. Please verify your email address by
-  clicking the button below.
+  Dziękujemy za utworzenie konta w aplikacji AlkohoLove. Zweryfikuj swój adres email klikając w poniższy przycisk.
 </p>
 <table
   role="presentation"
@@ -19,7 +18,7 @@
           <tbody>
             <tr>
               <td>
-                <a href="{{url}}" target="_blank">Verify email address</a>
+                <a href="{{url}}" target="_blank">Zweryfikuj</a>
               </td>
             </tr>
           </tbody>
@@ -28,6 +27,6 @@
     </tr>
   </tbody>
 </table>
-<p>Cheers!</p>
+<p>Na zdrowie!</p>
 
 {% endblock %}
