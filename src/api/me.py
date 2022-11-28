@@ -825,8 +825,8 @@ async def update_review(
         review_id,
         review_update_payload,
     )
-
-    await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
+    if rating != review_update_payload.rating:
+        await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
     return review_update
