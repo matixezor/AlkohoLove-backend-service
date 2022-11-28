@@ -254,7 +254,7 @@ class AlcoholDatabaseHandler:
             phrase: str | None
     ) -> list[str]:
         if phrase:
-            result = list(collection.aggregate([
+            values = list(collection.aggregate([
                 # Match the possible documents. Always the best approach
                 {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
                 # De-normalize the array content to separate documents
@@ -267,6 +267,12 @@ class AlcoholDatabaseHandler:
                 {'$skip': offset},
                 {'$limit': limit}
             ]))
-            return [value['_id'] for value in result]
         else:
-            return sorted(collection.distinct(field_name))
+            values = list(collection.aggregate([
+                {'$unwind': f'${field_name}'},
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+                {'$limit': limit}
+            ]))
+        return [value['_id'] for value in values]

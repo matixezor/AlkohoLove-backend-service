@@ -134,8 +134,8 @@ ALCOHOL_FIXTURE_2 = {
 }
 
 AROMA_FIXTURE = ['orzechy', 'owoce']
-ALL_AROMAS = ["cytrusy", "drewno", "gruszka", "jabłko", "kwiaty", "lukrecja", "nuty korzenne",
-              "orzechy", "owoce", "pieprz", "skórka limonki", "toffi"]
+ALL_AROMAS = ["cytrusy", "drewno", "gruszka", "jabłko", "kwiaty", "lukrecja", "nuty korzenne", "orzechy", "owoce",
+              "pieprz"]
 KIND_FIXTURE = ['whisky']
 ALL_KINDS = ["likier", "rum", "whisky", "wódka"]
 
