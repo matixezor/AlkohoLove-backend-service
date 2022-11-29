@@ -20,6 +20,8 @@ When running with IDE, set Run/Debug configurations with env variables:
 `EMAIL_USERNAME=info@alkoholove.com.pl`    
 `EMAIL_PASSWORD`= get from SMTP server provider    
 `EMAIL_FROM=info@alkoholove.com.pl`   
+`WEB_PORT`=443  
+`WEB_HOST`=alkoholove.com.pl  
 or create `.local.env` file with these env variables and set Run/Debug configurations with env variable  
 `ENV=LOCAL`  
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
@@ -47,9 +49,11 @@ When running with docker create `.docker.env` file with env variables:
 `EMAIL_USERNAME=info@alkoholove.com.pl`  
 `EMAIL_PASSWORD`= get from SMTP server provider  
 `EMAIL_FROM=info@alkoholove.com.pl`  
+`WEB_PORT`=443  
+`WEB_HOST`=alkoholove.com.pl  
 To run `$ docker-compose up --build -d`  
 To stop `$ docker-compose down --volumes`  
-To run just the db `$ docker-compose run -d --service-ports mongodb`  
+To run just the db `$ docker-compose run -d --service-ports db`  
 Db is persisted between launches, to get a brand-new db delete `mongo-data` directory  
 Backend on docker will be under `http://localhost:8008/docs`   
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  

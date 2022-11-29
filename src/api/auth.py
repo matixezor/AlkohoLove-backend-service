@@ -92,7 +92,6 @@ async def refresh(
 )
 async def register(
         user_create_payload: UserCreate,
-        request: Request,
         db: Database = Depends(get_db)
 ) -> None:
     """
@@ -113,7 +112,7 @@ async def register(
 
     user = await UserDatabaseHandler.create_user(db.users, user_create_payload)
     try:
-        await UserDatabaseHandler.send_verification_mail(db.users, user, request)
+        await UserDatabaseHandler.send_verification_mail(db.users, user)
     except Exception:
         await UserDatabaseHandler.delete_user_by_id(user['_id'], db.users)
         raise SendingEmailError()

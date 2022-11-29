@@ -13,14 +13,13 @@ from src.api.me import router as logged_in_user_router
 from src.api.socials import router as followers_router
 from src.api.reported_errors import router as reported_error_router
 from src.api.alcohol_suggestion import router as suggestions_router
-from src.infrastructure.config.app_config import \
-    ALLOWED_ORIGINS, ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS
+from src.infrastructure.config.app_config import ALLOWED_HEADERS, ALLOWED_METHODS, ALLOW_CREDENTIALS, get_settings
 
-app = FastAPI(title='AlkohoLove-backend-service')
+app = FastAPI(title='AlkohoLove-backend-service', docs_url=get_settings().DOCS_URL, redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=get_settings().ALLOWED_ORIGINS.split(';'),
     allow_credentials=ALLOW_CREDENTIALS,
     allow_methods=ALLOWED_METHODS,
     allow_headers=ALLOWED_HEADERS,

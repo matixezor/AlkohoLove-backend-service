@@ -1,5 +1,4 @@
 from bson import ObjectId
-from datetime import datetime
 from pymongo.database import Database
 from starlette.responses import RedirectResponse
 from fastapi import APIRouter, Depends, status, Response, Request
@@ -19,6 +18,7 @@ from src.infrastructure.config.app_config import get_settings
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.domain.alcohol import PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -30,6 +30,7 @@ from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundExce
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
+from src.infrastructure.recommender.recommender_client import RecommenderClient, recommender_client
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
@@ -62,14 +63,13 @@ async def get_self(current_user: UserDb = Depends(get_valid_user)):
     summary='Send delete request to email'
 )
 async def send_delete_request(
-        request: Request,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ):
     """
         Sends email message with deletion link to address associated with account.
     """
-    await UserDatabaseHandler.send_deletion_request(current_user, request, db.users)
+    await UserDatabaseHandler.send_deletion_request(current_user, db.users)
 
 
 @router.get(
@@ -83,11 +83,18 @@ async def delete_self(
         db: Database = Depends(get_db)
 ):
     settings = get_settings()
-    if not await UserDatabaseHandler.find_user_by_deletion_code(token, db.users):
+    user = await UserDatabaseHandler.find_user_by_deletion_code(token, db.users)
+    if not user:
         url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_account_deletion'
         return RedirectResponse(url=url)
     else:
-        await UserDatabaseHandler.delete_user(token, db.users)
+        await UserDatabaseHandler.delete_user_lists(db.user_favourites, db.user_wishlist, db.user_search_history,
+                                                    db.user_tags, user['_id'])
+        await FollowingDatabaseHandler.delete_user_following(db.following, db.followers, db.users, user['_id'])
+        await FollowingDatabaseHandler.delete_user_followers(db.followers, db.following, db.users, user['_id'])
+        await ReviewDatabaseHandler.delete_reviews(db.reviews, db.alcohols, user['_id'])
+        await UserDatabaseHandler.delete_user(db.users, user['_id'])
+        await UserDatabaseHandler.delete_user(db.users, user['_id'])
         url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_account_deletion'
     return RedirectResponse(url=url)
 
@@ -503,7 +510,6 @@ async def delete_alcohol_from_favourites(
 )
 async def delete_alcohol_from_search_history(
         alcohol_id: str,
-        date: datetime,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
@@ -512,7 +518,7 @@ async def delete_alcohol_from_search_history(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
+    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id)
 
 
 @router.post(
@@ -799,8 +805,8 @@ async def update_review(
         review_id,
         review_update_payload,
     )
-
-    await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
+    if rating != review_update_payload.rating:
+        await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
     return review_update
@@ -907,3 +913,25 @@ async def migrate_user(
                 alcohol_tag.tag_name,
                 [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
             )
+
+
+@router.get(
+    path='/recommendations',
+    response_model=AlcoholRecommendation,
+    status_code=status.HTTP_200_OK,
+    summary='Fetch recommendations',
+    response_model_by_alias=False,
+)
+async def get_recommendations(
+        current_user: UserDb = Depends(get_valid_user),
+        client: RecommenderClient = Depends(recommender_client),
+        db: Database = Depends(get_db)
+):
+    recommendations = [
+        ObjectId(alcohol_id) for alcohol_id in
+        client.fetch_recommendations(str(current_user.get('_id')))['recommendations']
+    ]
+    recommendations = await AlcoholDatabaseHandler.get_alcohols_by_ids(db.alcohols, recommendations)
+    return AlcoholRecommendation(
+        alcohols=recommendations
+    )

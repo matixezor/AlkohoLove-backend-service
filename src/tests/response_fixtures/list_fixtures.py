@@ -167,47 +167,6 @@ SEARCH_HISTORY_FIXTURE = [
                     'value': 4
                 }],
                 'alcohol_by_volume': 40.0,
-                'aroma': ['kwiaty', 'owoce', 'nuty korzenne', 'drewno'],
-                'avg_rating': 5.0,
-                'barcode': ['5011007003234', '5011007015534', '5011007003005'],
-                'color': 'bursztyn',
-                'country': 'Irlandia',
-                'description': 'Lorem ipsum',
-                'finish': ['gładki', 'słodki', 'pikantny'],
-                'food': ['czekoladowy mus'],
-                'id': '6288e32dd5ab6070dde8db8a',
-                'keywords': ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend'],
-                'kind': 'whisky',
-                'manufacturer': 'Irish Distillers',
-                'name': 'Jameson',
-                'rate_count': 1,
-                'rate_value': 5,
-                'date': None,
-                'username': None,
-                'region': 'Cork',
-                'taste': ['nuty korzenne',
-                          'orzechy',
-                          'wanilia',
-                          'słodkie sherry',
-                          'łagodny'],
-                'type': 'blended',
-                "rate_1_count": 0,
-                "rate_2_count": 0,
-                "rate_3_count": 0,
-                "rate_4_count": 0,
-                "rate_5_count": 1
-            },
-        'date': '2022-04-25T19:13:25+00:00'
-    },
-    {
-        'alcohol':
-            {
-                'additional_properties': [{
-                    'name': 'age',
-                    'display_name': 'wiek',
-                    'value': 4
-                }],
-                'alcohol_by_volume': 40.0,
                 'aroma': ['owoce',
                           'jabłko',
                           'gruszka',
@@ -244,5 +203,46 @@ SEARCH_HISTORY_FIXTURE = [
                 "rate_5_count": 0
             },
         'date': '2022-07-21T19:13:25+00:00'
+    },
+    {
+        'alcohol':
+            {
+                'additional_properties': [{
+                    'name': 'age',
+                    'display_name': 'wiek',
+                    'value': 4
+                }],
+                'alcohol_by_volume': 40.0,
+                'aroma': ['kwiaty', 'owoce', 'nuty korzenne', 'drewno'],
+                'avg_rating': 5.0,
+                'barcode': ['5011007003234', '5011007015534', '5011007003005'],
+                'color': 'bursztyn',
+                'country': 'Irlandia',
+                'description': 'Lorem ipsum',
+                'finish': ['gładki', 'słodki', 'pikantny'],
+                'food': ['czekoladowy mus'],
+                'id': '6288e32dd5ab6070dde8db8a',
+                'keywords': ['czteroletnia', 'irlandzka', 'irlandzkie', 'blend'],
+                'kind': 'whisky',
+                'manufacturer': 'Irish Distillers',
+                'name': 'Jameson',
+                'rate_count': 1,
+                'rate_value': 5,
+                'date': None,
+                'username': None,
+                'region': 'Cork',
+                'taste': ['nuty korzenne',
+                          'orzechy',
+                          'wanilia',
+                          'słodkie sherry',
+                          'łagodny'],
+                'type': 'blended',
+                "rate_1_count": 0,
+                "rate_2_count": 0,
+                "rate_3_count": 0,
+                "rate_4_count": 0,
+                "rate_5_count": 1
+            },
+        'date': '2022-04-25T19:13:25+00:00'
     }
 ]

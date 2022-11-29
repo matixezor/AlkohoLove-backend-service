@@ -9,9 +9,12 @@ from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
+from src.infrastructure.config.app_config import get_settings
 from src.infrastructure.database.models.user import User
 from src.infrastructure.email.email_handler import Email
+from src.infrastructure.database.models.user_tag import UserTag
 from src.infrastructure.email.email_utils import dehash_token, hash_token
+from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
@@ -65,6 +68,23 @@ class UserDatabaseHandler:
             if username
             else collection.estimated_document_count()
         )
+
+    @staticmethod
+    async def delete_user(collection: Collection[User], user_id: ObjectId) -> None:
+        collection.delete_one({'_id': user_id})
+
+    @staticmethod
+    async def delete_user_lists(
+            favourites: Collection[Favourites],
+            wishlist: Collection[UserWishlist],
+            search_history: Collection[UserSearchHistory],
+            tags: Collection[UserTag],
+            user_id: ObjectId
+    ) -> None:
+        favourites.delete_one({'user_id': user_id})
+        wishlist.delete_one({'user_id': user_id})
+        search_history.delete_one({'user_id': user_id})
+        tags.delete_many({'user_id': user_id})
 
     @staticmethod
     async def check_if_user_exists(
@@ -121,15 +141,15 @@ class UserDatabaseHandler:
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
-            user: User,
-            request: Request
+            user: User
     ):
+        settings = get_settings()
         token = randbytes(10)
         verification_code = hash_token(token)
         new_user = collection.find_one_and_update({'_id': user['_id']}, {
             '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                   return_document=ReturnDocument.AFTER)
-        url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/auth/verify_email/{token.hex()}'
+        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/auth/verify_email/{token.hex()}'
         await Email(new_user, url, [EmailStr(user['email'])]).send_verification_code()
 
     @staticmethod
@@ -222,12 +242,13 @@ class UserDatabaseHandler:
             user: User
     ):
         try:
+            settings = get_settings()
             token = randbytes(10)
             change_password_code = hash_token(token)
             collection.find_one_and_update({'_id': user['_id']}, {
                 '$set': {'reset_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
-            url = f'https://alkoholove.com.pl/reset_password/{token.hex()}'
+            url = f'https://{settings.WEB_HOST}/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
         except Exception:
             collection.find_one_and_update({'_id': user['_id']},
@@ -259,16 +280,16 @@ class UserDatabaseHandler:
     @staticmethod
     async def send_deletion_request(
             current_user: User,
-            request: Request,
             collection: Collection[User]
     ):
+        settings = get_settings()
         try:
             token = randbytes(10)
             delete_account_code = hash_token(token)
             user = collection.find_one_and_update({'_id': current_user['_id']},
                                                   {'$set': {'delete_account_code': delete_account_code}},
                                                   return_document=ReturnDocument.AFTER)
-            url = f'{request.url.scheme}://{request.client.host}:{request.url.port}/me/delete_account/{token.hex()}'
+            url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/me/delete_account/{token.hex()}'
             await Email(user, url, [EmailStr(current_user['email'])]).send_delete_account_code()
         except Exception:
             collection.find_one_and_update({'_id': current_user['_id']}, {'$set': {'delete_account_code': None}})
@@ -278,11 +299,6 @@ class UserDatabaseHandler:
     async def find_user_by_deletion_code(token: str, collection: Collection[User]):
         delete_account_code = dehash_token(token)
         return collection.find_one({'delete_account_code': delete_account_code})
-
-    @staticmethod
-    async def delete_user(token: str, collection: Collection[User]):
-        delete_account_code = dehash_token(token)
-        return collection.find_one_and_delete({'delete_account_code': delete_account_code})
 
     @staticmethod
     async def delete_user_by_id(user_id: ObjectId, collection: Collection[User]):
