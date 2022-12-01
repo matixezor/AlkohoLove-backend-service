@@ -276,7 +276,7 @@ class AlcoholDatabaseHandler:
                 {'$limit': limit}
             ]))
         return [value['_id'] for value in values]
-    
+
     @staticmethod
     async def get_guest_list(
             collection: Collection,
