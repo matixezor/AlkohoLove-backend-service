@@ -68,12 +68,15 @@ class FollowingDatabaseHandler:
     async def count_following(
             following_collection: Collection[Following],
             users_collection: Collection,
-            user_id: ObjectId
+            user_id: ObjectId,
+            phrase: str | None = None
     ) -> int:
         following = following_collection.find_one({'_id': user_id}, {'following': 1})
         following = following['following']
-
-        return len(list(users_collection.find({'_id': {'$in': following}})))
+        query = {'_id': {'$in': following}}
+        if phrase:
+            query |= {'username': {'$regex': phrase, '$options': 'i'}}
+        return users_collection.count_documents(filter=query)
 
     @staticmethod
     async def batch_decrease_following_counter(collection: Collection[User], user_ids: [ObjectId]) -> None:
@@ -123,3 +126,21 @@ class FollowingDatabaseHandler:
             follower_user_id: ObjectId
     ):
         collection.update_many({'_id': {'$in': user_ids}}, {'$pull': {'following': follower_user_id}})
+
+    @staticmethod
+    async def search_following_by_user_id(
+            limit: int,
+            offset: int,
+            following_collection: Collection[Following],
+            users_collection: Collection[User],
+            phrase: str | None,
+            user_id: ObjectId = None
+    ) -> list[dict]:
+        following = following_collection.find_one({'_id': user_id}, {'following': 1})
+        following = following['following']
+        query = {'_id': {'$in': following}}
+        if phrase:
+            query |= {'username': {'$regex': phrase, '$options': 'i'}}
+        return (
+            list(users_collection.find(query).skip(offset).limit(limit))
+        )

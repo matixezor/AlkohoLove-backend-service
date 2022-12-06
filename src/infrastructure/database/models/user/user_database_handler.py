@@ -38,9 +38,10 @@ class UserDatabaseHandler:
         return collection.find_one({'_id': user_id})
 
     @staticmethod
-    async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:
+    async def get_users(collection: Collection[User], limit: int, offset: int, username: str | None) -> list[User]:
+        query = {'username': {'$regex': username, '$options': 'i'}} if username else {}
         return list(
-            collection.find({'username': {'$regex': username, '$options': 'i'}}).skip(offset).limit(limit)
+            collection.find(query).skip(offset).limit(limit)
         )
 
     @staticmethod
@@ -52,10 +53,16 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def count_users_without_current(collection: Collection[User], username: str, current_user: User) -> int:
+    async def count_users_without_current(
+            collection: Collection[User],
+            username: str | None,
+            current_user: User
+    ) -> int:
+        query = {'username': {'$ne': current_user['username']}}
+        if username:
+            query['username'] |= {'$regex': username, '$options': 'i'}
         return (
-            collection.count_documents(
-                filter={'username': {'$regex': username, '$options': 'i', '$ne': current_user['username']}})
+            collection.count_documents(filter=query)
             if username
             else collection.estimated_document_count()
         )
