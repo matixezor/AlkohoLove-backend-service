@@ -90,11 +90,15 @@ class FollowersDatabaseHandler:
     async def count_followers(
             followers_collection: Collection[Followers],
             users_collection: Collection,
-            user_id: ObjectId
+            user_id: ObjectId,
+            phrase: str | None
     ) -> int:
         followers = followers_collection.find_one({'_id': user_id}, {'followers': 1})
         followers = followers['followers']
-        return len(list(users_collection.find({'_id': {'$in': followers}})))
+        query = {'_id': {'$in': followers}}
+        if phrase:
+            query |= {'username': {'$regex': phrase, '$options': 'i'}}
+        return users_collection.count_documents(filter=query)
 
     @staticmethod
     async def delete_user_from_many_followers_list(
@@ -103,3 +107,21 @@ class FollowersDatabaseHandler:
             follower_user_id: ObjectId
     ):
         collection.update_many({'_id': {'$in': user_ids}}, {'$pull': {'followers': follower_user_id}})
+
+    @staticmethod
+    async def search_followers_by_user_id(
+            limit: int,
+            offset: int,
+            followers_collection: Collection[Followers],
+            users_collection: Collection[User],
+            phrase: str | None,
+            user_id: ObjectId,
+    ) -> list[dict]:
+        followers = followers_collection.find_one({'_id': user_id}, {'followers': 1})
+        followers = followers['followers']
+        query = {'_id': {'$in': followers}}
+        if phrase:
+            query |= {'username': {'$regex': phrase, '$options': 'i'}}
+        return (
+            list(users_collection.find(query).skip(offset).limit(limit))
+        )
