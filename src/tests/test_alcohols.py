@@ -133,6 +133,12 @@ ALCOHOL_FIXTURE_2 = {
     "rate_5_count": 0
 }
 
+AROMA_FIXTURE = ['orzechy', 'owoce']
+ALL_AROMAS = ["cytrusy", "drewno", "gruszka", "jabłko", "kwiaty", "lukrecja", "nuty korzenne", "orzechy", "owoce",
+              "pieprz"]
+KIND_FIXTURE = ['whisky']
+ALL_KINDS = ["likier", "rum", "whisky", "wódka"]
+
 
 @mark.asyncio
 async def test_search_alcohols(
@@ -286,3 +292,59 @@ async def test_get_total_alcohols_created_by_user(
     assert response.status_code == 200
     response = response.json()
     assert response == 1
+
+
+@mark.asyncio
+async def test_search_alcohol_list_value_by_phrase(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/alcohols/search_values?field_name=aroma&phrase=o&limit=10&offset=0',
+        headers=user_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == AROMA_FIXTURE
+
+
+@mark.asyncio
+async def test_search_alcohol_list_value_by_empty_phrase(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/alcohols/search_values?field_name=aroma&limit=10&offset=0',
+        headers=user_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == ALL_AROMAS
+
+
+@mark.asyncio
+async def test_search_alcohol_simple_value_by_phrase(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/alcohols/search_values?field_name=kind&phrase=whi&limit=10&offset=0',
+        headers=user_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == KIND_FIXTURE
+
+
+@mark.asyncio
+async def test_search_alcohol_simple_value_by_empty_phrase(
+        async_client: AsyncClient,
+        user_token_headers: dict[str, str]
+):
+    response = await async_client.post(
+        '/alcohols/search_values?field_name=kind&limit=10&offset=0',
+        headers=user_token_headers,
+    )
+    assert response.status_code == 200
+    response = response.json()
+    assert response == ALL_KINDS

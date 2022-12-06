@@ -246,6 +246,38 @@ class AlcoholDatabaseHandler:
         collection.find_one_and_delete({'name': name})
 
     @staticmethod
+    async def search_values(
+            field_name: str,
+            collection: Collection,
+            limit: int,
+            offset: int,
+            phrase: str | None
+    ) -> list[str]:
+        if phrase:
+            values = list(collection.aggregate([
+                # Match the possible documents. Always the best approach
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # De-normalize the array content to separate documents
+                {'$unwind': f'${field_name}'},
+                # Now "filter" the content to actual matches
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # Group the "like" terms as the "key"
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+                {'$limit': limit}
+            ]))
+        else:
+            values = list(collection.aggregate([
+                {'$unwind': f'${field_name}'},
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+                {'$limit': limit}
+            ]))
+        return [value['_id'] for value in values]
+
+    @staticmethod
     async def get_guest_list(
             collection: Collection,
             limit: int,
