@@ -1,6 +1,6 @@
 from bson import ObjectId
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
@@ -34,6 +34,7 @@ from src.infrastructure.database.models.user_list.favourites_database_handler im
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
+from src.infrastructure.exceptions.auth_exceptions import PasswordNotProvidedException, IncorrectOldPasswordException
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
@@ -72,10 +73,7 @@ async def update_self(
             (update_payload.password and not update_payload.new_password)
             or (not update_payload.password and update_payload.new_password)
     ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Both passwords must be provided'
-        )
+        raise PasswordNotProvidedException()
 
     elif update_payload.password:
         password_verified = UserDatabaseHandler.verify_password(
@@ -83,10 +81,7 @@ async def update_self(
             current_user['password']
         )
         if not password_verified:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Old password is invalid'
-            )
+            raise IncorrectOldPasswordException()
 
         update_payload.password = UserDatabaseHandler.get_password_hash(
             password=update_payload.new_password,

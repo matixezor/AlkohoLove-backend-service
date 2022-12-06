@@ -189,7 +189,7 @@ async def test_get_alcohol_by_non_existing_barcode(async_client: AsyncClient):
     response = await async_client.get('/alcohols/5900699104827')
     assert response.status_code == 404
     assert response.json() == {
-        'detail': 'Alcohol not found'
+        'detail': 'Nie znaleziono alkoholu.'
     }
 
 

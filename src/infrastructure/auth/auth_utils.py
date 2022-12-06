@@ -1,14 +1,14 @@
 from datetime import timedelta
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import Depends, Header
 
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.config.app_config import ApplicationSettings
 from src.infrastructure.database.models.user import UserDatabaseHandler as DatabaseHandler, User
 from src.infrastructure.database.models.token.token_database_handler import TokenBlacklistDatabaseHandler
 from src.infrastructure.exceptions.auth_exceptions \
-    import CredentialsException, UserBannedException, TokenRevokedException
+    import CredentialsException, UserBannedException, TokenRevokedException, InsufficientPermissionsException
 
 
 async def get_valid_token(
@@ -70,7 +70,4 @@ async def admin_permission(user: User = Depends(get_valid_user)) -> bool:
     if user['is_admin']:
         return True
     else:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='Insufficient permissions'
-        )
+        raise InsufficientPermissionsException()

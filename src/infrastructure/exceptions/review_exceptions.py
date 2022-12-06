@@ -5,7 +5,7 @@ class ReviewAlreadyExistsException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'Review already exists'
+            'Opinia już istnieje.'
         )
 
 
@@ -13,7 +13,7 @@ class ReviewDoesNotBelongToUserException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'Review does not belong to user'
+            'Opinia nie należy do tego użytkownika.'
         )
 
 
@@ -21,7 +21,7 @@ class ReviewNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_404_NOT_FOUND,
-            'Review not found'
+            'Opinia nie znaleziona.'
         )
 
 
@@ -29,7 +29,7 @@ class ReviewAlreadyReportedExcepiton(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'User already reported review'
+            'Opinia została już dodana przez tego użytkownika.'
         )
 
 
@@ -37,5 +37,13 @@ class OwnReviewAsHelpfulException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'Can\'t mark/unmark own review as helpful'
+            'Nie można oznaczyć swojej opinii jako pomocna.'
+        )
+
+
+class WrongRatingValueException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'Ocena powinna być cyfrą od 1 do 5.'
         )
