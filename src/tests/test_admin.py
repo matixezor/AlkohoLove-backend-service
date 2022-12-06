@@ -103,7 +103,7 @@ async def test_get_non_existing_user(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'
 
 
 @mark.asyncio
@@ -328,7 +328,7 @@ async def test_get_suggestion_by_id_that_doesnt_exist(
     response = await async_client.get(f'/admin/suggestions/{NON_EXISTING_ID_FIXTURE}', headers=admin_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == "Suggestion not found"
+    assert response['detail'] == "Nie znaleziono sugestii."
 
 
 @mark.asyncio

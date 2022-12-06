@@ -105,4 +105,4 @@ async def test_get_user_info_that_not_exists(
     response = await async_client.get('socials/user_info/6288e2fdd5ab6070dde8db8f', headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'

@@ -5,7 +5,7 @@ class UserNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_404_NOT_FOUND,
-            'User not found',
+            'Nie znaleziono użytkownika.',
         )
 
 
@@ -13,5 +13,13 @@ class UserExistsException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'User already exists',
+            'Taki użytkownik już istnieje.',
+        )
+
+
+class NoValuesProvidedException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            'Przynajmniej jedna z wartości musi zostać podana.',
         )
