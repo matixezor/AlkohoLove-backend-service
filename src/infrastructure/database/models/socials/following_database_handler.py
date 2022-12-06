@@ -69,7 +69,7 @@ class FollowingDatabaseHandler:
             following_collection: Collection[Following],
             users_collection: Collection,
             user_id: ObjectId,
-            phrase: str | None
+            phrase: str | None = None
     ) -> int:
         following = following_collection.find_one({'_id': user_id}, {'following': 1})
         following = following['following']

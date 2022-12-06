@@ -53,7 +53,11 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def count_users_without_current(collection: Collection[User], username: str | None, current_user: User) -> int:
+    async def count_users_without_current(
+            collection: Collection[User],
+            username: str | None,
+            current_user: User
+    ) -> int:
         query = {'username': {'$ne': current_user['username']}}
         if username:
             query['username'] |= {'$regex': username, '$options': 'i'}

@@ -91,7 +91,7 @@ class FollowersDatabaseHandler:
             followers_collection: Collection[Followers],
             users_collection: Collection,
             user_id: ObjectId,
-            phrase: str | None
+            phrase: str | None = None
     ) -> int:
         followers = followers_collection.find_one({'_id': user_id}, {'followers': 1})
         followers = followers['followers']
