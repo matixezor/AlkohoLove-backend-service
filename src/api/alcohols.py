@@ -24,6 +24,10 @@ translate = {
     'kind': 'kategoria',
     'country': 'kraj',
     'type': 'typ',
+    'food': 'jedzenie',
+    'aroma': 'aromat',
+    'taste': 'smak',
+    'finish': 'finisz'
 }
 
 
@@ -77,6 +81,7 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
             'filters': []
         }
         for key, values in db_filter.items():
+            print(key)
             filter_dict['filters'].append({
                 'name': key,
                 'display_name': translate[key],
