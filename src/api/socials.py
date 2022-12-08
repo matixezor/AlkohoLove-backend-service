@@ -147,7 +147,7 @@ async def search_users(
     if search_type == 'all':
         users = await UserDatabaseHandler.get_users(db.users, limit, offset, phrase)
         total = await UserDatabaseHandler.count_users_without_current(db.users, phrase, current_user)
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
@@ -161,7 +161,7 @@ async def search_users(
         )
         total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id, phrase)
 
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
@@ -174,7 +174,7 @@ async def search_users(
             limit, offset, db.followers, db.users, phrase, user_id
         )
         total = await FollowersDatabaseHandler.count_followers(db.followers, db.users, user_id, phrase)
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
