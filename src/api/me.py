@@ -1,5 +1,3 @@
-import requests
-from datetime import datetime
 from bson import ObjectId
 from pymongo.database import Database
 from fastapi import APIRouter, Depends, status, Response
@@ -22,6 +20,7 @@ from src.domain.alcohol import PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.infrastructure.common.hate_speech_detection_utils import check_review
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
@@ -760,15 +759,9 @@ async def create_review(
             current_user['_id'],
             review_create_payload.rating
         )
-
-        try:
-            response = requests.post(
-                settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review, timeout=3
-            )
-            if response.json():
-                await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review.inserted_id)
-        except requests.exceptions.RequestException as err:
-            print(f"Hate Speech Detection Service encountered an unexpected error: \n{err}")
+        await check_review(
+            settings.HATE_SPEECH_DETECTION_SERVICE_URL, review_create_payload.review, db.reviews, review.inserted_id
+        )
 
 
 @router.delete(
@@ -842,14 +835,9 @@ async def update_review(
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
     if review_update_payload.review:
-        try:
-            response = requests.post(
-                settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review, timeout=3
-            )
-            if response.json():
-                await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review_id)
-        except requests.exceptions.RequestException as err:
-            print(f"Hate Speech Detection Service encountered an unexpected error: \n{err}")
+        await check_review(
+            settings.HATE_SPEECH_DETECTION_SERVICE_URL, review_update_payload.review, db.reviews, review_id
+        )
 
     return review_update
 
