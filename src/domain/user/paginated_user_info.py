@@ -10,4 +10,3 @@ class PaginatedUserSocial(BaseModel):
 
 class PaginatedExtendedUserSocial(PaginatedUserSocial):
     users: list[ExtendedUserSocial]
-
