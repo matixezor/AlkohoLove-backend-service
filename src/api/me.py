@@ -738,20 +738,15 @@ async def create_review(
     ):
         raise ReviewAlreadyExistsException()
 
-    try:
-        response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
-        if response.json():
-            raise ReviewIsInappropriateException()
-    except requests.exceptions.RequestException:
-        pass
-
-    if await ReviewDatabaseHandler.create_review(
+    review = await ReviewDatabaseHandler.create_review(
             db.reviews,
             current_user['_id'],
             alcohol_id,
             current_user['username'],
             review_create_payload
-    ):
+    )
+
+    if review:
         await ReviewDatabaseHandler.add_rating_to_alcohol(
             db.alcohols,
             alcohol_id,
@@ -763,6 +758,13 @@ async def create_review(
             current_user['_id'],
             review_create_payload.rating
         )
+
+        try:
+            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
+            if response.json():
+                await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review.inserted_id)
+        except requests.exceptions.RequestException:
+            pass
 
 
 @router.delete(
@@ -817,14 +819,6 @@ async def update_review(
     ):
         raise ReviewNotFoundException()
 
-    if review_update_payload.review:
-        try:
-            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review)
-            if response.json():
-                raise ReviewIsInappropriateException()
-        except requests.exceptions.RequestException:
-            pass
-
     if not await ReviewDatabaseHandler.check_if_review_belongs_to_user(
             db.reviews,
             review_id,
@@ -842,6 +836,14 @@ async def update_review(
 
     await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
+
+    if review_update_payload.review:
+        try:
+            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review)
+            if response.json():
+                await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review_id)
+        except requests.exceptions.RequestException:
+            pass
 
     return review_update
 
