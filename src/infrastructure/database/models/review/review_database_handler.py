@@ -429,7 +429,7 @@ class ReviewDatabaseHandler:
             collection: Collection[Review],
             review_id: ObjectId
     ) -> None:
-        collection.update_one({'_id': review_id}, {'$inc': {'report_count': 10}})
+        collection.update_one({'_id': review_id}, {'$inc': {'report_count': 50}})
 
     @staticmethod
     async def get_review_by_id(

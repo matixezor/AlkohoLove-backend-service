@@ -20,11 +20,9 @@ from src.domain.alcohol import PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
-from src.infrastructure.common.hate_speech_detection_utils import check_review
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
-from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
@@ -37,6 +35,8 @@ from src.infrastructure.database.models.socials.following_database_handler impor
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
 from src.infrastructure.exceptions.auth_exceptions import PasswordNotProvidedException, IncorrectOldPasswordException
+from src.infrastructure.hate_speech_detection.hate_speech_detection_client import hate_speech_detection_client, \
+    HateSpeechDetectionClient
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
@@ -726,9 +726,9 @@ async def add_user_to_following(
 async def create_review(
         alcohol_id: str,
         review_create_payload: ReviewCreate,
+        client: HateSpeechDetectionClient = Depends(hate_speech_detection_client),
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db),
-        settings: ApplicationSettings = Depends(get_settings)
 ):
     alcohol_id = validate_object_id(alcohol_id)
 
@@ -739,15 +739,13 @@ async def create_review(
     ):
         raise ReviewAlreadyExistsException()
 
-    review = await ReviewDatabaseHandler.create_review(
+    if review := await ReviewDatabaseHandler.create_review(
             db.reviews,
             current_user['_id'],
             alcohol_id,
             current_user['username'],
             review_create_payload
-    )
-
-    if review:
+    ):
         await ReviewDatabaseHandler.add_rating_to_alcohol(
             db.alcohols,
             alcohol_id,
@@ -759,9 +757,9 @@ async def create_review(
             current_user['_id'],
             review_create_payload.rating
         )
-        await check_review(
-            settings.HATE_SPEECH_DETECTION_SERVICE_URL, review_create_payload.review, db.reviews, review.inserted_id
-        )
+
+        if client.check_review(review_create_payload.review):
+            await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review.inserted_id)
 
 
 @router.delete(
@@ -806,7 +804,7 @@ async def update_review(
         review_update_payload: ReviewUpdate,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db),
-        settings: ApplicationSettings = Depends(get_settings)
+        client: HateSpeechDetectionClient = Depends(hate_speech_detection_client)
 ):
     review_id = validate_object_id(review_id)
     alcohol_id = validate_object_id(alcohol_id)
@@ -834,10 +832,8 @@ async def update_review(
         await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
-    if review_update_payload.review:
-        await check_review(
-            settings.HATE_SPEECH_DETECTION_SERVICE_URL, review_update_payload.review, db.reviews, review_id
-        )
+    if review_update_payload.review and client.check_review(review_update_payload.review):
+        await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review_id)
 
     return review_update
 
