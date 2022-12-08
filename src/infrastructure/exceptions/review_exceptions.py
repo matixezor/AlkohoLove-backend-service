@@ -9,14 +9,6 @@ class ReviewAlreadyExistsException(HTTPException):
         )
 
 
-class ReviewIsInappropriateException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status.HTTP_400_BAD_REQUEST,
-            'Review does not follow AlkohoLove standards'
-        )
-
-
 class ReviewDoesNotBelongToUserException(HTTPException):
     def __init__(self):
         super().__init__(

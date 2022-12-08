@@ -15,7 +15,6 @@ from src.domain.user.user_migration import UserMigration
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_list.list_belonging import ListsBelonging
-from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
@@ -26,6 +25,7 @@ from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
+from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
@@ -42,7 +42,7 @@ from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongTo
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
     ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
-    OwnReviewAsHelpfulException, ReviewIsInappropriateException
+    OwnReviewAsHelpfulException
 
 router = APIRouter(prefix='/me', tags=['me'])
 
@@ -762,11 +762,13 @@ async def create_review(
         )
 
         try:
-            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review)
+            response = requests.post(
+                settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_create_payload.review, timeout=3
+            )
             if response.json():
                 await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review.inserted_id)
-        except requests.exceptions.RequestException:
-            pass
+        except requests.exceptions.RequestException as err:
+            print(f"Hate Speech Detection Service encountered an unexpected error: \n{err}")
 
 
 @router.delete(
@@ -841,11 +843,13 @@ async def update_review(
 
     if review_update_payload.review:
         try:
-            response = requests.post(settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review)
+            response = requests.post(
+                settings.HATE_SPEECH_DETECTION_SERVICE_URL, json=review_update_payload.review, timeout=3
+            )
             if response.json():
                 await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review_id)
-        except requests.exceptions.RequestException:
-            pass
+        except requests.exceptions.RequestException as err:
+            print(f"Hate Speech Detection Service encountered an unexpected error: \n{err}")
 
     return review_update
 
