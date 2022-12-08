@@ -3,6 +3,7 @@ from pymongo import DESCENDING
 from bson import ObjectId, Int64
 from pymongo.collection import Collection, ReturnDocument
 
+from src.domain.alcohol import Alcohol
 from src.domain.review import ReviewCreate
 from src.domain.review.review_update import ReviewUpdate
 from src.infrastructure.database.models.review import Review
@@ -132,7 +133,7 @@ class ReviewDatabaseHandler:
 
         rate_count = user['rate_count'] + 1
         rate_value = user['rate_value'] + rating
-        avg_rating = rate_value/rate_count
+        avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(user_id)}},
@@ -187,7 +188,7 @@ class ReviewDatabaseHandler:
         if rate_count < 1:
             avg_rating = 0
         else:
-            avg_rating = rate_value/rate_count
+            avg_rating = rate_value / rate_count
 
         collection.update_one(
             {'_id': {'$eq': ObjectId(user_id)}},
@@ -287,6 +288,31 @@ class ReviewDatabaseHandler:
     ) -> int:
         delete = collection.delete_one({'_id': review_id, 'alcohol_id': alcohol_id})
         return delete.deleted_count
+
+    @staticmethod
+    async def remove_user_from_reporters(
+            review_collection: Collection[Review],
+            user_id: ObjectId
+    ) -> None:
+        review_collection.update_many(
+            {'reporters': user_id},
+            {'$inc': {'report_count': -1}, '$pull': {'reporters': user_id}})
+        review_collection.update_many(
+            {'helpful_reporters': user_id},
+            {'$inc': {'helpful_count': -1}, '$pull': {'helpful_reporters': user_id}})
+
+    @staticmethod
+    async def delete_reviews(
+            review_collection: Collection[Review],
+            alcohol_collection: Collection[Alcohol],
+            user_id: ObjectId
+    ) -> None:
+        reviews = list(review_collection.find({'user_id': user_id}))
+        for review in reviews:
+            await ReviewDatabaseHandler.remove_rating_from_alcohol(alcohol_collection, review.get('alcohol_id'),
+                                                                   review.get('rating'))
+        await ReviewDatabaseHandler.remove_user_from_reporters(review_collection, user_id)
+        review_collection.delete_many({'user_id': user_id})
 
     @staticmethod
     async def get_rating(

@@ -1,18 +1,21 @@
+from bson import ObjectId
 from pymongo.database import Database
 from fastapi import APIRouter, status, Depends, Query
 
 from src.domain.common import PageInfo
 from src.domain.alcohol_filter import AlcoholFilters
-from src.domain.alcohol import Alcohol, PaginatedAlcohol
 from src.domain.alcohol_filter import AlcoholFiltersMetadata
 from src.infrastructure.database.database_config import get_db
 from src.domain.alcohol_category import PaginatedAlcoholCategories
+from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
+from src.domain.alcohol import Alcohol, PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatabaseHandler
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
+from src.infrastructure.recommender.recommender_client import RecommenderClient, recommender_client
 
 router = APIRouter(prefix='/alcohols', tags=['alcohol'])
 
@@ -127,3 +130,47 @@ async def get_schemas(
             total=total
         )
     )
+
+
+@router.get(
+    path='/{alcohol_id}/similar',
+    response_model=AlcoholRecommendation,
+    status_code=status.HTTP_200_OK,
+    summary='Get similar alcohols',
+    response_model_by_alias=False,
+)
+async def get_similar(
+        alcohol_id: str,
+        client: RecommenderClient = Depends(recommender_client),
+        db: Database = Depends(get_db)
+):
+    alcohol_id = str(validate_object_id(alcohol_id))
+    similar = [
+        ObjectId(alcohol_id) for alcohol_id in
+        client.fetch_similar_alcohols(alcohol_id)['similar']
+    ]
+    similar = await AlcoholDatabaseHandler.get_alcohols_by_ids(db.alcohols, similar)
+    return AlcoholRecommendation(
+        alcohols=similar
+    )
+
+
+@router.post(
+    path='/search_values',
+    status_code=status.HTTP_200_OK,
+    summary='Search for values by phrase',
+)
+async def search_values(
+        field_name: str,
+        phrase: str | None = Query(default=None),
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> list[str]:
+    """
+    Search for values Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    - **phrase**: str - default None return all values
+    """
+    return await AlcoholDatabaseHandler.search_values(field_name, db.alcohols, limit, offset, phrase)

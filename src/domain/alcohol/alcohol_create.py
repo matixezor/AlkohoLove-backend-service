@@ -3,6 +3,7 @@ from pydantic import validator, root_validator
 
 from src.domain.alcohol import AlcoholBase
 from src.infrastructure.common.scalar_utils import parse_float
+from src.infrastructure.exceptions.alcohol_exceptions import NoBarcodeException
 
 
 class AlcoholCreate(AlcoholBase):
@@ -29,5 +30,5 @@ class AlcoholCreate(AlcoholBase):
     @validator('barcode')
     def barcode_validator(cls, value: list[str]) -> list[str]:
         if not value:
-            raise ValueError('Barcode must be provided')
+            raise NoBarcodeException()
         return value

@@ -71,6 +71,10 @@ class AlcoholDatabaseHandler:
         return collection.find_one({'_id': ObjectId(alcohol_id)})
 
     @staticmethod
+    async def get_alcohols_by_ids(collection: Collection, alcohol_ids: list[ObjectId]) -> list[dict] | None:
+        return list(collection.find({'_id': {'$in': alcohol_ids}}))
+
+    @staticmethod
     async def add_alcohol(collection: Collection, payload: AlcoholCreate):
         payload = payload.dict() | {
             'avg_rating': float(0),
@@ -240,3 +244,44 @@ class AlcoholDatabaseHandler:
     @staticmethod
     async def revert_by_removal(collection: Collection, name: str) -> None:
         collection.find_one_and_delete({'name': name})
+
+    @staticmethod
+    async def search_values(
+            field_name: str,
+            collection: Collection,
+            limit: int,
+            offset: int,
+            phrase: str | None
+    ) -> list[str]:
+        if phrase:
+            values = list(collection.aggregate([
+                # Match the possible documents. Always the best approach
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # De-normalize the array content to separate documents
+                {'$unwind': f'${field_name}'},
+                # Now "filter" the content to actual matches
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # Group the "like" terms as the "key"
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+                {'$limit': limit}
+            ]))
+        else:
+            values = list(collection.aggregate([
+                {'$unwind': f'${field_name}'},
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+                {'$limit': limit}
+            ]))
+        return [value['_id'] for value in values]
+
+    @staticmethod
+    async def get_guest_list(
+            collection: Collection,
+            limit: int,
+            offset: int,
+            alcohol_list: list[ObjectId]
+    ) -> list[dict]:
+        return list(collection.find({'_id': {'$in': alcohol_list}}).skip(offset).limit(limit))

@@ -2,12 +2,11 @@ import requests
 from datetime import datetime
 from bson import ObjectId
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
 from src.domain.user import User, UserUpdate
-from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
 from src.domain.user.me_user_info import MeUserInfo
 from src.domain.user_list import SearchHistoryEntry
@@ -20,6 +19,7 @@ from src.infrastructure.config.app_config import ApplicationSettings, get_settin
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
+from src.domain.alcohol import PaginatedAlcohol, AlcoholRecommendation
 from src.infrastructure.database.models.review import ReviewDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
@@ -30,12 +30,14 @@ from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundExce
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
 from src.infrastructure.exceptions.followers_exceptions import UserAlreadyInFollowingException
+from src.infrastructure.recommender.recommender_client import RecommenderClient, recommender_client
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException, UserExistsException
 from src.infrastructure.database.models.user_list.wishlist_database_handler import UserWishlistHandler
 from src.infrastructure.database.models.user_list.favourites_database_handler import UserFavouritesHandler
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
+from src.infrastructure.exceptions.auth_exceptions import PasswordNotProvidedException, IncorrectOldPasswordException
 from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
@@ -74,10 +76,7 @@ async def update_self(
             (update_payload.password and not update_payload.new_password)
             or (not update_payload.password and update_payload.new_password)
     ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Both passwords must be provided'
-        )
+        raise PasswordNotProvidedException()
 
     elif update_payload.password:
         password_verified = UserDatabaseHandler.verify_password(
@@ -85,10 +84,7 @@ async def update_self(
             current_user['password']
         )
         if not password_verified:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Old password is invalid'
-            )
+            raise IncorrectOldPasswordException()
 
         update_payload.password = UserDatabaseHandler.get_password_hash(
             password=update_payload.new_password,
@@ -113,6 +109,11 @@ async def delete_self(
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
+    await UserDatabaseHandler.delete_user_lists(db.user_favourites, db.user_wishlist, db.user_search_history,
+                                                db.user_tags, current_user['_id'])
+    await FollowingDatabaseHandler.delete_user_following(db.following, db.followers, db.users, current_user['_id'])
+    await FollowingDatabaseHandler.delete_user_followers(db.followers, db.following, db.users, current_user['_id'])
+    await ReviewDatabaseHandler.delete_reviews(db.reviews, db.alcohols, current_user['_id'])
     await UserDatabaseHandler.delete_user(db.users, current_user['_id'])
 
 
@@ -407,7 +408,7 @@ async def get_belonging_to_lists(
                                                                                     user_id, alcohol_id),
         is_in_wishlist=await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id),
         alcohol_tags=await UserTagDatabaseHandler.get_alcohol_tags(db.user_tags, alcohol_id, user_id)
-        )
+    )
 
 
 @router.get(
@@ -495,7 +496,8 @@ async def delete_alcohol_from_wishlist(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id)
+    if await UserWishlistHandler.delete_alcohol_from_wishlist(db.user_wishlist, user_id, alcohol_id):
+        await UserDatabaseHandler.remove_from_wishlist_counter(db.users, user_id)
 
 
 @router.delete(
@@ -526,7 +528,6 @@ async def delete_alcohol_from_favourites(
 )
 async def delete_alcohol_from_search_history(
         alcohol_id: str,
-        date: datetime,
         current_user: UserDb = Depends(get_valid_user),
         db: Database = Depends(get_db)
 ) -> None:
@@ -535,7 +536,7 @@ async def delete_alcohol_from_search_history(
     """
     alcohol_id = validate_object_id(alcohol_id)
     user_id = current_user['_id']
-    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id, date)
+    await SearchHistoryHandler.delete_alcohol_from_search_history(db.user_search_history, user_id, alcohol_id)
 
 
 @router.post(
@@ -556,6 +557,7 @@ async def add_alcohol_to_wishlist(
     user_id = current_user['_id']
     if not await UserWishlistHandler.check_if_alcohol_in_wishlist(db.user_wishlist, user_id, alcohol_id):
         await UserWishlistHandler.add_alcohol_to_wishlist(db.user_wishlist, user_id, alcohol_id)
+        await UserDatabaseHandler.add_to_wishlist_counter(db.users, user_id)
     else:
         raise AlcoholAlreadyInListException()
 
@@ -833,8 +835,8 @@ async def update_review(
         review_id,
         review_update_payload,
     )
-
-    await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
+    if rating != review_update_payload.rating:
+        await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
 
     if review_update_payload.review:
@@ -949,3 +951,25 @@ async def migrate_user(
                 alcohol_tag.tag_name,
                 [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
             )
+
+
+@router.get(
+    path='/recommendations',
+    response_model=AlcoholRecommendation,
+    status_code=status.HTTP_200_OK,
+    summary='Fetch recommendations',
+    response_model_by_alias=False,
+)
+async def get_recommendations(
+        current_user: UserDb = Depends(get_valid_user),
+        client: RecommenderClient = Depends(recommender_client),
+        db: Database = Depends(get_db)
+):
+    recommendations = [
+        ObjectId(alcohol_id) for alcohol_id in
+        client.fetch_recommendations(str(current_user.get('_id')))['recommendations']
+    ]
+    recommendations = await AlcoholDatabaseHandler.get_alcohols_by_ids(db.alcohols, recommendations)
+    return AlcoholRecommendation(
+        alcohols=recommendations
+    )

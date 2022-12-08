@@ -32,7 +32,7 @@ async def test_create_suggestion_same_barcode_same_user(
                                        json=SUGGESTION_SAME_USER_FIXTURE)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'User already made a suggestion for this alcohol'
+    assert response['detail'] == 'Użytkownik już dodał sugestię dla tego alkoholu.'
 
 
 @mark.asyncio

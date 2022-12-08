@@ -7,6 +7,7 @@ from pymongo.collection import Collection, ReturnDocument
 from src.domain.user import UserUpdate
 from src.domain.user import UserCreate
 from src.infrastructure.database.models.user import User
+from src.infrastructure.database.models.user_tag import UserTag
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
@@ -37,9 +38,10 @@ class UserDatabaseHandler:
         return collection.find_one({'_id': user_id})
 
     @staticmethod
-    async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:
+    async def get_users(collection: Collection[User], limit: int, offset: int, username: str | None) -> list[User]:
+        query = {'username': {'$regex': username, '$options': 'i'}} if username else {}
         return list(
-            collection.find({'username': {'$regex': username, '$options': 'i'}}).skip(offset).limit(limit)
+            collection.find(query).skip(offset).limit(limit)
         )
 
     @staticmethod
@@ -51,10 +53,16 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def count_users_without_current(collection: Collection[User], username: str, current_user: User) -> int:
+    async def count_users_without_current(
+            collection: Collection[User],
+            username: str | None,
+            current_user: User
+    ) -> int:
+        query = {'username': {'$ne': current_user['username']}}
+        if username:
+            query['username'] |= {'$regex': username, '$options': 'i'}
         return (
-            collection.count_documents(
-                filter={'username': {'$regex': username, '$options': 'i', '$ne': current_user['username']}})
+            collection.count_documents(filter=query)
             if username
             else collection.estimated_document_count()
         )
@@ -62,6 +70,19 @@ class UserDatabaseHandler:
     @staticmethod
     async def delete_user(collection: Collection[User], user_id: ObjectId) -> None:
         collection.delete_one({'_id': user_id})
+
+    @staticmethod
+    async def delete_user_lists(
+            favourites: Collection[Favourites],
+            wishlist: Collection[UserWishlist],
+            search_history: Collection[UserSearchHistory],
+            tags: Collection[UserTag],
+            user_id: ObjectId
+    ) -> None:
+        favourites.delete_one({'user_id': user_id})
+        wishlist.delete_one({'user_id': user_id})
+        search_history.delete_one({'user_id': user_id})
+        tags.delete_many({'user_id': user_id})
 
     @staticmethod
     async def check_if_user_exists(
@@ -107,6 +128,7 @@ class UserDatabaseHandler:
             followers_count=0,
             following_count=0,
             favourites_count=0,
+            wishlist_count=0,
             rate_value=Int64(0)
         )
 
@@ -190,5 +212,27 @@ class UserDatabaseHandler:
             },
             {
                 '$inc': {'favourites_count': -1}
+            }
+        )
+
+    @staticmethod
+    async def add_to_wishlist_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'wishlist_count': 1}})
+
+    @staticmethod
+    async def remove_from_wishlist_counter(
+            collection: Collection,
+            user_id: ObjectId
+    ):
+        collection.update_one(
+            {
+                '_id': {'$eq': ObjectId(user_id)},
+                'wishlist_count': {'$gt': 0}
+            },
+            {
+                '$inc': {'wishlist_count': -1}
             }
         )
