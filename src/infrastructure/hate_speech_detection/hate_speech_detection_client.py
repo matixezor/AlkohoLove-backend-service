@@ -13,6 +13,7 @@ class HateSpeechDetectionClient:
             return post(url=self.service_url, json=json, timeout=3).json()
         except RequestException as exception:
             print(f"Hate Speech Detection Service encountered an unexpected error: \n{exception}")
+            return None
 
 
 async def hate_speech_detection_client(config: ApplicationSettings = Depends(get_settings)):
