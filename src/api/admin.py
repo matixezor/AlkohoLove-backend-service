@@ -1,9 +1,11 @@
 import cloudinary
 import cloudinary.api
+from pytz import timezone
 import cloudinary.uploader
 from datetime import datetime
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
+
 from src.domain.review import ReportedReview
 from src.domain.alcohol import PaginatedAlcohol
 from src.domain.common.page_info import PageInfo
@@ -306,7 +308,7 @@ async def create_alcohol(
     payload = AlcoholCreate(
         **payload.dict(),
         username=current_user["username"],
-        date=datetime.now()
+        date=datetime.now(timezone('Europe/Warsaw'))
     )
 
     alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)

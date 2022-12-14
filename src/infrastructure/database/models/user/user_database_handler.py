@@ -1,3 +1,4 @@
+from pytz import timezone
 from bcrypt import gensalt
 from datetime import datetime
 from bson import ObjectId, Int64
@@ -118,7 +119,7 @@ class UserDatabaseHandler:
 
         db_user = User(
             **payload.dict(),
-            created_on=datetime.now(),
+            created_on=datetime.now(timezone('Europe/Warsaw')),
             password_salt=password_salt,
             is_banned=False,
             is_admin=False,
@@ -150,7 +151,8 @@ class UserDatabaseHandler:
         if user['is_banned']:
             raise UserBannedException()
         if update_last_login:
-            collection.update_one({'_id': user['_id']}, {'$set': {'last_login': datetime.now()}})
+            collection.update_one({'_id': user['_id']},
+                                  {'$set': {'last_login': datetime.now(timezone('Europe/Warsaw'))}})
         return user
 
     @staticmethod

@@ -1,4 +1,5 @@
 from pytest import mark
+from pytz import timezone
 from datetime import datetime
 from httpx import AsyncClient
 
@@ -364,7 +365,8 @@ async def test_migrate(
     data = {
         'wishlist': ['6288e32dd5ab6070dde8db8a'],
         'favourites': [],
-        'search_history': [{'alcohol_id': '6288e32dd5ab6070dde8db8b', 'date': str(datetime.now())}],
+        'search_history': [
+            {'alcohol_id': '6288e32dd5ab6070dde8db8b', 'date': str(datetime.now(timezone('Europe/Warsaw')))}],
         'tags': [{'tag_name': 'test_tag', 'alcohols': ['6288e32dd5ab6070dde8db8a', '6288e32dd5ab6070dde8db8b']}]
     }
     response = await async_client.post('/me/migrate', headers=user_token_headers, json=data)

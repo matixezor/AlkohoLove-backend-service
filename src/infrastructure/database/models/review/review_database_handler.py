@@ -1,3 +1,4 @@
+from pytz import timezone
 from datetime import datetime
 from pymongo import DESCENDING
 from bson import ObjectId, Int64
@@ -261,7 +262,7 @@ class ReviewDatabaseHandler:
             user_id=user_id,
             alcohol_id=alcohol_id,
             username=username,
-            date=datetime.now(),
+            date=datetime.now(timezone('Europe/Warsaw')),
             report_count=0,
             reporters=[],
             helpful_count=0,
@@ -448,7 +449,7 @@ class ReviewDatabaseHandler:
         db_banned_review = collection.find_one({'_id': review_id})
         db_banned_review = BannedReview(
             **dict(db_banned_review),
-            ban_date=datetime.now(),
+            ban_date=datetime.now(timezone('Europe/Warsaw')),
             reason=reason
         )
         banned_reviews_collection.insert_one(dict(db_banned_review))
