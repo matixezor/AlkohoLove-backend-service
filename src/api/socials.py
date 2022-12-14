@@ -1,16 +1,16 @@
 from starlette import status
 from pymongo.database import Database
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 
 from src.domain.common import PageInfo
 from src.domain.user.user_info import UserInfo
 from src.infrastructure.database.models.user import User
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.infrastructure.database.database_config import get_db
-from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.infrastructure.database.models.user import UserDatabaseHandler
 from src.infrastructure.common.validate_object_id import validate_object_id
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.domain.user.paginated_user_info import PaginatedUserSocial, PaginatedExtendedUserSocial
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.exceptions\
@@ -115,7 +115,7 @@ async def search_users_by_phrase(
 
 @router.get(
     path='/search',
-    response_model=PaginatedUserSocial,
+    response_model=PaginatedExtendedUserSocial,
     status_code=status.HTTP_200_OK,
     summary=' Context aware search for users with pagination',
     response_model_by_alias=False,
@@ -147,7 +147,7 @@ async def search_users(
     if search_type == 'all':
         users = await UserDatabaseHandler.get_users(db.users, limit, offset, phrase)
         total = await UserDatabaseHandler.count_users_without_current(db.users, phrase, current_user)
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
@@ -161,7 +161,7 @@ async def search_users(
         )
         total = await FollowingDatabaseHandler.count_following(db.following, db.users, user_id, phrase)
 
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
@@ -174,7 +174,7 @@ async def search_users(
             limit, offset, db.followers, db.users, phrase, user_id
         )
         total = await FollowersDatabaseHandler.count_followers(db.followers, db.users, user_id, phrase)
-        return PaginatedUserSocial(
+        return PaginatedExtendedUserSocial(
             users=users,
             page_info=PageInfo(
                 limit=limit,
