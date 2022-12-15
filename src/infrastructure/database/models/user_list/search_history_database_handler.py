@@ -36,10 +36,10 @@ class SearchHistoryHandler:
 
     @staticmethod
     async def add_alcohol_to_search_history(collection: Collection[UserSearchHistory], user_id: ObjectId,
-                                            alcohol_id: ObjectId) -> None:
+                                            alcohol_id: ObjectId, search_date: str = datetime.now()) -> None:
         collection.update_one({'user_id': user_id}, {'$pull': {'alcohols': {'alcohol_id': alcohol_id}}})
         collection.update_one({'user_id': user_id},
-                              {'$push': {'alcohols': {'alcohol_id': alcohol_id, 'search_date': datetime.now()}}})
+                              {'$push': {'alcohols': {'alcohol_id': alcohol_id, 'search_date': search_date}}})
 
     @staticmethod
     async def count_alcohols_in_search_history(
