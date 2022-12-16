@@ -26,6 +26,9 @@ class ApplicationSettings(BaseSettings):
     EMAIL_FROM: str = getenv('EMAIL_FROM')
     WEB_PORT: str = getenv('WEB_PORT')
     WEB_HOST: str = getenv('WEB_HOST')
+    HOST: str = getenv('HOST')
+    HOST_PORT: str = getenv('HOST_PORT')
+    HATE_SPEECH_DETECTION_SERVICE_URL: str = getenv('HATE_SPEECH_DETECTION_SERVICE_URL')
 
     @root_validator
     def set_authjwt_secret_key(cls, values):

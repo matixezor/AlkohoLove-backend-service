@@ -92,7 +92,8 @@ async def refresh(
 )
 async def register(
         user_create_payload: UserCreate,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Send verification email to given email address.
@@ -112,7 +113,7 @@ async def register(
 
     user = await UserDatabaseHandler.create_user(db.users, user_create_payload)
     try:
-        await UserDatabaseHandler.send_verification_mail(db.users, user)
+        await UserDatabaseHandler.send_verification_mail(db.users, user, settings)
     except Exception:
         await UserDatabaseHandler.delete_user_by_id(user['_id'], db.users)
         raise SendingEmailError()
@@ -173,16 +174,15 @@ async def logout(
 )
 async def verify_email(
         token: str,
-        db: Database = Depends(get_db)
-
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
-    settings = get_settings()
     try:
         await UserDatabaseHandler.verify_email(token, db.users)
     except InvalidVerificationCode:
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_email_verification'
+        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_email_verification'
         return RedirectResponse(url=url)
-    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_email_verification'
+    url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_email_verification'
     return RedirectResponse(url=url)
 
 
@@ -194,7 +194,8 @@ async def verify_email(
 )
 async def request_password_reset(
         payload: UserEmail,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ) -> None:
     """
     Sends email message with link to web page where you can put new password.
@@ -205,7 +206,7 @@ async def request_password_reset(
     db_user = await UserDatabaseHandler.get_user_by_email(db.users, payload.email)
     if not db_user['is_verified']:
         raise EmailNotVerifiedException()
-    await UserDatabaseHandler.send_password_reset_request(payload, db.users, db_user)
+    await UserDatabaseHandler.send_password_reset_request(payload, db.users, db_user, settings)
 
 
 @router.post(
@@ -216,16 +217,16 @@ async def request_password_reset(
 )
 async def reset_password(
         payload: UserChangePassword,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
     token: token sent to email
     new_password: required validated with regex `^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$`
     """
-    settings = get_settings()
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change'
+        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change'
         return RedirectResponse(url=url)
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
-    url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_password_change'
+    url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_password_change'
     return RedirectResponse(url=url)

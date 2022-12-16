@@ -190,7 +190,7 @@ async def test_alcohol_already_in_wishlist(
     response = await async_client.post('/me/wishlist/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already in list'
+    assert response['detail'] == 'Alkohol jest już w liście.'
 
 
 @mark.asyncio
@@ -201,7 +201,7 @@ async def test_alcohol_already_in_favourites(
     response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8c', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already in list'
+    assert response['detail'] == 'Alkohol jest już w liście.'
 
 
 # ----------------------------------------followers---------------------------------------------------------------------
@@ -261,7 +261,7 @@ async def test_user_already_in_following(
     response = await async_client.post('/me/following/6288e2fdd5ab6070dde8db8b', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'This user is already in following'
+    assert response['detail'] == 'Ten użytkownik jest już w obserwowanych.'
 
 
 @mark.asyncio
@@ -272,7 +272,7 @@ async def test_delete_non_existing_user_from_following(
     response = await async_client.delete('/me/following/6288e2fdd5ab6070dde8db8a', headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'
 
 
 @mark.asyncio
@@ -324,7 +324,7 @@ async def test_mark__own_review_as_unhelpful(
     response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'
+    assert response['detail'] == 'Nie można oznaczyć swojej opinii jako pomocna.'
 
 
 @mark.asyncio
@@ -335,4 +335,4 @@ async def test_mark_own_review_as_helpful(
     response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'
+    assert response['detail'] == 'Nie można oznaczyć swojej opinii jako pomocna.'

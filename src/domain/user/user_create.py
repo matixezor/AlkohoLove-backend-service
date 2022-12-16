@@ -2,6 +2,7 @@ from pydantic import validator
 
 from src.domain.user import UserBase
 from src.infrastructure.config.patterns import email_pattern, password_pattern
+from src.infrastructure.exceptions.auth_exceptions import IncorrectEmailException, IncorrectPasswordException
 
 
 class UserCreate(UserBase):
@@ -10,11 +11,11 @@ class UserCreate(UserBase):
     @validator('email')
     def email_match(cls, value: str) -> str:
         if not email_pattern.match(value):
-            raise ValueError('Invalid email')
+            raise IncorrectEmailException()
         return value
 
     @validator('password')
     def password_validator(cls, value: str) -> str:
         if not password_pattern.match(value):
-            raise ValueError('Password does not comply with rules')
+            raise IncorrectPasswordException()
         return value

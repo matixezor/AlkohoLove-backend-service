@@ -22,6 +22,8 @@ When running with IDE, set Run/Debug configurations with env variables:
 `EMAIL_FROM=info@alkoholove.com.pl`   
 `WEB_PORT`=443  
 `WEB_HOST`=alkoholove.com.pl  
+`HOST`=https://api-alkoholove.herokuapp.com  
+`HOST_PORT`=443 
 or create `.local.env` file with these env variables and set Run/Debug configurations with env variable  
 `ENV=LOCAL`  
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
@@ -51,6 +53,8 @@ When running with docker create `.docker.env` file with env variables:
 `EMAIL_FROM=info@alkoholove.com.pl`  
 `WEB_PORT`=443  
 `WEB_HOST`=alkoholove.com.pl  
+`HOST`=https://api-alkoholove.herokuapp.com  
+`HOST_PORT`=443  
 To run `$ docker-compose up --build -d`  
 To stop `$ docker-compose down --volumes`  
 To run just the db `$ docker-compose run -d --service-ports db`  

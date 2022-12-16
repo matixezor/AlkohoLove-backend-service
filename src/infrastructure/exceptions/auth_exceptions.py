@@ -5,7 +5,7 @@ class CredentialsException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            'Could not validate credentials',
+            'Uwierzytelnienie nie powiodło się.',
             {'WWW-Authenticate': 'Bearer'}
         )
 
@@ -14,7 +14,7 @@ class UserBannedException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            'Access denied. User is banned',
+            'Brak dostępu. Użytkownik jest zablokowany.',
         )
 
 
@@ -22,7 +22,7 @@ class TokenRevokedException(HTTPException):
     def __init__(self, token_type):
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f'{token_type} token is blacklisted',
+            f'{token_type} token jest na czarnej liście.',
         )
 
 
@@ -30,7 +30,7 @@ class InvalidCredentialsException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            detail=f'Invalid username or password'
+            detail=f'Nieprawidłowa nazwa użytkownika lub hasło.'
         )
 
 
@@ -69,6 +69,38 @@ class SendingEmailError(HTTPException):
 class InsufficientPermissionsException(HTTPException):
     def __init__(self):
         super().__init__(
-            status.HTTP_401_UNAUTHORIZED,
-            detail=f'Insufficient permissions'
+            status.HTTP_403_FORBIDDEN,
+            detail=f'Niewystarczające uprawnienia.'
+        )
+
+
+class PasswordNotProvidedException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f'Oba hasła muszą zostać podane.'
+        )
+
+
+class IncorrectOldPasswordException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f'Stare hasło jest niepoprawne.'
+        )
+
+
+class IncorrectPasswordException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'Hasło nie spełnia zasad.',
+        )
+
+
+class IncorrectEmailException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'Nieprawidłowy email.',
         )

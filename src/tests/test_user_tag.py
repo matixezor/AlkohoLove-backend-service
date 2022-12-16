@@ -88,7 +88,7 @@ async def test_create_tag_with_existing_name(
     response = await async_client.post('/me/tags', json=data, headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag already exists'
+    assert response['detail'] == 'Taki tag już istnieje.'
 
 
 @mark.asyncio
@@ -125,7 +125,7 @@ async def test_get_alcohols_with_not_existing_tag(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Tag not found'
+    assert response['detail'] == 'Nie znaleziono tagu.'
 
 
 @mark.asyncio
@@ -196,7 +196,7 @@ async def test_add_alcohol_non_existing_tag_id(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Tag not found'
+    assert response['detail'] == 'Nie znaleziono tagu.'
 
 
 @mark.asyncio
@@ -210,7 +210,7 @@ async def test_add_alcohol_non_existing_alcohol_id(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Alcohol not found'
+    assert response['detail'] == 'Nie znaleziono alkoholu.'
 
 
 @mark.asyncio
@@ -224,7 +224,7 @@ async def test_add_alcohol_with_existing_alcohol_in_tag(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already is in tag'
+    assert response['detail'] == 'Alkohol należy już do tego tagu.'
 
 
 @mark.asyncio
@@ -238,7 +238,7 @@ async def test_add_alcohol_without_existing_tag(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Tag not found'
+    assert response['detail'] == 'Nie znaleziono tagu.'
 
 
 @mark.asyncio
@@ -252,7 +252,7 @@ async def test_add_alcohol_without_existing_alcohol(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Alcohol not found'
+    assert response['detail'] == 'Nie znaleziono alkoholu.'
 
 
 @mark.asyncio
@@ -266,7 +266,7 @@ async def test_add_alcohol_to_tag_that_does_not_belong_to_user(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag does not belong to user'
+    assert response['detail'] == 'Tag nie należy do tego użytkownika.'
 
 
 @mark.asyncio
@@ -292,7 +292,7 @@ async def test_delete_tag_that_does_not_belong_to_user(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag does not belong to user'
+    assert response['detail'] == 'Tag nie należy do tego użytkownika.'
 
 
 @mark.asyncio
@@ -318,7 +318,7 @@ async def test_remove_alcohol_from_tag_that_does_not_belong_to_user(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag does not belong to user'
+    assert response['detail'] == 'Tag nie należy do tego użytkownika.'
 
 
 @mark.asyncio
@@ -345,7 +345,7 @@ async def test_update_tag_that_not_exists(
         headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Tag not found'
+    assert response['detail'] == 'Nie znaleziono tagu.'
 
 
 @mark.asyncio
@@ -358,7 +358,7 @@ async def test_update_tag_with_existing_name(
         headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag already exists'
+    assert response['detail'] == 'Taki tag już istnieje.'
 
 
 @mark.asyncio
@@ -371,4 +371,4 @@ async def test_update_tag_that_does_not_belong_to_user(
         headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Tag does not belong to user'
+    assert response['detail'] == 'Tag nie należy do tego użytkownika.'

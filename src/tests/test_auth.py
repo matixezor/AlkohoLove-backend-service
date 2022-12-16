@@ -48,7 +48,7 @@ async def test_login_to_non_existing_account(async_client: AsyncClient):
     response = await async_client.post('/auth/token', data=data)
     assert response.status_code == 404
     assert response.json() == {
-        'detail': 'User not found'
+        'detail': 'Nie znaleziono użytkownika.'
     }
 
 
@@ -61,7 +61,7 @@ async def test_login_with_invalid_credentials(async_client: AsyncClient):
     response = await async_client.post('/auth/token', data=data)
     assert response.status_code == 401
     assert response.json() == {
-        'detail': 'Invalid username or password'
+        'detail': 'Nieprawidłowa nazwa użytkownika lub hasło.'
     }
 
 
@@ -120,5 +120,5 @@ async def test_register_with_existing_user(
     response = await async_client.post('/auth/register', json=data)
     assert response.status_code == 400
     assert response.json() == {
-        'detail': f'User already exists'
+        'detail': f'Taki użytkownik już istnieje.'
     }

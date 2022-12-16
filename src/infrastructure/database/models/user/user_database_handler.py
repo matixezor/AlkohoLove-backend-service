@@ -3,21 +3,19 @@ from random import randbytes
 from pydantic import EmailStr
 from datetime import datetime
 from bson import ObjectId, Int64
-from starlette.requests import Request
 from passlib.context import CryptContext
 from pymongo.collection import Collection, ReturnDocument
 
 from src.domain.user import UserCreate
 from src.domain.user.user_email import UserEmail
-from src.infrastructure.config.app_config import get_settings
 from src.infrastructure.database.models.user import User
 from src.infrastructure.email.email_handler import Email
 from src.infrastructure.database.models.user_tag import UserTag
 from src.infrastructure.email.email_utils import dehash_token, hash_token
-from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.database.models.user_list.wishlist import UserWishlist
 from src.infrastructure.database.models.user_list.favourites import Favourites
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.database.models.user_list.search_history import UserSearchHistory
 from src.infrastructure.exceptions.auth_exceptions import UserBannedException, InvalidCredentialsException, \
     EmailNotVerifiedException, SendingEmailError, InvalidVerificationCode
@@ -47,9 +45,10 @@ class UserDatabaseHandler:
         return collection.find_one({'_id': user_id})
 
     @staticmethod
-    async def get_users(collection: Collection[User], limit: int, offset: int, username: str) -> list[User]:
+    async def get_users(collection: Collection[User], limit: int, offset: int, username: str | None) -> list[User]:
+        query = {'username': {'$regex': username, '$options': 'i'}} if username else {}
         return list(
-            collection.find({'username': {'$regex': username, '$options': 'i'}}).skip(offset).limit(limit)
+            collection.find(query).skip(offset).limit(limit)
         )
 
     @staticmethod
@@ -61,10 +60,16 @@ class UserDatabaseHandler:
         )
 
     @staticmethod
-    async def count_users_without_current(collection: Collection[User], username: str, current_user: User) -> int:
+    async def count_users_without_current(
+            collection: Collection[User],
+            username: str | None,
+            current_user: User
+    ) -> int:
+        query = {'username': {'$ne': current_user['username']}}
+        if username:
+            query['username'] |= {'$regex': username, '$options': 'i'}
         return (
-            collection.count_documents(
-                filter={'username': {'$regex': username, '$options': 'i', '$ne': current_user['username']}})
+            collection.count_documents(filter=query)
             if username
             else collection.estimated_document_count()
         )
@@ -141,15 +146,15 @@ class UserDatabaseHandler:
     @staticmethod
     async def send_verification_mail(
             collection: Collection[User],
-            user: User
+            user: User,
+            settings: ApplicationSettings
     ):
-        settings = get_settings()
         token = randbytes(10)
         verification_code = hash_token(token)
         new_user = collection.find_one_and_update({'_id': user['_id']}, {
             '$set': {'verification_code': verification_code, 'updated_at': datetime.utcnow()}},
                                                   return_document=ReturnDocument.AFTER)
-        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/auth/verify_email/{token.hex()}'
+        url = f'{settings.HOST}:{settings.HOST_PORT}/auth/verify_email/{token.hex()}'
         await Email(new_user, url, [EmailStr(user['email'])]).send_verification_code()
 
     @staticmethod
@@ -239,16 +244,16 @@ class UserDatabaseHandler:
     async def send_password_reset_request(
             payload: UserEmail,
             collection: Collection[User],
-            user: User
+            user: User,
+            settings: ApplicationSettings
     ):
         try:
-            settings = get_settings()
             token = randbytes(10)
             change_password_code = hash_token(token)
             collection.find_one_and_update({'_id': user['_id']}, {
                 '$set': {'reset_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
-            url = f'https://{settings.WEB_HOST}/reset_password/{token.hex()}'
+            url = f'{settings.HOST}:{settings.HOST_PORT}/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
         except Exception:
             collection.find_one_and_update({'_id': user['_id']},
@@ -280,16 +285,16 @@ class UserDatabaseHandler:
     @staticmethod
     async def send_deletion_request(
             current_user: User,
-            collection: Collection[User]
+            collection: Collection[User],
+            settings: ApplicationSettings
     ):
-        settings = get_settings()
         try:
             token = randbytes(10)
             delete_account_code = hash_token(token)
             user = collection.find_one_and_update({'_id': current_user['_id']},
                                                   {'$set': {'delete_account_code': delete_account_code}},
                                                   return_document=ReturnDocument.AFTER)
-            url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/me/delete_account/{token.hex()}'
+            url = f'{settings.HOST}:{settings.HOST_PORT}/me/delete_account/{token.hex()}'
             await Email(user, url, [EmailStr(current_user['email'])]).send_delete_account_code()
         except Exception:
             collection.find_one_and_update({'_id': current_user['_id']}, {'$set': {'delete_account_code': None}})

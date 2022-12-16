@@ -1,11 +1,10 @@
 from bson import ObjectId
 from pymongo.database import Database
 from starlette.responses import RedirectResponse
-from fastapi import APIRouter, Depends, status, Response, Request
+from fastapi import APIRouter, Depends, status, Response
 
 from src.domain.common import PageInfo
 from src.domain.user_tag import UserTag
-from src.domain.alcohol import PaginatedAlcohol
 from src.domain.review import ReviewCreate, Review
 from src.domain.user.me_user_info import MeUserInfo
 from src.domain.user_list import SearchHistoryEntry
@@ -14,7 +13,6 @@ from src.domain.user.user_migration import UserMigration
 from src.domain.user_tag.user_tag_create import UserTagCreate
 from src.infrastructure.auth.auth_utils import get_valid_user
 from src.domain.user_list.list_belonging import ListsBelonging
-from src.infrastructure.config.app_config import get_settings
 from src.infrastructure.database.database_config import get_db
 from src.domain.user.paginated_user_info import PaginatedUserSocial
 from src.domain.user_tag.paginated_user_tag import PaginatedUserTags
@@ -26,6 +24,7 @@ from src.infrastructure.database.models.user_tag import UserTagDatabaseHandler
 from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.user_list.paginated_search_history import PaginatedSearchHistory
 from src.infrastructure.exceptions.users_exceptions import UserNotFoundException
+from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundException
 from src.infrastructure.database.models.user import User as UserDb, UserDatabaseHandler
 from src.infrastructure.exceptions.list_exceptions import AlcoholAlreadyInListException
@@ -36,7 +35,9 @@ from src.infrastructure.database.models.user_list.favourites_database_handler im
 from src.infrastructure.database.models.socials.following_database_handler import FollowingDatabaseHandler
 from src.infrastructure.database.models.socials.followers_database_handler import FollowersDatabaseHandler
 from src.infrastructure.database.models.user_list.search_history_database_handler import SearchHistoryHandler
-from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException, \
+from src.infrastructure.hate_speech_detection.hate_speech_detection_client import hate_speech_detection_client, \
+    HateSpeechDetectionClient
+from src.infrastructure.exceptions.user_tag_exceptions import TagDoesNotBelongToUserException,\
     TagAlreadyExistsException, AlcoholIsInTagException, TagNotFoundException
 from src.infrastructure.exceptions.review_exceptions import ReviewAlreadyExistsException, \
     ReviewDoesNotBelongToUserException, ReviewNotFoundException, ReviewAlreadyReportedExcepiton, \
@@ -64,12 +65,13 @@ async def get_self(current_user: UserDb = Depends(get_valid_user)):
 )
 async def send_delete_request(
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
     """
         Sends email message with deletion link to address associated with account.
     """
-    await UserDatabaseHandler.send_deletion_request(current_user, db.users)
+    await UserDatabaseHandler.send_deletion_request(current_user, db.users, settings)
 
 
 @router.get(
@@ -80,12 +82,12 @@ async def send_delete_request(
 )
 async def delete_self(
         token: str,
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        settings: ApplicationSettings = Depends(get_settings)
 ):
-    settings = get_settings()
     user = await UserDatabaseHandler.find_user_by_deletion_code(token, db.users)
     if not user:
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_account_deletion'
+        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_account_deletion'
         return RedirectResponse(url=url)
     else:
         await UserDatabaseHandler.delete_user_lists(db.user_favourites, db.user_wishlist, db.user_search_history,
@@ -95,7 +97,7 @@ async def delete_self(
         await ReviewDatabaseHandler.delete_reviews(db.reviews, db.alcohols, user['_id'])
         await UserDatabaseHandler.delete_user(db.users, user['_id'])
         await UserDatabaseHandler.delete_user(db.users, user['_id'])
-        url = f'http://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_account_deletion'
+        url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_account_deletion'
     return RedirectResponse(url=url)
 
 
@@ -709,10 +711,12 @@ async def add_user_to_following(
 async def create_review(
         alcohol_id: str,
         review_create_payload: ReviewCreate,
+        client: HateSpeechDetectionClient = Depends(hate_speech_detection_client),
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
 ):
     alcohol_id = validate_object_id(alcohol_id)
+
     if await ReviewDatabaseHandler.check_if_review_exists(
             db.reviews,
             alcohol_id,
@@ -720,7 +724,7 @@ async def create_review(
     ):
         raise ReviewAlreadyExistsException()
 
-    if await ReviewDatabaseHandler.create_review(
+    if review := await ReviewDatabaseHandler.create_review(
             db.reviews,
             current_user['_id'],
             alcohol_id,
@@ -738,6 +742,9 @@ async def create_review(
             current_user['_id'],
             review_create_payload.rating
         )
+
+        if client.check_review(review_create_payload.review):
+            await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review.inserted_id)
 
 
 @router.delete(
@@ -781,7 +788,8 @@ async def update_review(
         alcohol_id: str,
         review_update_payload: ReviewUpdate,
         current_user: UserDb = Depends(get_valid_user),
-        db: Database = Depends(get_db)
+        db: Database = Depends(get_db),
+        client: HateSpeechDetectionClient = Depends(hate_speech_detection_client)
 ):
     review_id = validate_object_id(review_id)
     alcohol_id = validate_object_id(alcohol_id)
@@ -808,6 +816,9 @@ async def update_review(
     if rating != review_update_payload.rating:
         await ReviewDatabaseHandler.update_alcohol_rating(db.alcohols, alcohol_id, rating, review_update_payload.rating)
     await ReviewDatabaseHandler.update_user_rating(db.users, current_user['_id'], rating, review_update_payload.rating)
+
+    if review_update_payload.review and client.check_review(review_update_payload.review):
+        await ReviewDatabaseHandler.machine_increase_review_report_count(db.reviews, review_id)
 
     return review_update
 
