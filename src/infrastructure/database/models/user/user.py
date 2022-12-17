@@ -20,3 +20,8 @@ class User(TypedDict):
     favourites_count: int
     wishlist_count: int
     rate_value: int
+    is_verified: bool
+    updated_at: datetime
+    verification_code: str | None
+    reset_password_code: str | None
+    delete_account_code: str | None

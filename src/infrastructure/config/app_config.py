@@ -3,7 +3,7 @@ from cloudinary import config
 from dotenv import find_dotenv
 from functools import lru_cache
 from async_fastapi_jwt_auth import AuthJWT
-from pydantic import BaseSettings, root_validator
+from pydantic import BaseSettings, root_validator, EmailStr
 
 
 class ApplicationSettings(BaseSettings):
@@ -19,6 +19,15 @@ class ApplicationSettings(BaseSettings):
     ALGORITHM: str = getenv('ALGORITHM')
     SECRET_KEY: str = getenv('SECRET_KEY')
     authjwt_secret_key: str = ''
+    EMAIL_USERNAME: str = getenv('EMAIL_USERNAME')
+    EMAIL_HOST: str = getenv('EMAIL_HOST')
+    EMAIL_PORT: int = getenv('EMAIL_PORT')
+    EMAIL_PASSWORD: str = getenv('EMAIL_PASSWORD')
+    EMAIL_FROM: str = getenv('EMAIL_FROM')
+    WEB_PORT: str = getenv('WEB_PORT')
+    WEB_HOST: str = getenv('WEB_HOST')
+    HOST: str = getenv('HOST')
+    HOST_PORT: str = getenv('HOST_PORT')
     HATE_SPEECH_DETECTION_SERVICE_URL: str = getenv('HATE_SPEECH_DETECTION_SERVICE_URL')
 
     @root_validator

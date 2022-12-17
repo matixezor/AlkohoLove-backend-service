@@ -46,9 +46,9 @@ async def test_login_to_non_existing_account(async_client: AsyncClient):
         'password': 'Jan1233'
     }
     response = await async_client.post('/auth/token', data=data)
-    assert response.status_code == 401
+    assert response.status_code == 404
     assert response.json() == {
-        'detail': 'Nieprawidłowa nazwa użytkownika lub hasło.'
+        'detail': 'Nie znaleziono użytkownika.'
     }
 
 
@@ -122,14 +122,3 @@ async def test_register_with_existing_user(
     assert response.json() == {
         'detail': f'Taki użytkownik już istnieje.'
     }
-
-
-@mark.asyncio
-async def test_register(async_client: AsyncClient):
-    data = {
-        'username': 'test',
-        'email': 'test@gmail.com',
-        'password': TEST_PASSWORD_FIXTURE
-    }
-    response = await async_client.post('/auth/register', json=data)
-    assert response.status_code == 201

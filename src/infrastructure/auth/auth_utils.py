@@ -1,14 +1,14 @@
 from datetime import timedelta
+from fastapi import Depends, Header
 from pymongo.database import Database
 from async_fastapi_jwt_auth import AuthJWT
-from fastapi import Depends, Header
 
 from src.infrastructure.database.database_config import get_db
 from src.infrastructure.config.app_config import ApplicationSettings
 from src.infrastructure.database.models.user import UserDatabaseHandler as DatabaseHandler, User
 from src.infrastructure.database.models.token.token_database_handler import TokenBlacklistDatabaseHandler
-from src.infrastructure.exceptions.auth_exceptions \
-    import CredentialsException, UserBannedException, TokenRevokedException, InsufficientPermissionsException
+from src.infrastructure.exceptions.auth_exceptions import CredentialsException, UserBannedException, \
+    TokenRevokedException, InsufficientPermissionsException, EmailNotVerifiedException
 
 
 async def get_valid_token(
@@ -63,6 +63,8 @@ async def get_valid_user(
         raise CredentialsException()
     if user['is_banned']:
         raise UserBannedException()
+    if not user['is_verified']:
+        raise EmailNotVerifiedException()
     return user
 
 

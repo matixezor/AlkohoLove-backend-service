@@ -17,7 +17,12 @@
     "followers_count": 0,
     "following_count": 0,
     "rate_count": 0,
-    "rate_value": 0
+    "rate_value": 0,
+    "is_verified": true,
+    "verification_code": null,
+    "reset_password_code": null,
+    "delete_account_code": null,
+    "updated_at": "2022-03-22T19:13:25Z"
   },
   {
     "_id": {
@@ -37,7 +42,12 @@
     "followers_count": 0,
     "following_count": 0,
     "rate_count": 2,
-    "rate_value": 10
+    "rate_value": 10,
+    "is_verified": true,
+    "verification_code": null,
+    "reset_password_code": "50e80f2fd185331a6a8775557d93a3ef383fbc25b3ae6bb47abc132a6ea476a0",
+    "delete_account_code": "50e80f2fd185331a6a8775557d93a3ef383fbc25b3ae6bb47abc132a6ea476a0",
+    "updated_at": "2022-03-22T19:13:25Z"
   },
   {
     "_id": {
@@ -57,7 +67,12 @@
     "followers_count": 0,
     "following_count": 0,
     "rate_count": 0,
-    "rate_value": 0
+    "rate_value": 0,
+    "is_verified": true,
+    "verification_code": null,
+    "reset_password_code": null,
+    "delete_account_code": null,
+    "updated_at": "2022-03-22T19:13:25Z"
   },
   {
     "_id": {
@@ -77,6 +92,11 @@
     "followers_count": 0,
     "following_count": 0,
     "rate_count": 0,
-    "rate_value": 0
+    "rate_value": 0,
+    "is_verified": true,
+    "verification_code": null,
+    "reset_password_code": null,
+    "delete_account_code": null,
+    "updated_at": "2022-03-22T19:13:25Z"
   }
 ]

@@ -34,6 +34,38 @@ class InvalidCredentialsException(HTTPException):
         )
 
 
+class EmailNotVerifiedException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_401_UNAUTHORIZED,
+            detail=f'Email not verified'
+        )
+
+
+class InvalidVerificationCode(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_403_FORBIDDEN,
+            detail=f'Invalid verification code or account already verified'
+        )
+
+
+class InvalidChangePasswordCode(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_403_FORBIDDEN,
+            detail=f'Invalid change password code'
+        )
+
+
+class SendingEmailError(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'There was an error sending email'
+        )
+
+
 class InsufficientPermissionsException(HTTPException):
     def __init__(self):
         super().__init__(
