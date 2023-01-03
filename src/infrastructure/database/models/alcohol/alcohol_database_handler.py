@@ -126,6 +126,9 @@ class AlcoholDatabaseHandler:
          * null - results from regex do not have this field
          Then we paginate the results and aggregate total count
         """
+        alcohols_pipeline = [{'$skip': offset}]
+        if limit:
+            alcohols_pipeline.append({'$limit': limit})
         result = list(collection.aggregate([
             {
                 '$match': {
@@ -146,7 +149,7 @@ class AlcoholDatabaseHandler:
             {'$sort': {'score': -1}},
             {
                 '$facet': {
-                    'alcohols': [{'$skip': offset}, {'$limit': limit}],
+                    'alcohols': alcohols_pipeline,
                     'totalCount': [{'$count': 'total'}]
                 }
             },
@@ -254,7 +257,7 @@ class AlcoholDatabaseHandler:
             phrase: str | None
     ) -> list[str]:
         if phrase:
-            values = list(collection.aggregate([
+            pipeline = [
                 # Match the possible documents. Always the best approach
                 {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
                 # De-normalize the array content to separate documents
@@ -265,16 +268,20 @@ class AlcoholDatabaseHandler:
                 {'$group': {'_id': f'${field_name}'}},
                 {'$sort': {'_id': 1}},
                 {'$skip': offset},
-                {'$limit': limit}
-            ]))
+            ]
+            if limit:
+                pipeline.append({'$limit': limit})
+            values = list(collection.aggregate(pipeline))
         else:
-            values = list(collection.aggregate([
+            pipeline = [
                 {'$unwind': f'${field_name}'},
                 {'$group': {'_id': f'${field_name}'}},
                 {'$sort': {'_id': 1}},
                 {'$skip': offset},
-                {'$limit': limit}
-            ]))
+            ]
+            if limit:
+                pipeline.append({'$limit': limit})
+            values = list(collection.aggregate(pipeline))
         return [value['_id'] for value in values]
 
     @staticmethod
