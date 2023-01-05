@@ -253,7 +253,7 @@ class UserDatabaseHandler:
             collection.find_one_and_update({'_id': user['_id']}, {
                 '$set': {'reset_password_code': reset_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
-            url = f'{settings.WEB_HOST}:{settings.WEB_PORT}/reset_password/{token.hex()}'
+            url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
         except Exception:
             collection.find_one_and_update({'_id': user['_id']},
