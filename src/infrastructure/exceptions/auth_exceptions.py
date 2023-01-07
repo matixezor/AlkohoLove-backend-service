@@ -38,7 +38,7 @@ class EmailNotVerifiedException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            detail=f'Email not verified'
+            detail=f'Adres mailowy nie jest zweryfikowany.'
         )
 
 
@@ -46,7 +46,7 @@ class InvalidVerificationCode(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_403_FORBIDDEN,
-            detail=f'Invalid verification code or account already verified'
+            detail=f'Nieprawidłowy kod weryfikacji lub konto już zweryfikowane.'
         )
 
 
@@ -54,7 +54,7 @@ class InvalidChangePasswordCode(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_403_FORBIDDEN,
-            detail=f'Invalid change password code'
+            detail=f'Nieprawidłowy kod zmiany hasła.'
         )
 
 
@@ -62,7 +62,7 @@ class SendingEmailError(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f'There was an error sending email'
+            detail=f'Błąd przy wysyłaniu maila.'
         )
 
 
