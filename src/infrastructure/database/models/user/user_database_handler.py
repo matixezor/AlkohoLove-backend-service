@@ -221,9 +221,10 @@ class UserDatabaseHandler:
     @staticmethod
     async def add_to_favourite_counter(
             collection: Collection,
-            user_id: ObjectId
+            user_id: ObjectId,
+            favourites_count=1
     ):
-        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': 1}})
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'favourites_count': favourites_count}})
 
     @staticmethod
     async def remove_from_favourite_counter(
@@ -312,9 +313,10 @@ class UserDatabaseHandler:
     @staticmethod
     async def add_to_wishlist_counter(
             collection: Collection,
-            user_id: ObjectId
+            user_id: ObjectId,
+            wishlist_count=1
     ):
-        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'wishlist_count': 1}})
+        collection.update_one({'_id': {'$eq': ObjectId(user_id)}}, {'$inc': {'wishlist_count': wishlist_count}})
 
     @staticmethod
     async def remove_from_wishlist_counter(

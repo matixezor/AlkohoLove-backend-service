@@ -904,7 +904,6 @@ async def migrate_user(
             ObjectId(alcohol_history.alcohol_id),
             alcohol_history.date
         )
-
     for alcohol_tag in user_migration.tags:
         if not await UserTagDatabaseHandler.check_if_user_tag_exists(
                 db.user_tags,
@@ -924,6 +923,8 @@ async def migrate_user(
                 alcohol_tag.tag_name,
                 [ObjectId(alcohol_id) for alcohol_id in alcohol_tag.alcohols]
             )
+    await UserDatabaseHandler.add_to_favourite_counter(db.users, user_id, len(user_migration.favourites))
+    await UserDatabaseHandler.add_to_wishlist_counter(db.users, user_id, len(user_migration.wishlist))
 
 
 @router.get(

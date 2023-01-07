@@ -59,7 +59,10 @@ class AlcoholDatabaseHandler:
         return aggregated_filters
 
     @staticmethod
-    async def get_alcohol_by_barcode(collection: Collection, barcode: list[str]) -> dict | None:
+    async def get_alcohol_by_barcode(
+            collection: Collection,
+            barcode: list[str]
+    ) -> dict | None:
         return collection.find_one({'barcode': {'$in': barcode}})
 
     @staticmethod
