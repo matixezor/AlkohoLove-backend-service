@@ -2,6 +2,15 @@ db.createCollection(
     'alcohol_filters'
 )
 
+db.alcohol_filters.insertOne(
+    {
+        _id: "all",
+        type: db.alcohols.distinct('type'),
+        color: db.alcohols.distinct('color'),
+        country: db.alcohols.distinct('country'),
+    }
+)
+
 db.alcohols.aggregate([
     {
         $group: {
@@ -17,12 +26,3 @@ db.alcohols.aggregate([
         }
     }
 ])
-
-db.alcohol_filters.insertOne(
-    {
-        _id: "all",
-        type: db.alcohols.distinct('type'),
-        color: db.alcohols.distinct('color'),
-        country: db.alcohols.distinct('country'),
-    }
-)
