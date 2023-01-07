@@ -10,6 +10,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-13T15:22:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 0,
+        'reported': None,
         'helpful': True
     },
     {
@@ -20,6 +22,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-15T12:42:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 0,
+        'reported': None,
         'helpful': False
     }
 ]
