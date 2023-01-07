@@ -23,7 +23,7 @@ When running with IDE, set Run/Debug configurations with env variables:
 `WEB_PORT`=443  
 `WEB_HOST`=alkoholove.com.pl  
 `HOST`=https://api-alkoholove.herokuapp.com  
-`HOST_PORT`=443 
+`HOST_PORT`=443  
 or create `.local.env` file with these env variables and set Run/Debug configurations with env variable  
 `ENV=LOCAL`  
 To upload image on production storage change env variable to `ALCOHOL_IMAGES_DIR=alcohols`  
