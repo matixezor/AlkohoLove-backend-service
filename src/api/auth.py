@@ -211,8 +211,8 @@ async def request_password_reset(
 
 @router.post(
     '/reset_password',
-    response_class=RedirectResponse,
-    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+    response_class=Response,
+    status_code=status.HTTP_200_OK,
     summary='Reset password'
 )
 async def reset_password(
@@ -226,7 +226,7 @@ async def reset_password(
     """
     if not await UserDatabaseHandler.check_reset_token(payload.token, db.users):
         url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/invalid_password_change'
-        return RedirectResponse(url=url)
+        return RedirectResponse(url=url, status_code=200)
     await UserDatabaseHandler.change_password(payload.new_password, payload.token, db.users)
     url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_password_change'
-    return RedirectResponse(url=url)
+    return RedirectResponse(url=url, status_code=200)
