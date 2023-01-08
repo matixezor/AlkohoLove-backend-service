@@ -249,11 +249,11 @@ class UserDatabaseHandler:
     ):
         try:
             token = randbytes(10)
-            change_password_code = hash_token(token)
+            reset_password_code = hash_token(token)
             collection.find_one_and_update({'_id': user['_id']}, {
-                '$set': {'reset_password_code': change_password_code, 'updated_at': datetime.utcnow()}},
+                '$set': {'reset_password_code': reset_password_code, 'updated_at': datetime.utcnow()}},
                                            return_document=ReturnDocument.AFTER)
-            url = f'{settings.HOST}:{settings.HOST_PORT}/reset_password/{token.hex()}'
+            url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/reset_password/{token.hex()}'
             await Email(user, url, [EmailStr(payload.email)]).send_reset_password_code()
         except Exception:
             collection.find_one_and_update({'_id': user['_id']},
@@ -275,12 +275,12 @@ class UserDatabaseHandler:
             token: str,
             collection: Collection[User]
     ):
-        change_password_code = dehash_token(token)
+        reset_password_code = dehash_token(token)
         password_salt = gensalt().decode('utf-8')
         new_password = UserDatabaseHandler.get_password_hash(new_password, password_salt)
-        collection.find_one_and_update({'reset_password_code': change_password_code},
+        collection.find_one_and_update({'reset_password_code': reset_password_code},
                                        {'$set': {'password': new_password, 'password_salt': password_salt,
-                                                 'change_password_code': None, 'updated_at': datetime.utcnow()}})
+                                                 'reset_password_code': None, 'updated_at': datetime.utcnow()}})
 
     @staticmethod
     async def send_deletion_request(
