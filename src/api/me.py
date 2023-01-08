@@ -96,7 +96,6 @@ async def delete_self(
         await FollowingDatabaseHandler.delete_user_followers(db.followers, db.following, db.users, user['_id'])
         await ReviewDatabaseHandler.delete_reviews(db.reviews, db.alcohols, user['_id'])
         await UserDatabaseHandler.delete_user(db.users, user['_id'])
-        await UserDatabaseHandler.delete_user(db.users, user['_id'])
         url = f'https://{settings.WEB_HOST}:{settings.WEB_PORT}/valid_account_deletion'
     return RedirectResponse(url=url)
 
