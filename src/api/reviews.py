@@ -19,7 +19,7 @@ from src.infrastructure.exceptions.alcohol_exceptions import AlcoholNotFoundExce
 router = APIRouter(prefix='/reviews', tags=['reviews'])
 
 
-def handle_helpful_review(reporters: list[ObjectId], user_id: ObjectId, review_user_id: ObjectId) -> bool | None:
+def handle_reporters(reporters: list[ObjectId], user_id: ObjectId, review_user_id: ObjectId) -> bool | None:
     return None if user_id == review_user_id else user_id in reporters
 
 
@@ -53,7 +53,12 @@ async def get_reviews(
         reviews=[
             Review(
                 **review,
-                helpful=handle_helpful_review(
+                reported=handle_reporters(
+                    review['reporters'],
+                    user_id,
+                    review['user_id']
+                ) if user_id else False,
+                helpful=handle_reporters(
                     review['helpful_reporters'],
                     user_id,
                     review['user_id']
@@ -99,7 +104,12 @@ async def get_user_reviews(
         reviews=[
             UserReview(
                 **review,
-                helpful=handle_helpful_review(
+                reported=handle_reporters(
+                    review['reporters'],
+                    current_user_id,
+                    review['user_id']
+                ) if current_user_id else False,
+                helpful=handle_reporters(
                     review['helpful_reporters'],
                     current_user_id,
                     review['user_id']

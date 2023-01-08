@@ -10,6 +10,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-13T15:22:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 0,
+        'reported': False,
         'helpful': True
     },
     {
@@ -20,6 +22,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-15T12:42:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 2,
+        'reported': True,
         'helpful': False
     }
 ]
@@ -197,6 +201,7 @@ async def test_get_alcohol_reviews_current_user_review(
     )
     fixture = ALCOHOL_REVIEWS_FIXTURE[0]
     fixture['helpful'] = None
+    fixture['reported'] = None
     assert response.status_code == 200
     response = response.json()
     assert response['my_review'] == fixture
