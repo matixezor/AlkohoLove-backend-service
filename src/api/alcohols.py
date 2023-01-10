@@ -76,7 +76,7 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
             'value': db_filter.pop('_id'),
             'filters': []
         }
-        for key, values in db_filter.items():
+        for key, values in sorted(db_filter.items()):
             filter_dict['filters'].append({
                 'name': key,
                 'display_name': translate[key],
