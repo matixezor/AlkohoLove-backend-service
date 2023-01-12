@@ -158,3 +158,24 @@ async def get_similar(
     return AlcoholRecommendation(
         alcohols=similar
     )
+
+
+@router.post(
+    path='/search_values',
+    status_code=status.HTTP_200_OK,
+    summary='Search for values by phrase',
+)
+async def search_values(
+        field_name: str,
+        phrase: str | None = Query(default=None),
+        limit: int = 10,
+        offset: int = 0,
+        db: Database = Depends(get_db)
+) -> list[str]:
+    """
+    Search for values Query params:
+    - **limit**: int - default 10
+    - **offset**: int - default 0
+    - **phrase**: str - default None return all values
+    """
+    return await AlcoholDatabaseHandler.search_values(field_name, db.alcohols, limit, offset, phrase)

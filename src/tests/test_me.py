@@ -9,7 +9,7 @@ from src.tests.response_fixtures.list_fixtures import WISHLIST_FIXTURE, FAVOURIT
 @mark.asyncio
 @mark.parametrize(
     'method',
-    ['get', 'put', 'delete']
+    ['get']
 )
 async def test_endpoints_without_token(
         method: str,
@@ -20,59 +20,18 @@ async def test_endpoints_without_token(
 
 
 @mark.asyncio
-async def test_update_self_with_taken_email(
-        async_client: AsyncClient,
-        user_token_headers: dict[str, str]
-):
-    data = {
-        'email': 'admin@gmail.com'
-    }
-    response = await async_client.put('/me', headers=user_token_headers, json=data)
-    assert response.status_code == 400
-    assert response.json() == {
-        'detail': 'User already exists'
-    }
-
-
-@mark.asyncio
 async def test_update_self_with_invalid_new_password(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
     data = {
-        'password': 'Test',
+        'token': 'f983e96fba88ce5523e9',
         'new_password': 'Test'
     }
-    response = await async_client.put('/me', headers=user_token_headers, json=data)
+    response = await async_client.post('/auth/reset_password', headers=user_token_headers, json=data)
     assert response.status_code == 422
     response = response.json()
-    assert response['detail'][0]['msg'] == 'New password does not comply with rules'
-
-
-@mark.asyncio
-@mark.parametrize(
-    'password,new_password',
-    [
-        ('Test1234', None),
-        (None, 'Testtest1234')
-    ]
-)
-async def test_update_self_with_only_one_password(
-        password: str | None,
-        new_password: str | None,
-        async_client: AsyncClient,
-        user_token_headers: dict[str, str]
-):
-    data = {
-        'password': password,
-        'new_password': new_password
-    }
-    # omit None
-    data = {key: value for key, value in data.items() if value}
-    response = await async_client.put('/me', headers=user_token_headers, json=data)
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Both passwords must be provided'
+    assert response['detail'][0]['msg'] == 'Password does not comply with rules'
 
 
 @mark.asyncio
@@ -89,52 +48,12 @@ async def test_get_self(
 
 
 @mark.asyncio
-@mark.parametrize(
-    'data',
-    [
-        {
-            'password': 'JanJan123',
-            'new_password': 'JanJan123'
-        },
-        {
-            'email': 'adam.skorupa2@gmail.com'
-        }
-    ]
-)
-async def test_update_self(
-        data: dict,
-        async_client: AsyncClient,
-        user_token_headers: dict[str, str]
-):
-    response = await async_client.put('/me', headers=user_token_headers, json=data)
-    assert response.status_code == 200
-    response = response.json()
-    assert response['username'] == 'Adam_Skorupa'
-    assert response['email'] == data.get('email', 'adam.skorupa@gmail.com')
-
-
-@mark.asyncio
-async def test_update_self_with_password_not_matched_in_db(
-        async_client: AsyncClient,
-        user_token_headers: dict[str, str]
-):
-    data = {
-        'password': 'Jan123',
-        'new_password': 'TestTest1234'
-    }
-    response = await async_client.put('/me', headers=user_token_headers, json=data)
-    assert response.status_code == 400
-    response = response.json()
-    assert response['detail'] == 'Old password is invalid'
-
-
-@mark.asyncio
 async def test_delete_self(
         async_client: AsyncClient,
         user_token_headers: dict[str, str]
 ):
-    response = await async_client.delete('/me', headers=user_token_headers)
-    assert response.status_code == 204
+    response = await async_client.get('/me/delete_account/f983e96fba88ce5523e9', headers=user_token_headers)
+    assert response.status_code == 307
 
 
 @mark.asyncio
@@ -271,7 +190,7 @@ async def test_alcohol_already_in_wishlist(
     response = await async_client.post('/me/wishlist/6288e32dd5ab6070dde8db8a', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already in list'
+    assert response['detail'] == 'Alkohol jest już w liście.'
 
 
 @mark.asyncio
@@ -282,7 +201,7 @@ async def test_alcohol_already_in_favourites(
     response = await async_client.post('/me/favourites/6288e32dd5ab6070dde8db8c', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Alcohol already in list'
+    assert response['detail'] == 'Alkohol jest już w liście.'
 
 
 # ----------------------------------------followers---------------------------------------------------------------------
@@ -342,7 +261,7 @@ async def test_user_already_in_following(
     response = await async_client.post('/me/following/6288e2fdd5ab6070dde8db8b', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'This user is already in following'
+    assert response['detail'] == 'Ten użytkownik jest już w obserwowanych.'
 
 
 @mark.asyncio
@@ -353,7 +272,7 @@ async def test_delete_non_existing_user_from_following(
     response = await async_client.delete('/me/following/6288e2fdd5ab6070dde8db8a', headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'
 
 
 @mark.asyncio
@@ -405,7 +324,7 @@ async def test_mark__own_review_as_unhelpful(
     response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbab', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'
+    assert response['detail'] == 'Nie można oznaczyć swojej opinii jako pomocna.'
 
 
 @mark.asyncio
@@ -416,4 +335,4 @@ async def test_mark_own_review_as_helpful(
     response = await async_client.put('/me/reviews/62964f8f12ce37ef94d3cbaa', headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Can\'t mark/unmark own review as helpful'
+    assert response['detail'] == 'Nie można oznaczyć swojej opinii jako pomocna.'

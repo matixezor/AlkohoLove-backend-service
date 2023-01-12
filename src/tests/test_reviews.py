@@ -10,6 +10,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-13T15:22:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 0,
+        'reported': False,
         'helpful': True
     },
     {
@@ -20,6 +22,8 @@ ALCOHOL_REVIEWS_FIXTURE = [
         'date': '2022-05-15T12:42:32+00:00',
         'alcohol_id': '6288e32dd5ab6070dde8db8b',
         'helpful_count': 1,
+        'report_count': 2,
+        'reported': True,
         'helpful': False
     }
 ]
@@ -197,6 +201,7 @@ async def test_get_alcohol_reviews_current_user_review(
     )
     fixture = ALCOHOL_REVIEWS_FIXTURE[0]
     fixture['helpful'] = None
+    fixture['reported'] = None
     assert response.status_code == 200
     response = response.json()
     assert response['my_review'] == fixture
@@ -212,7 +217,7 @@ async def test_get_alcohol_reviews_without_existing_alcohol(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Alcohol not found'
+    assert response['detail'] == 'Nie znaleziono alkoholu.'
 
 
 @mark.asyncio
@@ -256,7 +261,7 @@ async def test_get_user_reviews_without_existing_user(async_client: AsyncClient)
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'
 
 
 @mark.asyncio
@@ -298,7 +303,7 @@ async def test_create_review_with_existing_name(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Review already exists'
+    assert response['detail'] == 'Opinia już istnieje.'
 
 
 @mark.asyncio
@@ -316,18 +321,8 @@ async def test_create_review_with_wrong_rating(
         headers=user_token_headers
     )
     assert response.status_code == 422
-    assert response.json() == {
-            "detail": [
-                {
-                    "loc": [
-                        "body",
-                        "rating"
-                    ],
-                    "msg": "Rating should be number from 1 to 5",
-                    "type": "value_error"
-                }
-            ]
-    }
+    response = response.json()
+    assert response['detail'] == 'Ocena powinna być cyfrą od 1 do 5.'
 
 
 @mark.asyncio
@@ -367,7 +362,7 @@ async def test_update_review_without_existing_review(
         headers=user_token_headers)
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Review not found'
+    assert response['detail'] == 'Opinia nie znaleziona.'
 
 
 @mark.asyncio
@@ -385,7 +380,7 @@ async def test_update_review_that_does_not_belong_to_user(
         headers=user_token_headers)
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Review does not belong to user'
+    assert response['detail'] == 'Opinia nie należy do tego użytkownika.'
 
 
 @mark.asyncio
@@ -411,7 +406,7 @@ async def test_delete_review_that_does_not_belong_to_user(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'Review does not belong to user'
+    assert response['detail'] == 'Opinia nie należy do tego użytkownika.'
 
 
 @mark.asyncio
@@ -437,7 +432,7 @@ async def test_admin_delete_review_without_permissions(
     )
     assert response.status_code == 403
     response = response.json()
-    assert response['detail'] == 'Insufficient permissions'
+    assert response['detail'] == 'Niewystarczające uprawnienia.'
 
 
 @mark.asyncio
@@ -517,7 +512,7 @@ async def test_report_already_reported_review(
     )
     assert response.status_code == 400
     response = response.json()
-    assert response['detail'] == 'User already reported review'
+    assert response['detail'] == 'Opinia została już dodana przez tego użytkownika.'
 
 
 @mark.asyncio
@@ -565,7 +560,7 @@ async def test_admin_ban_review_that_not_exists(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'Review not found'
+    assert response['detail'] == 'Opinia nie znaleziona.'
 
 
 @mark.asyncio
@@ -597,7 +592,7 @@ async def test_admin_get_not_existing_user_banned_reviews(
     )
     assert response.status_code == 404
     response = response.json()
-    assert response['detail'] == 'User not found'
+    assert response['detail'] == 'Nie znaleziono użytkownika.'
 
 
 @mark.asyncio

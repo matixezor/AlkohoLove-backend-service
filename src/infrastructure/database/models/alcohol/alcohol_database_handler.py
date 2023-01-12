@@ -126,6 +126,9 @@ class AlcoholDatabaseHandler:
          * null - results from regex do not have this field
          Then we paginate the results and aggregate total count
         """
+        alcohols_pipeline = [{'$skip': offset}]
+        if limit:
+            alcohols_pipeline.append({'$limit': limit})
         result = list(collection.aggregate([
             {
                 '$match': {
@@ -146,7 +149,7 @@ class AlcoholDatabaseHandler:
             {'$sort': {'score': -1}},
             {
                 '$facet': {
-                    'alcohols': [{'$skip': offset}, {'$limit': limit}],
+                    'alcohols': alcohols_pipeline,
                     'totalCount': [{'$count': 'total'}]
                 }
             },
@@ -244,6 +247,42 @@ class AlcoholDatabaseHandler:
     @staticmethod
     async def revert_by_removal(collection: Collection, name: str) -> None:
         collection.find_one_and_delete({'name': name})
+
+    @staticmethod
+    async def search_values(
+            field_name: str,
+            collection: Collection,
+            limit: int,
+            offset: int,
+            phrase: str | None
+    ) -> list[str]:
+        if phrase:
+            pipeline = [
+                # Match the possible documents. Always the best approach
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # De-normalize the array content to separate documents
+                {'$unwind': f'${field_name}'},
+                # Now "filter" the content to actual matches
+                {'$match': {field_name: {'$regex': f'^{phrase}', '$options': 'i'}}},
+                # Group the "like" terms as the "key"
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+            ]
+            if limit:
+                pipeline.append({'$limit': limit})
+            values = list(collection.aggregate(pipeline))
+        else:
+            pipeline = [
+                {'$unwind': f'${field_name}'},
+                {'$group': {'_id': f'${field_name}'}},
+                {'$sort': {'_id': 1}},
+                {'$skip': offset},
+            ]
+            if limit:
+                pipeline.append({'$limit': limit})
+            values = list(collection.aggregate(pipeline))
+        return [value['_id'] for value in values]
 
     @staticmethod
     async def get_guest_list(

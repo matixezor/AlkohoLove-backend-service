@@ -83,7 +83,27 @@ let users = {
             favourites_count: {
                 bsonType: 'int',
                 description: '5'
-            }
+            },
+            is_verified: {
+                bsonType: 'bool',
+                description: 'must be a bool'
+            },
+            verification_code: {
+                bsonType: ['string', 'null'],
+                description: 'must be a str or null'
+            },
+            reset_password_code: {
+                bsonType: ['string', 'null'],
+                description: 'must be a str or null'
+            },
+            delete_account_code: {
+                bsonType: ['string', 'null'],
+                description: 'must be a str or null'
+            },
+            updated_at: {
+                bsonType: 'date',
+                description: 'must be a date'
+            },
         }
     }
 }
@@ -116,7 +136,13 @@ db.users.insertMany(
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(0),
-            rate_value: NumberLong(0)
+            rate_value: NumberLong(0),
+            is_verified: true,
+            verification_code: null,
+            reset_password_code: null,
+            delete_account_code: null,
+            updated_at: new ISODate('2022-03-22T19:10:25Z')
+
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8c'),
@@ -134,7 +160,13 @@ db.users.insertMany(
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(2),
-            rate_value: NumberLong(10)
+            rate_value: NumberLong(10),
+            is_verified: true,
+            verification_code: null,
+            reset_password_code: null,
+            delete_account_code: null,
+            updated_at: new ISODate('2022-03-22T19:10:25Z')
+
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8d'),
@@ -152,7 +184,13 @@ db.users.insertMany(
             followers_count: NumberInt(2),
             following_count: NumberInt(2),
             rate_count: NumberLong(1),
-            rate_value: NumberLong(1)
+            rate_value: NumberLong(1),
+            is_verified: true,
+            verification_code: null,
+            reset_password_code: null,
+            delete_account_code: null,
+            updated_at: new ISODate('2022-03-22T19:10:25Z')
+
         },
         {
             _id: ObjectId('6288e2fdd5ab6070dde8db8e'),
@@ -170,7 +208,14 @@ db.users.insertMany(
             followers_count: NumberInt(0),
             following_count: NumberInt(1),
             rate_count: NumberLong(0),
-            rate_value: NumberLong(0)
+            rate_value: NumberLong(0),
+            is_verified: true,
+            verification_code: null,
+            reset_password_code: null,
+            delete_account_code: null,
+            updated_at: new ISODate('2022-03-22T19:10:25Z')
+
+
         }
     ]
 )

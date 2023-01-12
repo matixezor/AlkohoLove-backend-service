@@ -31,6 +31,13 @@ let alcohol_review = {
                 bsonType: 'int',
                 description: 'must be an integer'
             },
+            helpful_reporters: {
+                bsonType: 'array',
+                description: 'list of user ids',
+                items: {
+                    bsonType: 'objectId'
+                }
+            },
             reporters: {
                 bsonType: 'array',
                 description: 'list of user ids',

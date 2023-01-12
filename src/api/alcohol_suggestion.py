@@ -11,7 +11,8 @@ from src.infrastructure.database.models.alcohol import AlcoholDatabaseHandler
 from src.infrastructure.config.app_config import ApplicationSettings, get_settings
 from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_suggestion.alcohol_suggestion_create import AlcoholSuggestionCreate
-from src.infrastructure.exceptions.alcohol_suggestion_exception import SuggestionAlreadyMadeException
+from src.infrastructure.exceptions.alcohol_suggestion_exception import SuggestionAlreadyMadeException, \
+    SuggestionFileTooBigException, WrongSuggestionFileTypeException
 from src.infrastructure.database.models.alcohol_suggestion import AlcoholSuggestionDatabaseHandler as DatabaseHandler, \
     AlcoholSuggestionDatabaseHandler
 
@@ -62,13 +63,10 @@ async def upload_suggestion_image(
         settings: ApplicationSettings = Depends(get_settings)):
 
     if file.content_type not in ['image/png', 'image/jpeg']:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png and .jpg files allowed')
+        raise WrongSuggestionFileTypeException()
 
     if image_size(file.file) > 9000000:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='File size too large. Maximum is 9 mb'
-        )
+        raise SuggestionFileTooBigException()
 
     try:
         cloudinary.uploader.upload(

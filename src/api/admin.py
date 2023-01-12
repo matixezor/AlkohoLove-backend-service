@@ -29,7 +29,6 @@ from src.infrastructure.alcohol.alcohol_mappers import map_alcohols, map_alcohol
 from src.domain.banned_review.paginated_banned_review import PaginatedBannedReview
 from src.infrastructure.config.app_config import get_settings, ApplicationSettings
 from src.infrastructure.exceptions.review_exceptions import ReviewNotFoundException
-from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException
 from src.domain.alcohol_category import AlcoholCategoryDelete, AlcoholCategoryCreate
 from src.infrastructure.exceptions.validation_exceptions import ValidationErrorException
 from src.infrastructure.database.models.reported_error import ReportedErrorDatabaseHandler
@@ -37,9 +36,14 @@ from src.infrastructure.database.models.alcohol_filter import AlcoholFilterDatab
 from src.infrastructure.database.models.alcohol_category import AlcoholCategoryDatabaseHandler
 from src.infrastructure.database.models.alcohol_category.mappers import map_to_alcohol_category
 from src.domain.alcohol_suggestion.paginated_alcohol_suggestion import PaginatedAlcoholSuggestion
-from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException
+from src.infrastructure.exceptions.reported_error_exceptions import ReportedErrorNotFoundException
+from src.infrastructure.exceptions.alcohol_suggestion_exception import SuggestionNotFoundException
 from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Body, Query
 from src.domain.alcohol_category import AlcoholCategory, AlcoholCategoryUpdate, PaginatedAlcoholCategories
+from src.infrastructure.exceptions.alcohol_categories_exceptions import AlcoholCategoryExistsException, \
+    AlcoholCategoryNotFoundException, PropertiesAlreadyExistException, PropertiesNotExistException
+from src.infrastructure.exceptions.alcohol_exceptions import AlcoholExistsException, WrongFileTypeException, \
+    FileTooBigException
 from src.infrastructure.database.models.alcohol_suggestion.alcohol_suggestion_database_handler import \
     AlcoholSuggestionDatabaseHandler
 
@@ -131,7 +135,7 @@ async def get_error(error_id: str, db: Database = Depends(get_db)):
     error_id = validate_object_id(error_id)
     db_reported_error = await ReportedErrorDatabaseHandler.get_reported_error_by_id(db.reported_errors, error_id)
     if not db_reported_error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Reported error not found')
+        raise ReportedErrorNotFoundException()
     return db_reported_error
 
 
@@ -305,7 +309,7 @@ async def create_alcohol(
 
     if sm.content_type != 'image/png' and md.content_type != 'image/png':
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only .png files allowed')
+        raise WrongFileTypeException()
 
     payload = AlcoholCreate(
         **payload.dict(),
@@ -316,10 +320,7 @@ async def create_alcohol(
     alcohol = await AlcoholDatabaseHandler.add_alcohol(db.alcohols, payload)
     if image_size(sm.file) > 1000000 and image_size(md.file) > 1000000:
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='File size too large. Maximum is 1 mb'
-        )
+        raise FileTooBigException()
 
     try:
         sm_name = f'{alcohol.inserted_id}_sm'
@@ -364,15 +365,9 @@ async def add_category_traits(
     category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Category not found'
-        )
+        raise AlcoholCategoryNotFoundException()
     if any(_key in list(db_category['properties'].keys()) for _key in list(payload.properties.keys())):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Properties already exist'
-        )
+        raise PropertiesAlreadyExistException()
     try:
         updated_category = await AlcoholCategoryDatabaseHandler.update_category(
             db.alcohol_categories, db_category, payload
@@ -399,15 +394,9 @@ async def remove_category_traits(
     category_id = validate_object_id(category_id)
     db_category = await AlcoholCategoryDatabaseHandler.get_category_by_id(db.alcohol_categories, category_id)
     if not db_category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Category not found'
-        )
+        raise AlcoholCategoryNotFoundException()
     if any(_key not in list(db_category['properties'].keys()) for _key in payload.properties):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Properties do not exist'
-        )
+        raise PropertiesNotExistException()
     try:
         updated_category = await AlcoholCategoryDatabaseHandler.remove_properties(
             db.alcohol_categories, db_category, payload
@@ -595,7 +584,7 @@ async def get_suggestion_by_id(
     db_suggestions = await AlcoholSuggestionDatabaseHandler.get_suggestion_by_id(db.alcohol_suggestion,
                                                                                  suggestion_id)
     if not db_suggestions:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Suggestion not found')
+        raise SuggestionNotFoundException()
     return db_suggestions
 
 

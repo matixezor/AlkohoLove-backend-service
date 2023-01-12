@@ -425,6 +425,13 @@ class ReviewDatabaseHandler:
         collection.update_one({'_id': review_id}, {'$inc': {'report_count': 1}})
 
     @staticmethod
+    async def machine_increase_review_report_count(
+            collection: Collection[Review],
+            review_id: ObjectId
+    ) -> None:
+        collection.update_one({'_id': review_id}, {'$inc': {'report_count': 50}})
+
+    @staticmethod
     async def get_review_by_id(
             collection: Collection[Review],
             review_id: ObjectId,
