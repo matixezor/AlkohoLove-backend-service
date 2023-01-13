@@ -37,6 +37,8 @@ USER_REVIEWS_FIXTURE = [
         'date': '2022-04-14T11:11:23+00:00',
         'helpful_count': 0,
         'helpful': False,
+        'report_count': 0,
+        'reported': False,
         'alcohol_id': '6288e32dd5ab6070dde8db8a',
         'alcohol': {
             'age': 4,
@@ -120,7 +122,9 @@ USER_REVIEWS_FIXTURE = [
             'username': None
         },
         'helpful_count': 1,
-        'helpful': False
+        'helpful': False,
+        'report_count': 0,
+        'reported': False,
     }
 ]
 

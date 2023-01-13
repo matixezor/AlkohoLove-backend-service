@@ -12,7 +12,9 @@ class UserReview(MongoBaseModel, ReviewBase):
     date: datetime
     alcohol_id: PyObjectId = Field(default_factory=PyObjectId, alias="alcohol_id")
     helpful_count: int
+    report_count: int
     helpful: bool | None
+    reported: bool | None
     alcohol: Alcohol
 
     @validator('alcohol_id', always=True)
