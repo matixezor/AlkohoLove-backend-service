@@ -36,6 +36,7 @@ async def login(
         db: Database = Depends(get_db),
         settings: ApplicationSettings = Depends(get_settings)
 ):
+    print(form_data.username)
     user = await UserDatabaseHandler.authenticate_user(db.users, form_data.username, form_data.password, True)
     print(user['username'])
     return await generate_tokens(user['username'], authorize, settings)
