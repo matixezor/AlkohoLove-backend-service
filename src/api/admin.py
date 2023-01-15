@@ -66,7 +66,7 @@ async def search_users(
     """
     Search for users with pagination by optional username
     """
-    users = await UserDatabaseHandler.get_users(db.users, limit, offset, username)
+    users = await UserDatabaseHandler.get_users(db.users, limit, offset, username, None)
     total = await UserDatabaseHandler.count_users(db.users, username)
     return PaginatedUserAdminInfo(
         users=users,
