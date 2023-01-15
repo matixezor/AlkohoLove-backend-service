@@ -13,8 +13,7 @@ class AlcoholFilterDatabaseHandler:
             color: str,
             food: list[str] | None,
             taste: list[str] | None,
-            aroma: list[str] | None,
-            finish: list[str] | None,
+            aroma: list[str] | None
     ) -> None:
         print(food)
         collection.update_one(
@@ -32,9 +31,6 @@ class AlcoholFilterDatabaseHandler:
                     },
                     'aroma': {
                         "$each": aroma
-                    },
-                    'finish': {
-                        "$each": finish
                     }
                 }
             }
@@ -54,7 +50,6 @@ class AlcoholFilterDatabaseHandler:
                 'color': [],
                 'food': [],
                 'taste': [],
-                'aroma': [],
-                'finish': []
+                'aroma': []
             }
         )

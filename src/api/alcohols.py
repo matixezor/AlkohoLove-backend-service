@@ -26,8 +26,7 @@ translate = {
     'type': 'typ',
     'food': 'jedzenie',
     'aroma': 'aromat',
-    'taste': 'smak',
-    'finish': 'finisz'
+    'taste': 'smak'
 }
 
 
