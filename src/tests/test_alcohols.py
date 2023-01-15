@@ -199,7 +199,7 @@ async def test_get_alcohol_filters(async_client: AsyncClient):
     assert response.status_code == 200
     response = response.json()
     assert len(response['filters']) == 5
-    assert response['filters'][0] == ALCOHOL_FILTER_FIXTURE
+    assert response['filters'][-1] == ALCOHOL_FILTER_FIXTURE
 
 
 @mark.asyncio
@@ -208,7 +208,7 @@ async def test_get_alcohol_filters_kind_all(async_client: AsyncClient):
     assert response.status_code == 200
     response = response.json()
     assert len(response['filters']) == 5
-    assert response['filters'][-1] == ALCOHOL_FILTER_FIXTURE_KIND_ALL
+    assert response['filters'][0] == ALCOHOL_FILTER_FIXTURE_KIND_ALL
 
 
 @mark.asyncio
