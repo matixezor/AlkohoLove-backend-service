@@ -45,8 +45,18 @@ class UserDatabaseHandler:
         return collection.find_one({'_id': user_id})
 
     @staticmethod
-    async def get_users(collection: Collection[User], limit: int, offset: int, username: str | None) -> list[User]:
-        query = {'username': {'$regex': username, '$options': 'i'}} if username else {}
+    async def get_users(
+            collection: Collection[User],
+            limit: int,
+            offset: int,
+            username: str | None,
+            current: str | None
+    ) -> list[User]:
+        query = {'$and': [{'username': {'$regex': username, '$options': 'i'}}]} \
+            if username else {}
+        if current:
+            query['$and'].append({'username': {'$ne': current}})\
+                if query.get('$and', None) else query.update({'username': {'$ne': current}})
         return list(
             collection.find(query).skip(offset).limit(limit)
         )
