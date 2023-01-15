@@ -73,6 +73,7 @@ async def search_alcohols(
 async def get_alcohol_filters(db: Database = Depends(get_db)):
     db_filters = await AlcoholFilterDatabaseHandler.get_all_filters(db.alcohol_filters)
     filters = []
+
     for db_filter in db_filters:
         filter_dict = {
             'name': 'kind',
@@ -80,14 +81,26 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
             'value': db_filter.pop('_id'),
             'filters': []
         }
+        print(filter_dict)
         for key, values in db_filter.items():
-            print(key)
             filter_dict['filters'].append({
                 'name': key,
                 'display_name': translate[key],
                 'values': [value for value in values if value != '']
             })
         filters.append(filter_dict)
+
+    categories = await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, 0, 0)
+    for category in categories:
+        title = category['title']
+        if title != 'core':
+            print('category name: ', title)
+            properties = category['properties']
+            for kind_property in properties:
+                if kind_property != 'kind' and ('string' in properties[kind_property]['bsonType']):
+                    print(kind_property, properties[kind_property]['title'])
+
+
     return AlcoholFiltersMetadata(
         filters=filters
     )

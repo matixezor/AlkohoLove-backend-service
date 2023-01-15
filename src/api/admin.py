@@ -431,12 +431,6 @@ async def add_category(
     except OperationFailure as ex:
         await AlcoholCategoryDatabaseHandler.revert_by_removal(db.alcohol_categories, payload.title)
         raise ValidationErrorException(ex.args[0])
-    print(payload.properties)
-    for kind_property in payload.properties:
-        if kind_property == 'kind':
-            continue
-        print(payload.properties[kind_property].bsonType)
-    print(payload.title)
 
 
 @router.get(
