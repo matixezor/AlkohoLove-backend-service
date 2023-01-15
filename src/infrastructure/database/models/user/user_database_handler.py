@@ -52,8 +52,11 @@ class UserDatabaseHandler:
             username: str | None,
             current: str | None
     ) -> list[User]:
-        query = {'$and': [{'username': {'$regex': username, '$options': 'i'}}, {'username': {'$ne': current}}]} \
-            if username else {{'username': {'$ne': current}}}
+        query = {'$and': [{'username': {'$regex': username, '$options': 'i'}}]} \
+            if username else {}
+        if current:
+            query['$and'].append({'username': {'$ne': current}})\
+                if query.get('$and', None) else query.update({'username': {'$ne': current}})
         return list(
             collection.find(query).skip(offset).limit(limit)
         )
