@@ -48,19 +48,6 @@ class AlcoholDatabaseHandler:
                 }
             })
 
-        # aggregated_filters.append(
-        #     {
-        #         '$or': [
-        #             {
-        #                 '$text': {'$search': phrase}
-        #             },
-        #             {
-        #                 'name': {'$regex': phrase, '$options': 'i'}
-        #             }
-        #         ]
-        #     }
-        # )
-
         aggregated_filters.append(
                 {
                     '$search': {
