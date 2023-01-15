@@ -182,14 +182,6 @@ class AlcoholDatabaseHandler:
             {
                 '$addFields': {'score': {'$meta': 'searchScore'}}
             },
-            # {
-            #     '$match': {
-            #         '$or': [
-            #             {'score': {'$gt': 5.5}},
-            #             {'score': None}
-            #         ]
-            #     }
-            # },
             {'$sort': {'score': -1}},
             {
                 '$facet': {
