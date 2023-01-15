@@ -8,6 +8,7 @@ from src.domain.common import MongoBaseModel
 
 class Review(MongoBaseModel, ReviewBase):
     username: str
+    user_id: PyObjectId = Field(default_factory=PyObjectId, alias="user_id")
     date: datetime
     alcohol_id: PyObjectId = Field(default_factory=PyObjectId, alias="alcohol_id")
     helpful_count: int
@@ -17,4 +18,8 @@ class Review(MongoBaseModel, ReviewBase):
 
     @validator('alcohol_id', always=True)
     def set_alcohol_id(cls, v):
+        return str(v)
+
+    @validator('user_id', always=True)
+    def set_user_id(cls, v):
         return str(v)
