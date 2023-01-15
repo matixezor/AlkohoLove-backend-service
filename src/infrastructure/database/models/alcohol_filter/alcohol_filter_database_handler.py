@@ -15,7 +15,6 @@ class AlcoholFilterDatabaseHandler:
             taste: list[str] | None,
             aroma: list[str] | None
     ) -> None:
-        print(food)
         collection.update_one(
             {'_id': kind},
             {
