@@ -73,7 +73,7 @@ async def search_alcohols(
 async def get_alcohol_filters(db: Database = Depends(get_db)):
     db_filters = await AlcoholFilterDatabaseHandler.get_all_filters(db.alcohol_filters)
     filters = []
-
+    categories = await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, 0, 0)
     for db_filter in db_filters:
         filter_dict = {
             'name': 'kind',
@@ -81,26 +81,27 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
             'value': db_filter.pop('_id'),
             'filters': []
         }
-        print(filter_dict)
         for key, values in db_filter.items():
             filter_dict['filters'].append({
                 'name': key,
                 'display_name': translate[key],
                 'values': [value for value in values if value != '']
             })
+        for category in categories:
+            if category['title'] == filter_dict['value']:
+                properties = category['properties']
+                for kind_property in properties:
+                    if kind_property != 'kind' and \
+                            any(x in properties[kind_property]['bsonType'] for x in ['array', 'string']):
+                        if kind_property != "temperature":
+                            filter_dict['filters'].append({
+                                'name': kind_property,
+                                'display_name': properties[kind_property]['title'],
+                                'values': await AlcoholDatabaseHandler.search_values(
+                                    kind_property, db.alcohols, 0, 0, ""
+                                )
+                            })
         filters.append(filter_dict)
-
-    categories = await AlcoholCategoryDatabaseHandler.get_categories(db.alcohol_categories, 0, 0)
-    for category in categories:
-        title = category['title']
-        if title != 'core':
-            print('category name: ', title)
-            properties = category['properties']
-            for kind_property in properties:
-                if kind_property != 'kind' and ('string' in properties[kind_property]['bsonType']):
-                    print(kind_property, properties[kind_property]['title'])
-
-
     return AlcoholFiltersMetadata(
         filters=filters
     )
