@@ -242,7 +242,14 @@ async def update_alcohol(
             raise AlcoholExistsException()
     db_alcohol = await AlcoholDatabaseHandler.update_alcohol(db.alcohols, alcohol_id, payload)
     await AlcoholFilterDatabaseHandler.update_filters(
-        db.alcohol_filters, db_alcohol['kind'], db_alcohol['type'], db_alcohol['country'], db_alcohol['color']
+        db.alcohol_filters,
+        db_alcohol['kind'],
+        db_alcohol['type'],
+        db_alcohol['country'],
+        db_alcohol['color'],
+        db_alcohol['food'],
+        db_alcohol['taste'],
+        db_alcohol['aroma']
     )
 
     if sm and md:
@@ -338,7 +345,14 @@ async def create_alcohol(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
     await AlcoholFilterDatabaseHandler.update_filters(
-        db.alcohol_filters, payload.kind, payload.type, payload.country, payload.color
+        db.alcohol_filters,
+        payload.kind,
+        payload.type,
+        payload.country,
+        payload.color,
+        payload.food,
+        payload.taste,
+        payload.aroma
     )
 
 

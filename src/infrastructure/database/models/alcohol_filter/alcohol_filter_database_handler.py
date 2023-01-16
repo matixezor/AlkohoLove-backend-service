@@ -10,7 +10,10 @@ class AlcoholFilterDatabaseHandler:
             kind: str,
             alcohol_type: str,
             country: str,
-            color: str
+            color: str,
+            food: list[str] | None,
+            taste: list[str] | None,
+            aroma: list[str] | None
     ) -> None:
         collection.update_one(
             {'_id': kind},
@@ -18,7 +21,17 @@ class AlcoholFilterDatabaseHandler:
                 '$addToSet': {
                     'type': alcohol_type,
                     'country': country,
-                    'color': color}
+                    'color': color,
+                    'food': {
+                        "$each": food
+                    },
+                    'taste': {
+                        "$each": taste
+                    },
+                    'aroma': {
+                        "$each": aroma
+                    }
+                }
             }
         )
 
@@ -28,4 +41,14 @@ class AlcoholFilterDatabaseHandler:
 
     @staticmethod
     async def create_init_entry(collection: Collection[AlcoholFilter], kind: str) -> None:
-        collection.insert_one({'_id': kind, 'type': [], 'country': [], 'color': []})
+        collection.insert_one(
+            {
+                '_id': kind,
+                'type': [],
+                'country': [],
+                'color': [],
+                'food': [],
+                'taste': [],
+                'aroma': []
+            }
+        )
