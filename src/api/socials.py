@@ -145,7 +145,7 @@ async def search_users(
         raise InvalidUsersSearchParametersException()
     user_id = current_user['_id']
     if search_type == 'all':
-        users = await UserDatabaseHandler.get_users(db.users, limit, offset, phrase)
+        users = await UserDatabaseHandler.get_users(db.users, limit, offset, phrase, current_user['username'])
         total = await UserDatabaseHandler.count_users_without_current(db.users, phrase, current_user)
         return PaginatedExtendedUserSocial(
             users=users,
