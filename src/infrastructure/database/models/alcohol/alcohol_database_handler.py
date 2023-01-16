@@ -41,22 +41,70 @@ class AlcoholDatabaseHandler:
         filters = AlcoholDatabaseHandler.prepare_filters(filters)
 
         if filters:
-            aggregated_filters.extend(filters)
+            aggregated_filters.append({
+                '$match': {
+                    key: value for dictionary in filters
+                    for key, value in dictionary.items()
+                }
+            })
 
         aggregated_filters.append(
-            {
-                '$or': [
-                    {
-                        '$text': {'$search': phrase}
-                    },
-                    {
-                        'name': {'$regex': phrase, '$options': 'i'}
+                {
+                    '$search': {
+                        'index': 'tetxtSearch',
+                        'compound': {
+                            'should': [
+                                {
+                                    'text': {
+                                        'query': phrase,
+                                        'path': 'name',
+                                        'fuzzy': {},
+                                        'score': {'boost': {'value': 10}}
+                                    }
+                                },
+                                {
+                                    'text': {
+                                        'query': phrase,
+                                        'path': 'kind',
+                                        'fuzzy': {},
+                                        'score': {'boost': {'value': 8}}
+                                    }
+                                },
+                                {
+                                    'text': {
+                                        'query': phrase,
+                                        'path': 'type',
+                                        'score': {'boost': {'value': 7}}
+                                    }
+                                },
+                                {
+                                    'text': {
+                                        'query': phrase,
+                                        'path': 'color',
+                                        'score': {'boost': {'value': 5}}
+                                    }
+                                },
+                                {
+                                    'text': {
+                                        'query': phrase,
+                                        'path': 'keywords',
+                                        'score': {'boost': {'value': 5}}
+                                    }
+                                },
+                                {
+                                    'autocomplete': {
+                                        'query': phrase,
+                                        'path': 'name',
+                                        'score': {'boost': {'value': 10}}
+                                    }
+                                }
+                            ]
+                        }
                     }
-                ]
-            }
+                }
         )
 
-        return aggregated_filters
+        return aggregated_filters[::-1]
 
     @staticmethod
     async def get_alcohol_by_barcode(collection: Collection, barcode: list[str]) -> dict | None:
@@ -130,21 +178,9 @@ class AlcoholDatabaseHandler:
         if limit:
             alcohols_pipeline.append({'$limit': limit})
         result = list(collection.aggregate([
+            *filters,
             {
-                '$match': {
-                    '$and': filters
-                }
-            },
-            {
-                '$addFields': {'score': {'$meta': 'textScore'}}
-            },
-            {
-                '$match': {
-                    '$or': [
-                        {'score': {'$gt': 5.5}},
-                        {'score': None}
-                    ]
-                }
+                '$addFields': {'score': {'$meta': 'searchScore'}}
             },
             {'$sort': {'score': -1}},
             {
