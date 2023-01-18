@@ -38,8 +38,8 @@ ALCOHOL_FILTER_FIXTURE_KIND_ALL = {
             'values': [
                 'bezbarwny',
                 'biały',
-                'karmel',
                 'bursztyn',
+                'karmel',
                 'pomarańczowy'
             ]
         },
@@ -47,19 +47,19 @@ ALCOHOL_FILTER_FIXTURE_KIND_ALL = {
             'name': 'country',
             'display_name': 'kraj',
             'values': [
-                'Szwecja',
-                'Kuba',
                 'Irlandia',
-                'Polska'
+                'Kuba',
+                'Polska',
+                'Szwecja'
             ]
         },
         {
             'name': 'type',
             'display_name': 'typ',
             'values': [
-                'czysta',
                 'biały',
                 'blended',
+                'czysta',
                 'owocowy'
             ]
         }
