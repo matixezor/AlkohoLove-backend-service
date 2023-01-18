@@ -29,7 +29,7 @@ class WrongFileTypeException(HTTPException):
     def __init__(self):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            'Dozwolone jedynie pliki .png.'
+            'Dozwolone jedynie pliki .png i .jpg.'
         )
 
 
