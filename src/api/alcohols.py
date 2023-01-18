@@ -93,12 +93,13 @@ async def get_alcohol_filters(db: Database = Depends(get_db)):
                     if kind_property != 'kind' and \
                             any(x in properties[kind_property]['bsonType'] for x in ['array', 'string']):
                         if kind_property != "temperature":
+                            values = await AlcoholDatabaseHandler.search_values(
+                                    kind_property, db.alcohols, 0, 0, ""
+                                )
                             filter_dict['filters'].append({
                                 'name': kind_property,
                                 'display_name': properties[kind_property]['title'],
-                                'values': await AlcoholDatabaseHandler.search_values(
-                                    kind_property, db.alcohols, 0, 0, ""
-                                )
+                                'values': [value for value in values if value != '']
                             })
         filters.append(filter_dict)
     return AlcoholFiltersMetadata(
