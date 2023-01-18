@@ -253,6 +253,8 @@ async def update_alcohol(
     )
 
     if sm and md:
+        if sm.content_type not in ['image/png', 'image/jpeg'] or md.content_type not in ['image/png', 'image/jpeg']:
+            raise WrongFileTypeException()
         try:
             sm_name = f'{alcohol_id}_sm'
             md_name = f'{alcohol_id}_md'
@@ -306,7 +308,7 @@ async def create_alcohol(
             detail='Alcohol category does not exist. Create one first!'
         )
 
-    if sm.content_type != 'image/png' and md.content_type != 'image/png':
+    if sm.content_type not in ['image/png', 'image/jpeg'] or md.content_type not in ['image/png', 'image/jpeg']:
         await AlcoholDatabaseHandler.revert_by_removal(db.alcohols, payload.name)
         raise WrongFileTypeException()
 
