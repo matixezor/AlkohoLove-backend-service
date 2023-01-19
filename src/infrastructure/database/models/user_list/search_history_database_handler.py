@@ -15,12 +15,12 @@ class SearchHistoryHandler:
             alcohols_collection: Collection,
             user_id: ObjectId = None,
     ) -> list[SearchHistoryEntry]:
-        search_history = search_history_collection.find_one({'user_id': user_id}, {'alcohols': 1})
-        search_history = search_history['alcohols']
-        alcohol_ids = []
-        for a_dict in search_history:
-            alcohol_ids.append(a_dict['alcohol_id'])
-        alcohol_list = list((alcohols_collection.find({'_id': {'$in': alcohol_ids}})).skip(offset).limit(limit))
+        search_history = search_history_collection.find_one({'user_id': user_id})
+        search_history = search_history['alcohols'][::-1]
+        right_bound = offset + limit
+        search_history = search_history[offset:right_bound]
+        alcohol_ids = [alcohol['alcohol_id'] for alcohol in search_history]
+        alcohol_list = list((alcohols_collection.find({'_id': {'$in': alcohol_ids}})))
         alcohols = []
         for i in range(len(alcohol_list)):
             alcohol = next((item for item in search_history if item['alcohol_id'] == alcohol_list[i]['_id']), None)
